@@ -1,0 +1,40 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "appcli"
+author = "Kale Kundert"
+author-email = "kale@thekunderts.net"
+home-page = 'https://github.com/kalekundert/appcli'
+description-file = 'README.rst'
+requires-python = "~=3.6"
+requires = [
+]
+classifiers = [
+  'Programming Language :: Python :: 3',
+  'License :: OSI Approved :: MIT License',
+]
+
+[tool.flit.metadata.requires-extra]
+tests = [
+  'pytest',
+  'pytest-cov',
+  'coveralls',
+]
+docs = [
+  'sphinx',
+  'sphinx_rtd_theme',
+  'autoclasstoc',
+]
+
+[tool.flit.metadata.urls]
+'Documentation' = 'https://appcli.readthedocs.io/en/latest/'
+'Version Control' = 'https://github.com/kalekundert/appcli'
+'Bug Tracker' = 'https://github.com/kalekundert/appcli/issues'
+'Continuous Integration' = 'https://github.com/kalekundert/appcli/actions'
+'Test Coverage' = 'https://coveralls.io/github/kalekundert/appcli'
+
+[tool.semantic_release]
+version_variable = 'appcli/__init__.py:__version__'
+build_command = 'python -m pip install flit && flit build'
