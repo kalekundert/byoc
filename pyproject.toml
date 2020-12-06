@@ -10,6 +10,7 @@ home-page = 'https://github.com/kalekundert/appcli'
 description-file = 'README.rst'
 requires-python = "~=3.6"
 requires = [
+  'docopt~=0.6.2',
 ]
 classifiers = [
   'Programming Language :: Python :: 3',
@@ -21,6 +22,7 @@ tests = [
   'pytest',
   'pytest-cov',
   'coveralls',
+  'debugtools',
 ]
 docs = [
   'sphinx',
@@ -34,6 +36,10 @@ docs = [
 'Bug Tracker' = 'https://github.com/kalekundert/appcli/issues'
 'Continuous Integration' = 'https://github.com/kalekundert/appcli/actions'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/appcli'
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --doctest-glob='*.rst'"
+doctest_optionflags = 'NORMALIZE_WHITESPACE'
 
 [tool.semantic_release]
 version_variable = 'appcli/__init__.py:__version__'

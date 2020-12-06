@@ -1,0 +1,682 @@
+test_param:
+  -
+    id: keys
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >     x1 = appcli.param('x')
+      >     x2 = appcli.param(key='x')
+      >     x3 = appcli.param(key={'a': 'x'})
+    expected:
+      x: 1
+      x1: 1
+      x2: 1
+      x3: 1
+
+  -
+    id: pick
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     def load(self, obj):
+      >         return [
+      >                 appcli.Layer(values={'x': 1}, location='A'),
+      >                 appcli.Layer(values={'x': 2}, location='B'),
+      >         ]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x1 = appcli.param('x')
+      >     x2 = appcli.param('x', pick=list)
+      >     x3 = appcli.param('x', pick=list, default=0)
+    expected:
+      x1: 1
+      x2: [1,2]
+      x3: [1,2,0]
+
+  -
+    id: default
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(default=1)
+    expected:
+      x: 1
+  -
+    id: default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'y': 0}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(default=1)
+      >     y = appcli.param()
+    expected:
+      x: 1
+      y: 0
+
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(cast=lambda x: x+1)
+    expected:
+      x: 2
+  -
+    id: cast
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(default='str', cast=int)
+    expected:
+      x: 'str'
+
+  -
+    id: set
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = 2
+    expected:
+      x: 2
+  -
+    id: set
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = 2
+    expected:
+      x: 2
+  -
+    id: set
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > # Setting a parameter for one instance shouldn't affect other 
+      > # instances.
+      > decoy = DummyObj()
+      > decoy.x = 2
+      >
+      > obj = DummyObj()
+    expected:
+      x: 1
+  -
+    id: set
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = 2
+      > del obj.x
+    expected:
+      x: 1
+  -
+    id: set
+    obj:
+      > from copy import copy
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = 2
+      >
+      > obj = copy(obj)
+    expected:
+      x: 2
+
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > class ChildObj(ParentObj):
+      >     pass
+      >
+      > obj = ChildObj()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class ParentObj:
+      >     x = appcli.param()
+      >
+      > class ChildObj(ParentObj):
+      >     __config__ = [DummyConfig()]
+      >
+      > obj = ChildObj()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >
+      > class ChildObj(ParentObj):
+      >     x = appcli.param()
+      >
+      > obj = ChildObj()
+    expected:
+      x: 1
+
+test_iter_values_from_layers:
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+    key_map:
+      a: 'x'
+    cast_map:
+      a: lambda x: x
+    expected:
+      - 1
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return [
+        >                 appcli.Layer(values={'x': 1}, location='A'),
+        >                 appcli.Layer(values={'x': 2}, location='A'),
+        >         ]
+    key_map:
+      a: 'x'
+    cast_map:
+      a: lambda x: x
+    expected:
+      - 1
+      - 2
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return [
+        >                 appcli.Layer(values={'x': 1}, location='A'),
+        >                 appcli.Layer(values={'y': 2}, location='A'),
+        >         ]
+    key_map:
+      a: 'x'
+    cast_map:
+      a: lambda x: x
+    expected:
+      - 1
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'b'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 2}, location='B')
+    key_map:
+      a: 'x'
+      b: 'x'
+    cast_map:
+      a: lambda x: x
+      b: lambda x: x
+    expected:
+      - 1
+      - 2
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'b'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'y': 2}, location='B')
+    key_map:
+      a: 'x'
+      b: 'y'
+    cast_map:
+      a: lambda x: x
+      b: lambda y: y
+    expected:
+      - 1
+      - 2
+  -
+    id: layers
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'b'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'y': 2}, location='B')
+    key_map:
+      a: 'x'
+      b: 'x'
+    cast_map:
+      a: lambda x: x
+      b: lambda x: x
+    expected:
+      - 1
+
+  -
+    id: dotted
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': {'y': 1}}, location='A')
+    key_map:
+      a: 'x.y'
+    cast_map:
+      a: lambda x: x
+    expected:
+      - 1
+
+  -
+    id: cast
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 'z'}, location='A')
+    key_map:
+      a: 'x'
+    cast_map:
+      a: int
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't cast 'z' using <class 'int'>
+        - reading 'x' from A
+        - invalid literal for int\(\) with base 10: 'z'
+  -
+    id: cast
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return [
+        >                 appcli.Layer(values={'x': 1}, location='A'),
+        >                 appcli.Layer(values={'x': 2}, location='A'),
+        >         ]
+    key_map:
+      a: 'x'
+    cast_map:
+      a: lambda x: x + 1
+    expected:
+      - 2
+      - 3
+  -
+    id: cast
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'b'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='B')
+    key_map:
+      a: 'x'
+      b: 'x'
+    cast_map:
+      a: lambda x: x + 1
+      b: lambda x: x + 2
+    expected:
+      - 2
+      - 3
+
+  -
+    id: defaults
+    configs:
+    key_map:
+    cast_map:
+    error:
+      type: appcli.ConfigError
+      message:
+        - parameter must have a value
+        - nowhere to look for values
+        - is `__config__` empty?
+  -
+    id: defaults
+    configs:
+    key_map:
+    cast_map:
+    default: 0
+    expected:
+      - 0
+  -
+    id: defaults
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+    key_map:
+      a: 'y'
+    cast_map:
+      a: lambda y: y
+    error:
+      type: appcli.ConfigError
+      message:
+        - parameter must have a value
+        - the following locations were searched
+        - A: y
+        - did you mean to provide a default\?
+  -
+    id: defaults
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+    key_map:
+      a: 'y'
+    cast_map:
+      a: lambda y: y
+    default: 0
+    expected:
+      - 0
+  -
+    id: defaults
+    configs:
+      -
+        > class DummyConfig(appcli.Config):
+        >     tag = 'a'
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={'x': 1}, location='A')
+    key_map:
+      a: 'x'
+    cast_map:
+      a: lambda x: x
+    default: 0
+    expected:
+      - 1
+      - 0
+
+test_make_map:
+  # Values: dict
+  # Keys:   list
+  -
+    keys: []
+    values: dict()
+    expected: dict()
+  -
+    keys: ['a']
+    values: dict(a=1)
+    expected: dict(a=1)
+  -
+    keys: ['a']
+    values: dict(a=1, b=2)
+    expected: dict(a=1)
+  -
+    keys: ['a', 'b']
+    values: dict(a=1, b=2)
+    expected: dict(a=1, b=2)
+  -
+    keys: ['a']
+    values: dict()
+    default: 1
+    expected: dict(a=1)
+  -
+    keys: ['a', 'b']
+    values: dict(a=1)
+    default: 2
+    expected: dict(a=1, b=2)
+
+  # Values: dict
+  # Keys:   iterator
+  -
+    keys: iter([])
+    values: dict()
+    expected: dict()
+  -
+    keys: iter(['a'])
+    values: dict(a=1)
+    expected: dict(a=1)
+  -
+    keys: iter(['a'])
+    values: dict(a=1, b=2)
+    expected: dict(a=1)
+  -
+    keys: iter(['a', 'b'])
+    values: dict(a=1, b=2)
+    expected: dict(a=1, b=2)
+  -
+    keys: iter(['a'])
+    values: dict()
+    default: 1
+    expected: dict(a=1)
+  -
+    keys: iter(['a', 'b'])
+    values: dict(a=1)
+    default: 2
+    expected: dict(a=1, b=2)
+
+  # Values: dict
+  # Keys:   dict
+  -
+    keys: dict()
+    values: dict()
+    expected: dict()
+  -
+    keys: dict(a=None)
+    values: dict(a=1)
+    expected: dict(a=1)
+  -
+    keys: dict(a=None)
+    values: dict(a=1, b=2)
+    expected: dict(a=1)
+  -
+    keys: dict(a=None, b=None)
+    values: dict(a=1, b=2)
+    expected: dict(a=1, b=2)
+  -
+    keys: dict(a=None)
+    values: dict()
+    default: 1
+    expected: dict(a=1)
+  -
+    keys: dict(a=None, b=None)
+    values: dict(a=1)
+    default: 2
+    expected: dict(a=1, b=2)
+
+  # Values: list
+  # Keys:   list
+  -
+    keys: []
+    values: []
+    expected: dict()
+  -
+    keys: ['a']
+    values: [1]
+    expected: dict(a=1)
+  -
+    keys: ['a', 'b']
+    values: [1, 2]
+    expected: dict(a=1, b=2)
+
+  # Values: list
+  # Keys:   iterator
+  -
+    keys: iter([])
+    values: []
+    expected: dict()
+  -
+    keys: iter(['a'])
+    values: [1]
+    expected: dict(a=1)
+  -
+    keys: iter(['a', 'b'])
+    values: [1, 2]
+    expected: dict(a=1, b=2)
+
+  # Values: iterator
+  # Keys:   list
+  -
+    keys: []
+    values: iter([])
+    expected: dict()
+  -
+    keys: ['a']
+    values: iter([1])
+    expected: dict(a=1)
+  -
+    keys: ['a', 'b']
+    values: iter([1, 2])
+    expected: dict(a=1, b=2)
+
+  # Values: iterator
+  # Keys:   iterator
+  -
+    keys: iter([])
+    values: iter([])
+    expected: dict()
+  -
+    keys: iter(['a'])
+    values: iter([1])
+    expected: dict(a=1)
+  -
+    keys: iter(['a', 'b'])
+    values: iter([1, 2])
+    expected: dict(a=1, b=2)
+
+  # Values: scalar
+  # Keys:   list
+  -
+    keys: []
+    values: 'foo'
+    expected: dict()
+  -
+    keys: ['a']
+    values: 'foo'
+    expected: dict(a='foo')
+  -
+    keys: ['a', 'b']
+    values: 'foo'
+    expected: dict(a='foo', b='foo')
+
+  # Values: scalar
+  # Keys:   iterator
+  -
+    keys: iter([])
+    values: 'foo'
+    expected: dict()
+  -
+    keys: iter(['a'])
+    values: 'foo'
+    expected: dict(a='foo')
+  -
+    keys: iter(['a', 'b'])
+    values: 'foo'
+    expected: dict(a='foo', b='foo')
+
+  # Values: scalar
+  # Keys:   dict
+  -
+    keys: dict()
+    values: 'foo'
+    expected: dict()
+  -
+    keys: dict(a=None)
+    values: 'foo'
+    expected: dict(a='foo')
+  -
+    keys: dict(a=None, b=None)
+    values: 'foo'
+    expected: dict(a='foo', b='foo')

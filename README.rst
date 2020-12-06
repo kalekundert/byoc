@@ -2,6 +2,9 @@
 AppCLI
 ******
 
+Library for setting object attributes from arbitrary sources, e.g. command-line 
+arguments, config files, REST APIs, etc.
+
 .. image:: https://img.shields.io/pypi/v/appcli.svg
    :target: https://pypi.python.org/pypi/appcli
 

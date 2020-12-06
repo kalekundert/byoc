@@ -1,0 +1,545 @@
+test_config:
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     pass
+    key_group: None
+    cast_group: None
+    require_explicit_load: False
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+    key_group: 'a'
+    cast_group: 'a'
+    require_explicit_load: False
+
+  -
+    id: key_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     key_group = 'b'
+    key_group: 'b'
+    cast_group: 'a'
+    require_explicit_load: False
+  -
+    id: key_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     key_group = 'b'
+      >
+      > config = DummyConfig(tag='c')
+    key_group: 'b'
+    cast_group: 'c'
+    require_explicit_load: False
+  -
+    id: key_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     key_group = 'b'
+      >
+      > config = DummyConfig(tag='c', key_group='d')
+    key_group: 'd'
+    cast_group: 'c'
+    require_explicit_load: False
+  -
+    id: key_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     key_group = 'a'
+    key_group: 'a'
+    cast_group: None
+    require_explicit_load: False
+  -
+    id: key_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     key_group = 'a'
+      >
+      > config=DummyConfig(key_group='b')
+    key_group: 'b'
+    cast_group: None
+    require_explicit_load: False
+
+  -
+    id: cast_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     cast_group = 'b'
+    key_group: 'a'
+    cast_group: 'b'
+    require_explicit_load: False
+  -
+    id: cast_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     cast_group = 'b'
+      >
+      > config = DummyConfig(tag='c')
+    key_group: 'c'
+    cast_group: 'b'
+    require_explicit_load: False
+  -
+    id: cast_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     tag = 'a'
+      >     cast_group = 'b'
+      >
+      > config = DummyConfig(tag='c', cast_group='d')
+    key_group: 'c'
+    cast_group: 'd'
+    require_explicit_load: False
+  -
+    id: cast_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     cast_group = 'a'
+    key_group: None
+    cast_group: 'a'
+    require_explicit_load: False
+  -
+    id: cast_group
+    config:
+      > class DummyConfig(appcli.Config):
+      >     cast_group = 'a'
+      >
+      > config=DummyConfig(cast_group='b')
+    key_group: None
+    cast_group: 'b'
+    require_explicit_load: False
+
+  -
+    id: explicit_load
+    config:
+      > class DummyConfig(appcli.Config):
+      >     require_explicit_load = True
+    key_group: None
+    cast_group: None
+    require_explicit_load: True
+  -
+    id: explicit_load
+    config:
+      > class DummyConfig(appcli.Config):
+      >     require_explicit_load = True
+      >
+      > config = DummyConfig(autoload=True)
+    key_group: None
+    cast_group: None
+    require_explicit_load: False
+  -
+    id: explicit_load
+    config:
+      > class DummyConfig(appcli.Config):
+      >     pass
+      >
+      > config = DummyConfig(autoload=False)
+    key_group: None
+    cast_group: None
+    require_explicit_load: True
+
+test_dict_config:
+  -
+    id: dict
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.DictConfig(x=1)]
+    layers:
+      - appcli.Layer(values={'x': 1}, location='<string>:2')
+
+test_attr_config:
+  -
+    id: attr
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >     y = {'x': 1}
+    expected:
+      x: 1
+  -
+    id: attr
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > appcli.load(obj)
+      >
+      > obj.y = {'x': 1}
+    expected:
+      x: 1
+  -
+    id: attr
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.y = {'x': 1}
+      >
+      > decoy = DummyObj()
+      > decoy.y = {'x': 2}
+    expected:
+      x: 1
+
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >     y = {'x': 1}
+      >
+      > class Child(Parent):
+      >     pass
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     y = {'x': 1}
+      >
+      > class Child(Parent):
+      >     x = appcli.param()
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >
+      > class Child(Parent):
+      >     y = {'x': 1}
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     __config__ = [appcli.AttrConfig('y')]
+      >
+      > class Child(Parent):
+      >     x = appcli.param()
+      >     y = {'x': 1}
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     x = appcli.param()
+      >     y = {'x': 1}
+      >
+      > class Child(Parent):
+      >     __config__ = [appcli.AttrConfig('y')]
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     y = {'x': 1}
+      >
+      > class Child(Parent):
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     x = appcli.param()
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: attr-inherit
+    obj:
+      > class Parent:
+      >     x = appcli.param()
+      >
+      > class Child(Parent):
+      >     __config__ = [appcli.AttrConfig('y')]
+      >     y = {'x': 1}
+      >
+      > obj = Child()
+    expected:
+      x: 1
+
+test_docopt_config:
+  -
+    obj:
+      > class DummyObj:
+      >     """\
+      > Do something.
+      >
+      > Usage:
+      >     app <x> [-y]
+      > """
+      >     __config__ = [appcli.DocoptConfig()]
+      >     usage = appcli.attr()
+      >     brief = appcli.attr()
+    usage:
+      > Do something.
+      >
+      > Usage:
+      >     app <x> [-y]
+      >
+    brief:
+      > Do something.
+    argv:
+      > ./app x -y
+    layers:
+      - appcli.Layer(values={'<x>': 'x', '-y': True}, location="command line")
+  -
+    obj:
+      > class DummyObj:
+      >     """\
+      > Usage:
+      >     app <x> [-y]
+      > """
+      >     __config__ = [appcli.DocoptConfig()]
+      >     usage = appcli.attr()
+      >     brief = appcli.attr()
+    usage:
+      > Usage:
+      >     app <x> [-y]
+      >
+    brief:
+    argv:
+      > ./app x
+    layers:
+      - appcli.Layer(values={'<x>': 'x', '-y': False}, location="command line")
+
+test_file_config:
+  -
+    id: yaml
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig('x.yml')]
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+  -
+    id: toml
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.TomlConfig('x.toml')]
+    files:
+      x.toml:
+        > x = 1
+    layer:
+      values: {'x': 1}
+      location: x.toml
+  -
+    id: nt
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.NtConfig('x.nt')]
+    files:
+      x.nt:
+        > x: 1
+    layer:
+      values: {'x': '1'}
+      location: x.nt
+  -
+    id: schema
+    obj:
+      > add_1 = lambda x: {k: int(x[k]) + 1 for k in x}
+      > class DummyObj:
+      >     __config__ = [appcli.NtConfig('x.nt', schema=add_1)]
+    files:
+      x.nt:
+        > x: 1
+    layer:
+      values: {'x': 2}
+      location: x.nt
+
+test_appdirs_config:
+  -
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.AppDirsConfig('conf.nt')]
+      >     dirs = appcli.attr()
+    slug: 'dummyobj'
+    author: None
+    version: None
+    files:
+      user/conf.nt:
+        > x: 1
+      site/conf.nt:
+        > y: 2
+    layers:
+      -
+        values: {'x': '1'}
+        location: user/conf.nt
+      -
+        values: {'y': '2'}
+        location: site/conf.nt
+  -
+    obj:
+      > class DummyObj:
+      >     __config__ = [
+      >             appcli.AppDirsConfig(
+      >                 'conf.nt',
+      >                 slug='slug',
+      >                 author='author',
+      >                 version='version',
+      >             )
+      >     ]
+      >     dirs = appcli.attr()
+    slug: 'slug'
+    author: 'author'
+    version: 'version'
+    files:
+      user/conf.nt:
+        > x: 1
+      site/conf.nt:
+        > y: 2
+    layers:
+      -
+        values: {'x': '1'}
+        location: user/conf.nt
+      -
+        values: {'y': '2'}
+        location: site/conf.nt
+
+test_appdirs_config_get_name_and_config_cls:
+  -
+    id: error
+    config: appcli.AppDirsConfig()
+    error:
+      type: appcli.ConfigError
+      message:
+        - must specify `AppDirsConfig.name` or `AppDirsConfig.format`
+  -
+    id: error
+    config: appcli.AppDirsConfig(name='conf.yml', format=appcli.TomlConfig)
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't specify `AppDirsConfig.name` and `AppDirsConfig.format`
+        - name: 'conf.yml'
+        - format: <class 'appcli.config.TomlConfig'>
+        - use `AppDirsConfig.stem` to change the filename used by `AppDirsConfig.format`
+  -
+    id: error
+    config: appcli.AppDirsConfig(name='conf.xyz')
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find FileConfig subclass to load 'conf.xyz'
+        - found these subclasses:
+        - <class 'appcli.config.YamlConfig'>: .yml .yaml
+        - <class 'appcli.config.TomlConfig'>: .toml
+        - <class 'appcli.config.NtConfig'>: .nt
+
+  -
+    id: name
+    config: appcli.AppDirsConfig(name='my-conf.yml')
+    name: my-conf.yml
+    config_cls: appcli.YamlConfig
+  -
+    id: name
+    config: appcli.AppDirsConfig(name='my-conf.yaml')
+    name: my-conf.yaml
+    config_cls: appcli.YamlConfig
+  -
+    id: name
+    config: appcli.AppDirsConfig(name='my-conf.toml')
+    name: my-conf.toml
+    config_cls: appcli.TomlConfig
+  -
+    id: name
+    config: appcli.AppDirsConfig(name='my-conf.nt')
+    name: my-conf.nt
+    config_cls: appcli.NtConfig
+
+  -
+    id: format
+    config: appcli.AppDirsConfig(format=appcli.YamlConfig)
+    name: conf.yml
+    config_cls: appcli.YamlConfig
+  -
+    id: config_cls
+    config: appcli.AppDirsConfig(format=appcli.YamlConfig, stem='my-conf')
+    name: my-conf.yml
+    config_cls: appcli.YamlConfig
+  -
+    id: config_cls
+    config: appcli.AppDirsConfig(format=appcli.TomlConfig)
+    name: conf.toml
+    config_cls: appcli.TomlConfig
+  -
+    id: config_cls
+    config: appcli.AppDirsConfig(format=appcli.TomlConfig, stem='my-conf')
+    name: my-conf.toml
+    config_cls: appcli.TomlConfig
+  -
+    id: config_cls
+    config: appcli.AppDirsConfig(format=appcli.NtConfig)
+    name: conf.nt
+    config_cls: appcli.NtConfig
+  -
+    id: config_cls
+    config: appcli.AppDirsConfig(format=appcli.NtConfig, stem='my-conf')
+    name: my-conf.nt
+    config_cls: appcli.NtConfig
+
+test_not_found:
+  -
+    f: f = lambda x: x+1
+    error: none
+  -
+    f:
+      > def f(x):
+      >     raise KeyError
+    error:
+      type: KeyError
+  -
+    f:
+      > def f(x):
+      >     raise IndexError
+    raises:
+      - IndexError
+    error:
+      type: KeyError
+  -
+    f:
+      > def f(x):
+      >     raise IndexError
+    raises:
+      - AttributeError
+    error:
+      type: IndexError
+  -
+    f:
+      > def f(x):
+      >     raise IndexError
+    raises:
+      - AttributeError
+      - IndexError
+    error:
+      type: KeyError
+
+

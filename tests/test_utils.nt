@@ -1,0 +1,83 @@
+test_first_specified:
+  -
+    args: [1]
+    expected: 1
+  -
+    args: [None, 1]
+    expected: 1
+  -
+    args: [1, None]
+    expected: 1
+  -
+    args: [1, 2]
+    expected: 1
+  -
+    args: []
+    kwargs:
+      default: 1
+    expected: 1
+  -
+    args: [None]
+    kwargs:
+      default: 1
+    expected: 1
+  -
+    args: [None, None]
+    kwargs:
+      default: 1
+    expected: 1
+  -
+    args: [1, 2]
+    kwargs:
+      sentinel: 1
+    expected: 2
+  -
+    args: [2, 1]
+    kwargs:
+      sentinel: 1
+    expected: 2
+  -
+    args: [2, 3]
+    kwargs:
+      sentinel: 1
+    expected: 2
+
+test_first_specified_err:
+  -
+    args: []
+  -
+    args: [None]
+  -
+    args: [None, None]
+  -
+    args: [1]
+    kwargs:
+      sentinel: 1
+  -
+    args: [1, 1]
+    kwargs:
+      sentinel: 1
+
+test_lookup:
+
+  -
+    x: {'a': 1}
+    key: a
+    expected: 1
+  -
+    x: {'a': {'b': 1}}
+    key: a.b
+    expected: 1
+  -
+    x: str.upper
+    key: a
+    expected: 'A'
+  -
+    x: {'a': str.upper}
+    key: a.b
+    expected: 'B'
+  -
+    x: lambda x: {'b': x}
+    key: a.b
+    expected: 'a'
+

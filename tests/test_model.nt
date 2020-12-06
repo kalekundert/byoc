@@ -1,0 +1,309 @@
+
+test_init_load:
+  -
+    id: 0-configs
+    configs:
+    init_layers:
+    load_layers:
+
+  -
+    id: 1-config
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+    init_layers:
+        - appcli.Layer(values={}, location='a')
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+  -
+    id: 1-config
+    configs:
+      ab:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return [
+        >               appcli.Layer(values={}, location='a'),
+        >               appcli.Layer(values={}, location='b'),
+        >         ]
+    init_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+  -
+    id: 1-config
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+    init_layers:
+        - appcli.PendingLayer(a)
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+
+  -
+    id: 2-configs
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+      b:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='b')
+    init_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+  -
+    id: 2-configs
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+      b:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='b')
+    init_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.PendingLayer(b)
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+  -
+    id: 2-configs
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+      b:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='b')
+    init_layers:
+        - appcli.PendingLayer(a)
+        - appcli.Layer(values={}, location='b')
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+  -
+    id: 2-configs
+    configs:
+      a:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='a')
+      b:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(values={}, location='b')
+    init_layers:
+        - appcli.PendingLayer(a)
+        - appcli.PendingLayer(b)
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+
+  -
+    id: misc
+    obj:
+      > class DummyObj:
+      >     x = appcli.param()
+    configs:
+      a:
+        # Access a value from an earlier layer.  This requires that the layers 
+        # are parsed in the correct order, and that the object is always kept 
+        # in a valid state.
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(
+        >                 values={'x': obj.x + 1},
+        >                 location='a',
+        >         )
+      b:
+        > class DummyConfig(appcli.Config):
+        >     def load(self, obj):
+        >         return appcli.Layer(
+        >                 values={'x': 1},
+        >                 location='b',
+        >         )
+    init_layers:
+        - appcli.Layer(values={'x': 2}, location='a')
+        - appcli.Layer(values={'x': 1}, location='b')
+    load_layers:
+        - appcli.Layer(values={'x': 2}, location='a')
+        - appcli.Layer(values={'x': 1}, location='b')
+  -
+    id: misc
+    obj:
+      > class DummyObj:
+      >     x = appcli.param()
+    configs:
+      a:
+        # Access a value from an earlier layer.  This requires that the layers 
+        # are parsed in the correct order, and that the object is always kept 
+        # in a valid state.
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(
+        >                 values={'x': obj.x + 1},
+        >                 location='a',
+        >         )
+      b:
+        > class DummyConfig(appcli.Config):
+        >     require_explicit_load = True
+        >
+        >     def load(self, obj):
+        >         return appcli.Layer(
+        >                 values={'x': 1},
+        >                 location='b',
+        >         )
+    init_layers:
+        - appcli.PendingLayer(a)
+        - appcli.PendingLayer(b)
+    load_layers:
+        - appcli.Layer(values={'x': 2}, location='a')
+        - appcli.Layer(values={'x': 1}, location='b')
+
+test_load_config:
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return appcli.Layer(
+      >                 values={'a': 1},
+      >                 location='a',
+      >         )
+    expected:
+      - {'a': 1}, 'a'
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         a = appcli.Layer(
+      >                 values={'a': 1},
+      >                 location='a',
+      >         )
+      >         b = appcli.Layer(
+      >                 values={'b': 2},
+      >                 location='b',
+      >         )
+      >         return [a, b]
+    expected:
+      - {'a': 1}, 'a'
+      - {'b': 2}, 'b'
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return []
+    expected:
+
+test_load_config_err:
+  -
+    config:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         return None
+    error:
+      > Config.load\(\) must return `Layer` or `List\[Layer\]`
+
+test_iter_active_layers:
+  -
+    id: 0-layers
+    layers:
+    expected:
+
+  -
+    id: 1-layer
+    layers:
+      - appcli.Layer(values={}, location='a')
+    expected:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: 1-layer
+    layers:
+      - appcli.PendingLayer(appcli.Config())
+    expected:
+
+  -
+    id: 2-layers
+    layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+    expected:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: 2-layers
+    layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.PendingLayer(appcli.Config())
+    expected:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: 2-layers
+    layers:
+      - appcli.PendingLayer(appcli.Config())
+      - appcli.Layer(values={}, location='a')
+    expected:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: 2-layers
+    layers:
+      - appcli.PendingLayer(appcli.Config())
+      - appcli.PendingLayer(appcli.Config())
+    expected:
+
+test_groups:
+  -
+    groups:
+    expected:
+  -
+    groups:
+      - a
+    expected:
+      - a
+  -
+    groups:
+      - a
+      - b
+    expected:
+      - a
+      - b
+  -
+    groups:
+      - a
+      - a
+    expected:
+      - a
+  -
+    groups:
+      - a
+      - b
+      - a
+    expected:
+      - a
+      - b

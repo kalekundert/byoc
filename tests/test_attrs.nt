@@ -1,0 +1,144 @@
+test_attr:
+  -
+    id: keys
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def get_x(self, obj):
+      >         return 1
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.attr()
+      >     y = appcli.attr('x')
+    expected:
+      x: 1
+      y: 1
+
+  -
+    id: iterate
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def __init__(self, x):
+      >         self.x = x
+      >     def get_x(self, obj):
+      >         return self.x
+      >
+      > class DummyObj:
+      >     __config__ = [
+      >             DummyConfig(1),
+      >             DummyConfig(2),
+      >     ]
+      >     x = appcli.attr()
+    expected:
+      x: 1
+  -
+    id: iterate
+    obj:
+      > class DummyConfigX(appcli.Config):
+      >     def get_x(self, obj):
+      >         return 1
+      >
+      > class DummyConfigY(appcli.Config):
+      >     def get_y(self, obj):
+      >         return 2
+      >
+      > class DummyObj:
+      >     __config__ = [
+      >             DummyConfigX(),
+      >             DummyConfigY(),
+      >     ]
+      >     x = appcli.attr()
+      >     y = appcli.attr()
+    expected:
+      x: 1
+      y: 2
+
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def get_x(self, obj):
+      >         return 1
+      >
+      > class Parent:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.attr()
+      >
+      > class Child(Parent):
+      >     pass
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def get_x(self, obj):
+      >         return 1
+      >
+      > class Parent:
+      >     x = appcli.attr()
+      >
+      > class Child(Parent):
+      >     __config__ = [DummyConfig()]
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def get_x(self, obj):
+      >         return 1
+      >
+      > class Parent:
+      >     __config__ = [DummyConfig()]
+      >
+      > class Child(Parent):
+      >     x = appcli.attr()
+      >
+      > obj = Child()
+    expected:
+      x: 1
+
+  -
+    id: decoy
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def get_y(self, obj):
+      >         return getattr(obj, 'x') + 1
+      >
+      > class Obj:
+      >     __config__ = [DummyConfig()]
+      >     y = appcli.attr()
+      >
+      > obj = Obj()
+      > obj.x = 1
+      >
+      > decoy = Obj()
+      > decoy.x = 3
+    expected:
+      x: 1
+      y: 2
+
+test_attr_err:
+
+  -
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     pass
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.attr()
+    attr: x
+    error:
+      type: AttributeError
+      message:
+        - can't find config attribute
+        - getting 'x' attribute for <DummyObj object at 0x[0-9a-f]*>
+        - DummyConfig
+
+
