@@ -3,7 +3,7 @@
 import appcli
 import pytest
 from schema import Schema, Use, And, Or, Optional
-from contextlib import contextmanager, nullcontext
+from contextlib import contextmanager
 
 class LayerWrapper:
 
@@ -68,6 +68,15 @@ def exec_config(code):
 empty_list = And('', Use(lambda x: []))
 empty_dict = And('', Use(lambda x: {}))
 no_templates = '^[^{}]*$'
+
+class nullcontext:
+    # This context manager is built in to python>=3.7
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *exc):
+        pass
 
 def error_or(**expected):
     schema = {}
