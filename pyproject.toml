@@ -14,7 +14,7 @@ requires = [
   'tidyexc',
   'appdirs',
   'docopt~=0.6.2',
-  'yaml',
+  'pyyaml',
   'toml',
   'nestedtext',
 ]
