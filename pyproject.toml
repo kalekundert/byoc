@@ -10,7 +10,13 @@ home-page = 'https://github.com/kalekundert/appcli'
 description-file = 'README.rst'
 requires-python = "~=3.6"
 requires = [
+  'more_itertools',
+  'tidyexc',
+  'appdirs',
   'docopt~=0.6.2',
+  'yaml',
+  'toml',
+  'nestedtext',
 ]
 classifiers = [
   'Programming Language :: Python :: 3',
