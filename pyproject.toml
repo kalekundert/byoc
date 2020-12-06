@@ -28,7 +28,8 @@ tests = [
   'pytest',
   'pytest-cov',
   'coveralls',
-  'debugtools',
+  'parametrize_from_file',
+  'schema',
 ]
 docs = [
   'sphinx',
