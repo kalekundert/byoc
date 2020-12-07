@@ -2,7 +2,7 @@
 
 import appcli
 import pytest
-from schema import Schema, Use, And, Or, Optional
+from voluptuous import Schema, And, Or, Optional, Invalid
 from contextlib import contextmanager
 
 class LayerWrapper:
@@ -31,24 +31,30 @@ class LayerWrapper:
 
 def eval_appcli(code, **locals):
     globals = dict(appcli=appcli)
-    return eval(code, globals, locals)
+    try:
+        return eval(code, globals, locals)
+    except Exception as err1:
+        raise Invalid(str(err)) from err
 
 def eval_layers(layers, **locals):
-    schema = Schema([Use(lambda x: eval_layer(x, **locals))])
-    return schema.validate(layers)
+    schema = Schema([lambda x: eval_layer(x, **locals)])
+    return schema(layers)
 
 def eval_layer(layer, **locals):
     schema = Schema(Or(str, {
-        'values': Use(eval),
+        'values': eval,
         'location': str,
     }))
-    layer = schema.validate(layer)
+    layer = schema(layer)
     layer = eval(layer) if isinstance(layer, str) else appcli.Layer(**layer)
     return LayerWrapper(layer)
 
 def exec_appcli(code):
     globals = dict(appcli=appcli)
-    exec(code, globals)
+    try:
+        exec(code, globals)
+    except Exception as err1:
+        raise Invalid(str(err)) from err
     return globals
 
 def exec_obj(code):
@@ -65,8 +71,8 @@ def exec_config(code):
     except KeyError:
         return locals['DummyConfig']()
 
-empty_list = And('', Use(lambda x: []))
-empty_dict = And('', Use(lambda x: {}))
+empty_list = And('', lambda x: [])
+empty_dict = And('', lambda x: {})
 no_templates = '^[^{}]*$'
 
 class nullcontext:
@@ -85,10 +91,10 @@ def error_or(**expected):
     # KBK: This doesn't work for some reason.
     #schema[Or('error', *expected, only_one=True)] = object
 
-    schema[Optional('error', default=nullcontext())] = Use(error)
+    schema[Optional('error', default='none')] = error
 
     schema.update({
-        Optional(k, default=None): v
+        Optional(k, default=None): Or(None, v)
         for k, v in expected.items()
     })
     return schema

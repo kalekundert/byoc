@@ -3,7 +3,7 @@
 import pytest
 import parametrize_from_file
 import appcli
-from schema import SchemaError, Use, And, Or, Optional
+from voluptuous import Schema, Or, Optional
 from schema_helpers import *
 from more_itertools import zip_equal
 
@@ -18,14 +18,13 @@ class DummyConfig(appcli.Config):
     def load(self, obj):
         return layers
 
-
 @parametrize_from_file(
-        schema={
-            Optional('obj', default=DummyObj): Use(exec_obj),
-            'configs': Or({str: Use(exec_config)}, empty_dict),
+        schema=Schema({
+            Optional('obj', default=DummyObj): Or(DummyObj, exec_obj),
+            'configs': Or({str: exec_config}, empty_dict),
             'init_layers': Or([str], empty_list),
-            'load_layers': Or([Use(eval_appcli)], empty_list),
-        }
+            'load_layers': Or([eval_appcli], empty_list),
+        })
 )
 def test_init_load(obj, configs, init_layers, load_layers):
     # `configs` is a dictionary, but the values are guaranteed to be in the 
@@ -63,10 +62,10 @@ def test_get_configs_err():
     assert err.match(no_templates)
 
 @parametrize_from_file(
-        schema={
-            'config': Use(exec_config),
-            'expected': Or([Use(eval)], empty_list),
-        }
+        schema=Schema({
+            'config': exec_config,
+            'expected': Or([eval], empty_list),
+        })
 )
 def test_load_config(config, expected):
     obj = DummyObj()
@@ -83,10 +82,10 @@ def test_load_config(config, expected):
     assert actual == expected
 
 @parametrize_from_file(
-        schema={
-            'config': Use(exec_config),
+        schema=Schema({
+            'config': exec_config,
             'error': str,
-        }
+        })
 )
 def test_load_config_err(config, error):
     obj = DummyObj()
@@ -97,10 +96,10 @@ def test_load_config_err(config, error):
     assert err.match(no_templates)
 
 @parametrize_from_file(
-        schema={
-            'layers':   Or([Use(eval_appcli)], empty_list),
-            'expected': Or([Use(eval_appcli)], empty_list),
-        }
+        schema=Schema({
+            'layers':   Or([eval_appcli], empty_list),
+            'expected': Or([eval_appcli], empty_list),
+        })
 )
 def test_iter_active_layers(layers, expected):
 
@@ -116,10 +115,10 @@ def test_iter_active_layers(layers, expected):
 
 @parametrize_from_file(
         key='test_groups',
-        schema={
+        schema=Schema({
             'groups': Or(list, empty_list),
             'expected': Or(list, empty_list),
-        }
+        })
 )
 def test_get_key_groups(groups, expected):
 
@@ -131,10 +130,10 @@ def test_get_key_groups(groups, expected):
 
 @parametrize_from_file(
         key='test_groups',
-        schema={
+        schema=Schema({
             'groups': Or(list, empty_list),
             'expected': Or(list, empty_list),
-        }
+        })
 )
 def test_get_cast_groups(groups, expected):
 

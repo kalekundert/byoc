@@ -3,14 +3,14 @@
 import appcli
 import pytest
 import parametrize_from_file
-from schema import Use, Optional, Or
+from voluptuous import Schema, Optional, Or
 from schema_helpers import *
 
 @parametrize_from_file(
-        schema={
-            'obj': Use(exec_obj),
-            'expected': {str: Use(eval)},
-        }
+        schema=Schema({
+            'obj': exec_obj,
+            'expected': {str: eval},
+        })
 )
 def test_param(obj, expected):
     for attr, value in expected.items():
@@ -25,15 +25,15 @@ def test_param_init_err():
     assert err.match(r"second specification: 'y'")
 
 @parametrize_from_file(
-        schema={
-            'configs': Or([Use(exec_config)], empty_list),
-            'key_map': Or({str: Use(eval)}, empty_dict),
-            'cast_map': Or({str: Use(eval)}, empty_dict),
-            Optional('default', default=None): Use(eval),
+        schema=Schema({
+            'configs': Or([exec_config], empty_list),
+            'key_map': Or({str: eval}, empty_dict),
+            'cast_map': Or({str: eval}, empty_dict),
+            Optional('default', default=None): Or(None, eval),
             **error_or(
-                expected=Or([Use(eval)], empty_list),
+                expected=Or([eval], empty_list),
             ),
-        }
+        })
 )
 def test_iter_values_from_layers(configs, key_map, cast_map, default, expected, error):
     class Obj:
@@ -50,10 +50,10 @@ def test_iter_values_from_layers(configs, key_map, cast_map, default, expected, 
         assert list(values) == expected
 
 @parametrize_from_file(
-        schema={
-            Optional('default', default=None): Use(eval),
-            str: Use(eval),
-        }
+        schema=Schema({
+            Optional('default', default=None): Or(None, eval),
+            str: eval,
+        })
 )
 def test_make_map(keys, values, default, expected):
     kwargs = {} if default is None else dict(default=default)

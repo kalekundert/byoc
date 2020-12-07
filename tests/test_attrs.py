@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 
 import parametrize_from_file
-from schema import Use
+from voluptuous import Schema
 from schema_helpers import *
 
 @parametrize_from_file(
-        schema={
-            'obj': Use(exec_obj),
-            'expected': {str: Use(eval)},
-        }
+        schema=Schema({
+            'obj': exec_obj,
+            'expected': {str: eval},
+        })
 )
 def test_attr(obj, expected):
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
 @parametrize_from_file(
-        schema={
-            'obj': Use(exec_obj),
+        schema=Schema({
+            'obj': exec_obj,
             'attr': str,
-            'error': Use(error),
-        }
+            'error': error,
+        })
 )
 def test_attr_err(obj, attr, error):
     with error:
