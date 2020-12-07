@@ -35,12 +35,12 @@ def test_config(config, key_group, cast_group, require_explicit_load):
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'layers': [eval_appcli],
+            'layer': eval_layer,
         })
 )
-def test_dict_config(obj, layers):
+def test_dict_config(obj, layer):
     appcli.init(obj)
-    assert appcli.model.get_layers(obj) == [LayerWrapper(x) for x in layers]
+    assert appcli.model.get_layers(obj) == [layer]
 
 @parametrize_from_file(
         schema=Schema({
@@ -58,10 +58,10 @@ def test_attr_config(obj, expected):
             'usage': str,
             'brief': str,
             'argv': shlex.split,
-            'layers': [eval_appcli],
+            'layer': eval_layer,
         })
 )
-def test_docopt_config(monkeypatch, obj, usage, brief, argv, layers):
+def test_argparse_docopt_config(monkeypatch, obj, usage, brief, argv, layer):
     # These attributes should be available even before init() is called.
     assert obj.usage == usage
     assert obj.brief == brief
@@ -73,7 +73,7 @@ def test_docopt_config(monkeypatch, obj, usage, brief, argv, layers):
     monkeypatch.setattr(sys, 'argv', argv)
     appcli.load(obj)
 
-    assert appcli.model.get_layers(obj) == [LayerWrapper(x) for x in layers]
+    assert appcli.model.get_layers(obj) == [layer]
 
 @parametrize_from_file(
         schema=Schema({

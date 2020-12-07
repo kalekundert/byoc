@@ -149,8 +149,9 @@ test_dict_config:
     obj:
       > class DummyObj:
       >     __config__ = [appcli.DictConfig(x=1)]
-    layers:
-      - appcli.Layer(values={'x': 1}, location='<string>:2')
+    layer:
+      values: {'x': 1}
+      location: <string>:2
 
 test_attr_config:
   -
@@ -283,8 +284,41 @@ test_attr_config:
     expected:
       x: 1
 
-test_docopt_config:
+test_argparse_docopt_config:
   -
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.ArgparseConfig()]
+      >     usage = appcli.attr()
+      >     brief = appcli.attr()
+      >
+      >     def get_argparse(self):
+      >         import argparse
+      >         p = argparse.ArgumentParser(description="Do something")
+      >         p.add_argument('x')
+      >         p.add_argument('-y', action='store_true')
+      >         return p
+    usage:
+      > usage: pytest [-h] [-y] x
+      >
+      > Do something
+      >
+      > positional arguments:
+      >   x
+      >
+      > optional arguments:
+      >   -h, --help  show this help message and exit
+      >   -y
+      >
+    brief:
+      > Do something
+    argv:
+      > ./app x -y
+    layer:
+      values: {'x': 'x', 'y': True}
+      location: command line
+  -
+    id: docopt
     obj:
       > class DummyObj:
       >     """\
@@ -306,16 +340,18 @@ test_docopt_config:
       > Do something.
     argv:
       > ./app x -y
-    layers:
-      - appcli.Layer(values={'<x>': 'x', '-y': True}, location="command line")
+    layer:
+      values: {'<x>': 'x', '-y': True}
+      location: command line
   -
+    id: docopt
     obj:
       > class DummyObj:
-      >     """\
+      >     doc = """\
       > Usage:
       >     app <x> [-y]
       > """
-      >     __config__ = [appcli.DocoptConfig()]
+      >     __config__ = [appcli.DocoptConfig(doc_attr='doc')]
       >     usage = appcli.attr()
       >     brief = appcli.attr()
     usage:
@@ -325,8 +361,9 @@ test_docopt_config:
     brief:
     argv:
       > ./app x
-    layers:
-      - appcli.Layer(values={'<x>': 'x', '-y': False}, location="command line")
+    layer:
+      values: {'<x>': 'x', '-y': False}
+      location: command line
 
 test_file_config:
   -

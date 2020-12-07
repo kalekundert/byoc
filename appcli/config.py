@@ -118,6 +118,38 @@ class AttrConfig(Config):
         )
 
 
+class ArgparseConfig(Config):
+    tag = 'argparse'
+    require_explicit_load = True
+
+    def __init__(self, parser_getter='get_argparse', **kwargs):
+        super().__init__(**kwargs)
+        self.parser_getter = parser_getter
+        self.parser = None
+
+    def load(self, obj):
+        import docopt
+
+        parser = self.get_parser(obj)
+        args = parser.parse_args()
+
+        return Layer(
+                values=vars(args),
+                location='command line',
+        )
+
+    def get_parser(self, obj):
+        if not self.parser:
+            self.parser = getattr(obj, self.parser_getter)()
+        return self.parser
+
+    def get_usage(self, obj):
+        return self.get_parser(obj).format_help()
+
+    def get_brief(self, obj):
+        return self.get_parser(obj).description
+
+
 class DocoptConfig(Config):
     tag = 'docopt'
     require_explicit_load = True
@@ -220,7 +252,6 @@ class AppDirsConfig(Config):
         slug = self.slug or obj.__class__.__name__.lower()
         return AppDirs(slug, self.author, version=self.version)
         
-
 
 class FileConfig(Config):
     tag = 'file'
