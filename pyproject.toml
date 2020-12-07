@@ -29,7 +29,7 @@ tests = [
   'pytest-cov',
   'coveralls',
   'parametrize_from_file',
-  'schema',
+  'voluptuous',
 ]
 docs = [
   'sphinx',
