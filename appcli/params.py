@@ -42,19 +42,15 @@ class param:
         except KeyError:
             pass
 
-        layers = model.get_layers(obj)
-        key_map = self.make_key_map(obj)
-        cast_map = self.make_cast_map(obj)
-
         with AppcliError.add_info(
                 "getting '{attr}' parameter for {obj!r}",
                 obj=obj,
                 attr=self.name,
         ):
             values = iter_values_from_layers(
-                    layers=layers,
-                    key_map=key_map,
-                    cast_map=cast_map,
+                    layers=model.iter_active_layers(obj),
+                    key_map=self.make_key_map(obj),
+                    cast_map=self.make_cast_map(obj),
                     default=self.default,
             )
             return self.pick(values)

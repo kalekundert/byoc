@@ -211,6 +211,46 @@ test_param:
     expected:
       x: 1
 
+  -
+    id: pending
+    obj:
+      > class InactiveConfig(appcli.Config):
+      >     require_explicit_load = True
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class ActiveConfig(appcli.Config):
+      >     require_explicit_load = False
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 2}, location='B')
+      >
+      > class DummyObj:
+      >     __config__ = [InactiveConfig(), ActiveConfig()]
+      >     x = appcli.param()
+    expected:
+      x: 2
+  -
+    id: pending
+    obj:
+      > class InactiveConfig(appcli.Config):
+      >     require_explicit_load = True
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 1}, location='A')
+      >
+      > class ActiveConfig(appcli.Config):
+      >     require_explicit_load = False
+      >     def load(self, obj):
+      >         return appcli.Layer(values={'x': 2}, location='B')
+      >
+      > class DummyObj:
+      >     __config__ = [InactiveConfig(), ActiveConfig()]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > appcli.load(obj)
+    expected:
+      x: 1
+
 test_iter_values_from_layers:
   -
     id: layers

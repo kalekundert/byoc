@@ -53,7 +53,7 @@ def exec_appcli(code):
     globals = dict(appcli=appcli)
     try:
         exec(code, globals)
-    except Exception as err1:
+    except Exception as err:
         raise Invalid(str(err)) from err
     return globals
 
