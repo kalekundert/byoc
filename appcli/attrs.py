@@ -3,7 +3,7 @@
 from . import model
 from .errors import AppcliError, ConfigError
 
-class attr:
+class config_attr:
 
     def __init__(self, key=None):
         self.key = key
@@ -16,7 +16,7 @@ class attr:
         configs = model.get_configs(obj)
 
         with AppcliError.add_info(
-                "getting '{attr}' attribute for {obj!r}",
+                "getting '{attr}' config_attr for {obj!r}",
                 obj=obj,
                 attr=attr,
         ):

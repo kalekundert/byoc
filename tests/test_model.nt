@@ -2,151 +2,352 @@
 test_init_load:
   -
     id: 0-configs
-    configs:
-    init_layers:
-    load_layers:
-
-  -
-    id: 1-config
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-    init_layers:
-        - appcli.Layer(values={}, location='a')
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-  -
-    id: 1-config
-    configs:
-      ab:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return [
-        >               appcli.Layer(values={}, location='a'),
-        >               appcli.Layer(values={}, location='b'),
-        >         ]
-    init_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-  -
-    id: 1-config
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-    init_layers:
-        - appcli.PendingLayer(a)
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-
-  -
-    id: 2-configs
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-      b:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='b')
-    init_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-  -
-    id: 2-configs
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-      b:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='b')
-    init_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.PendingLayer(b)
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-  -
-    id: 2-configs
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-      b:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='b')
-    init_layers:
-        - appcli.PendingLayer(a)
-        - appcli.Layer(values={}, location='b')
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-  -
-    id: 2-configs
-    configs:
-      a:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='a')
-      b:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(values={}, location='b')
-    init_layers:
-        - appcli.PendingLayer(a)
-        - appcli.PendingLayer(b)
-    load_layers:
-        - appcli.Layer(values={}, location='a')
-        - appcli.Layer(values={}, location='b')
-
-  -
-    id: misc
     obj:
       > class DummyObj:
+      >     __config__ = []
+    init_layers:
+    load_layers:
+
+  -
+    id: 1-layer
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: 2-layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >         yield appcli.Layer(values={}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: 2-layers
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='b')
+      >
+      > class DummyObj:
+      >   __config__ = [DummyConfigA(), DummyConfigB()]
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+
+  -
+    id: autoload
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: autoload
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >         yield appcli.Layer(values={}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: autoload
+    obj:
+        > class DummyConfigA(appcli.Config):
+        >     autoload = False
+        >
+        >     def load(self, obj):
+        >         yield appcli.Layer(values={}, location='a')
+        >
+        > class DummyConfigB(appcli.Config):
+        >     autoload = False
+        >
+        >     def load(self, obj):
+        >         yield appcli.Layer(values={}, location='b')
+        >
+        > class DummyObj:
+        >     __config__ = [DummyConfigA(), DummyConfigB()]
+    init_layers:
+        - appcli.PendingLayer(configs[0])
+        - appcli.PendingLayer(configs[1])
+    load_layers:
+        - appcli.Layer(values={}, location='a')
+        - appcli.Layer(values={}, location='b')
+  -
+    id: autoload-order
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.Layer(values={}, location='b')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: autoload-order
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='b')
+      >
+      > class DummyObj:
+      >   __config__ = [DummyConfigA(), DummyConfigB()]
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.PendingLayer(configs[1])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: autoload-order
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyConfigBC(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='b')
+      >         yield appcli.Layer(values={}, location='c')
+      >
+      > class DummyConfigD(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='d')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigBC(), DummyConfigD()]
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.PendingLayer(configs[1])
+      - appcli.Layer(values={}, location='d')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+      - appcli.Layer(values={}, location='c')
+      - appcli.Layer(values={}, location='d')
+  -
+    id: autoload-config-cls
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >
+      >     def load(self):
+      >         appcli.load(self, DummyConfig)
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: autoload-config-cls
+    obj:
+      > class BaseConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location=self.location)
+      >
+      > class DummyConfigA(BaseConfig):
+      >     location = 'a'
+      >
+      > class DummyConfigB(BaseConfig):
+      >     location = 'b'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      >     def load(self):
+      >         appcli.load(self, BaseConfig)
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.PendingLayer(configs[1])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
+  -
+    id: autoload-config-cls
+    obj:
+      > class BaseConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location=self.location)
+      >
+      > class DummyConfigA(BaseConfig):
+      >     location = 'a'
+      >
+      > class DummyConfigB(BaseConfig):
+      >     location = 'b'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      >     def load(self):
+      >         appcli.load(self, DummyConfigA)
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.PendingLayer(configs[1])
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+      - appcli.PendingLayer(configs[1])
+  -
+    id: autoload-config-cls
+    obj:
+      > class BaseConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location=self.location)
+      >
+      > class DummyConfigA(BaseConfig):
+      >     location = 'a'
+      >
+      > class DummyConfigB(BaseConfig):
+      >     location = 'b'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      >     def load(self):
+      >         appcli.load(self, DummyConfigB)
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.PendingLayer(configs[1])
+    load_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.Layer(values={}, location='b')
+  -
+    id: autoload-config-cls
+    obj:
+      > class BaseConfig(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location=self.location)
+      >
+      > class DummyConfigA(BaseConfig):
+      >     location = 'a'
+      >
+      > class DummyConfigB(BaseConfig):
+      >     location = 'b'
+      >
+      > class DummyConfigC(BaseConfig):
+      >     location = 'c'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      >     def load(self):
+      >         appcli.load(self, DummyConfigC)
+    init_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.PendingLayer(configs[1])
+    load_layers:
+      - appcli.PendingLayer(configs[0])
+      - appcli.PendingLayer(configs[1])
+
+  -
+    id: inheritance
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={}, location='a')
+      >
+      > class BaseObj:
+      >     __config__ = [DummyConfig()]
+      >
+      > class DummyObj(BaseObj):
+      >     pass
+    init_layers:
+      - appcli.Layer(values={}, location='a')
+    load_layers:
+      - appcli.Layer(values={}, location='a')
+  -
+    id: param-access
+    obj:
+      # Access a value from an earlier layer.  This requires that the layers 
+      # are parsed in the correct order, and that the object is always kept 
+      # in a valid state.
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values={'x': obj.x + 1},
+      >                 location='a',
+      >         )
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values={'x': 1},
+      >                 location='b',
+      >         )
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
       >     x = appcli.param()
-    configs:
-      a:
-        # Access a value from an earlier layer.  This requires that the layers 
-        # are parsed in the correct order, and that the object is always kept 
-        # in a valid state.
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(
-        >                 values={'x': obj.x + 1},
-        >                 location='a',
-        >         )
-      b:
-        > class DummyConfig(appcli.Config):
-        >     def load(self, obj):
-        >         return appcli.Layer(
-        >                 values={'x': 1},
-        >                 location='b',
-        >         )
     init_layers:
         - appcli.Layer(values={'x': 2}, location='a')
         - appcli.Layer(values={'x': 1}, location='b')
@@ -154,35 +355,36 @@ test_init_load:
         - appcli.Layer(values={'x': 2}, location='a')
         - appcli.Layer(values={'x': 1}, location='b')
   -
-    id: misc
+    id: param-access
     obj:
+      # Access a value from an earlier layer.  This requires that the layers 
+      # are parsed in the correct order, and that the object is always kept 
+      # in a valid state.
+      > class DummyConfigA(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values={'x': obj.x + 1},
+      >                 location='a',
+      >         )
+      >
+      > class DummyConfigB(appcli.Config):
+      >     autoload = False
+      >
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values={'x': 1},
+      >                 location='b',
+      >         )
+      >
       > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
       >     x = appcli.param()
-    configs:
-      a:
-        # Access a value from an earlier layer.  This requires that the layers 
-        # are parsed in the correct order, and that the object is always kept 
-        # in a valid state.
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(
-        >                 values={'x': obj.x + 1},
-        >                 location='a',
-        >         )
-      b:
-        > class DummyConfig(appcli.Config):
-        >     require_explicit_load = True
-        >
-        >     def load(self, obj):
-        >         return appcli.Layer(
-        >                 values={'x': 1},
-        >                 location='b',
-        >         )
+      >
     init_layers:
-        - appcli.PendingLayer(a)
-        - appcli.PendingLayer(b)
+        - appcli.PendingLayer(configs[0])
+        - appcli.PendingLayer(configs[1])
     load_layers:
         - appcli.Layer(values={'x': 2}, location='a')
         - appcli.Layer(values={'x': 1}, location='b')
@@ -192,7 +394,7 @@ test_load_config:
     config:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
-      >         return appcli.Layer(
+      >         yield appcli.Layer(
       >                 values={'a': 1},
       >                 location='a',
       >         )
@@ -202,15 +404,14 @@ test_load_config:
     config:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
-      >         a = appcli.Layer(
+      >         yield appcli.Layer(
       >                 values={'a': 1},
       >                 location='a',
       >         )
-      >         b = appcli.Layer(
+      >         yield appcli.Layer(
       >                 values={'b': 2},
       >                 location='b',
       >         )
-      >         return [a, b]
     expected:
       - {'a': 1}, 'a'
       - {'b': 2}, 'b'
@@ -218,17 +419,8 @@ test_load_config:
     config:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
-      >         return []
+      >         yield from []
     expected:
-
-test_load_config_err:
-  -
-    config:
-      > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
-      >         return None
-    error:
-      > Config.load\(\) must return `Layer` or `List\[Layer\]`
 
 test_iter_active_layers:
   -
@@ -267,9 +459,9 @@ test_iter_active_layers:
     id: 2-layers
     layers:
       - appcli.PendingLayer(appcli.Config())
-      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
     expected:
-      - appcli.Layer(values={}, location='a')
+      - appcli.Layer(values={}, location='b')
   -
     id: 2-layers
     layers:
@@ -277,33 +469,354 @@ test_iter_active_layers:
       - appcli.PendingLayer(appcli.Config())
     expected:
 
-test_groups:
+test_iter_values:
   -
-    groups:
+    id: layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: lambda x: x
     expected:
+      - 1
   -
-    groups:
-      - a
+    id: layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.Layer(values={'x': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: lambda x: x
     expected:
-      - a
+      - 1
+      - 2
   -
-    groups:
-      - a
-      - b
+    id: layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.Layer(values={'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: lambda x: x
     expected:
-      - a
-      - b
+      - 1
   -
-    groups:
-      - a
-      - a
+    id: layers
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    key_map:
+      0: 'x'
+      1: 'x'
+    cast_map:
+      0: lambda x: x
+      1: lambda x: x
     expected:
-      - a
+      - 1
+      - 2
   -
-    groups:
-      - a
-      - b
-      - a
+    id: layers
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'y': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    key_map:
+      0: 'x'
+      1: 'y'
+    cast_map:
+      0: lambda x: x
+      1: lambda y: y
     expected:
-      - a
-      - b
+      - 1
+      - 2
+  -
+    id: layers
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'y': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    key_map:
+      0: 'x'
+      1: 'x'
+    cast_map:
+      0: lambda x: x
+      1: lambda x: x
+    expected:
+      - 1
+  -
+    id: layers-autoload
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     autoload = False
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    key_map:
+      0: 'x'
+      1: 'x'
+    cast_map:
+      0: lambda x: x
+      1: lambda x: x
+    expected:
+      - 2
+  -
+    id: layers-autoload
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     autoload = False
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      > obj = DummyObj()
+      > appcli.load(obj)
+    key_map:
+      0: 'x'
+      1: 'x'
+    cast_map:
+      0: lambda x: x
+      1: lambda x: x
+    expected:
+      - 1
+      - 2
+  -
+    id: layers-err
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+    key_map:
+    cast_map:
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find value for parameter
+        - `DummyObj.__config__` is empty
+        - nowhere to look for values
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield from []
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+    cast_map:
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find value for parameter
+        - the following configs were found, but none yielded any layers:
+        - DummyConfig()
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+    cast_map:
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find value for parameter
+        - the following configs were found, but may not have been loaded:
+        - DummyConfig()
+        - did you forget to call `appcli.load\(\)`\?
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'y'
+    cast_map:
+      0: lambda y: y
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find value for parameter
+        - the following locations were searched
+        - a: y
+        - did you mean to provide a default\?
+
+  -
+    id: dotted
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': {'y': 1}}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x.y'
+    cast_map:
+      0: lambda x: x
+    expected:
+      - 1
+
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 'z'}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: int
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't cast 'z' using <class 'int'>
+        - read 'x' from a
+        - invalid literal for int\(\) with base 10: 'z'
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='A')
+      >         yield appcli.Layer(values={'x': 2}, location='A')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: lambda x: x + 1
+    expected:
+      - 2
+      - 3
+  -
+    id: cast
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+    key_map:
+      0: 'x'
+      1: 'x'
+    cast_map:
+      0: lambda x: x + 1
+      1: lambda x: x + 2
+    expected:
+      - 2
+      - 3
+
+  -
+    id: default
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+    key_map:
+    cast_map:
+    default: 0
+    expected:
+      - 0
+  -
+    id: default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'y'
+    cast_map:
+      0: lambda y: y
+    default: 0
+    expected:
+      - 0
+  -
+    id: default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    key_map:
+      0: 'x'
+    cast_map:
+      0: lambda x: x
+    default: 0
+    expected:
+      - 1
+      - 0
+

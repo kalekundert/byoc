@@ -14,6 +14,7 @@ from schema_helpers import *
 )
 def test_param(obj, expected):
     for attr, value in expected.items():
+        print(attr, value)
         assert getattr(obj, attr) == value
 
 def test_param_init_err():
@@ -26,35 +27,26 @@ def test_param_init_err():
 
 @parametrize_from_file(
         schema=Schema({
-            'configs': Or([exec_config], empty_list),
-            'key_map': Or({str: eval}, empty_dict),
-            'cast_map': Or({str: eval}, empty_dict),
-            Optional('default', default=None): Or(None, eval),
+            Optional('locals', default=''): str,
             **error_or(
-                expected=Or([eval], empty_list),
+                expected=str,
             ),
+            str: str,
         })
 )
-def test_iter_values_from_layers(configs, key_map, cast_map, default, expected, error):
-    class Obj:
-        __config__ = configs
+def test_make_map(locals, configs, values, expected, error):
 
-    obj = Obj()
-    appcli.init(obj)
-    layers = appcli.model.get_layers(obj)
-    kwargs = {} if default is None else dict(default=default)
+    if locals:
+        shared = dict(appcli=appcli)
+        exec(locals, {}, shared)
+    else:
+        class A(appcli.Config): pass
+        class B(appcli.Config): pass
+        shared = dict(appcli=appcli, A=A, B=B, a=A(), b=B())
+
+    configs = eval(configs, {}, shared)
+    values = eval(values, {}, shared)
+    expected = eval(expected or 'None', shared)
 
     with error:
-        values = appcli.params.iter_values_from_layers(
-                layers, key_map, cast_map, **kwargs)
-        assert list(values) == expected
-
-@parametrize_from_file(
-        schema=Schema({
-            Optional('default', default=None): Or(None, eval),
-            str: eval,
-        })
-)
-def test_make_map(keys, values, default, expected):
-    kwargs = {} if default is None else dict(default=default)
-    assert appcli.params.make_map(keys, values, **kwargs) == expected
+        assert appcli.params.make_map(configs, values) == expected

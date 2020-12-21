@@ -1,87 +1,46 @@
 #!/usr/bin/env python3
 
 import inspect
-import functools
 from pathlib import Path
 from more_itertools import one, first
+from .layers import Layer, not_found
 from .utils import lookup, first_specified
 from .errors import ConfigError
 
-# Brainstorming
-# =============
-# Requirements:
-# - Defined order
-# - Have name
-# - Have arguments (e.g. path for file)
-
-# Have config return dictionary:
-# - Can standardize tricks for handling nested keys.
-# - Wrap in Param instance to simultaneously return "location".
-#
-# Have config present getter API:
-# - Easier to implement configs where it may not make sense to load everything 
-#   at once, e.g. remote resources, massive configs, etc.
-# - That said, such configs could always return something that implements the 
-#   dict interface and does whatever it wants.
-# - Seems more complicated, for little benefit.
-
-# There are groups of configs:
-# - Groups that share the same keys
-# - Groups that should be loaded always vs. conditionally (e.g. on main())
-# - Groups that share cast functions.
-#
-#
-# In the use cases I have in mind, these groups will match, but that won't 
-# necessarily be the case.  
-#
-# I should have the ability to set the groups at config time, but for the most 
-# part I should be able to pick defaults that work.
-
 class Config:
-    tag = None
-    key_group = None
-    cast_group = None
-    require_explicit_load = False
-
-    def __init__(self, *, tag=None, key_group=None, cast_group=None, autoload=None):
-        self.init(
-                tag=tag,
-                key_group=key_group,
-                cast_group=cast_group,
-                autoload=autoload,
-        )
-
-    def init(self, *, tag=None, key_group=None, cast_group=None, autoload=None): 
-        self.key_group = first_specified(
-                key_group,
-                self.key_group,
-                tag,
-                self.tag,
-                default=None,
-        )
-        self.cast_group = first_specified(
-                cast_group,
-                self.cast_group,
-                tag,
-                self.tag,
-                default=None,
-        )
-        self.require_explicit_load = (
-                not autoload
-                if autoload is not None else
-                self.require_explicit_load
-        )
-        return self
+    autoload = True
 
     def load(self, obj):
-        # Return list of Layer instances
-        #
-        # By returning a list, makes it easy to nest configs
         raise NotImplmentedError
 
 
-class DictConfig(Config):
-    tag = 'dict'
+class CompositeConfig(Config):
+
+    def load(self, obj):
+        from .model import get_configs
+        for config in get_configs(self):
+            yield from config.load(obj)
+
+
+class CallbackConfig(Config):
+
+    def __init__(self, callback, *raises, location=None):
+        self.callback = callback
+        self.raises = raises
+        self.location = location
+
+    def load(self, obj):
+        location = self.location or 'callback'
+        if callable(location):
+            location = location(obj)
+
+        yield Layer(
+                values=not_found(*self.raises)(self.callback),
+                location=location
+        )
+
+
+class DefaultConfig(Config):
 
     def __init__(self, **kwargs):
         self.dict = kwargs
@@ -89,7 +48,7 @@ class DictConfig(Config):
         self.location = f'{frame.filename}:{frame.lineno}'
 
     def load(self, obj):
-        return Layer(
+        yield Layer(
                 values=self.dict,
                 location=self.location,
         )
@@ -98,32 +57,30 @@ class AttrConfig(Config):
     """
     Read parameters from another attribute of the object.
     """
-    tag = 'attr'
 
-    def __init__(self, attr, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, attr, f=lambda obj, x: x):
         self.attr = attr
+        self.func = f
 
     def load(self, obj):
 
         @not_found(AttributeError)
         def getter(key):
             x = getattr(obj, self.attr)
+            x = self.func(obj, x)
             return lookup(x, key)
 
         cls = obj.__class__
-        return Layer(
+        yield Layer(
                 values=getter,
                 location=f'{inspect.getmodule(cls).__name__}.{cls.__qualname__}.{self.attr}',
         )
 
 
 class ArgparseConfig(Config):
-    tag = 'argparse'
-    require_explicit_load = True
+    autoload = False
 
-    def __init__(self, parser_getter='get_argparse', **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, parser_getter='get_argparse'):
         self.parser_getter = parser_getter
         self.parser = None
 
@@ -133,7 +90,7 @@ class ArgparseConfig(Config):
         parser = self.get_parser(obj)
         args = parser.parse_args()
 
-        return Layer(
+        yield Layer(
                 values=vars(args),
                 location='command line',
         )
@@ -151,20 +108,26 @@ class ArgparseConfig(Config):
 
 
 class DocoptConfig(Config):
-    tag = 'docopt'
-    require_explicit_load = True
+    autoload = False
 
-    def __init__(self, doc_attr='__doc__', **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, doc_attr='__doc__', help=True, version=None, options_first=False):
         self.doc_attr = doc_attr
+        self.help = help
+        self.version = version
+        self.options_first = options_first
 
     def load(self, obj):
         import docopt
 
-        args = docopt.docopt(self.get_usage(obj))
+        args = docopt.docopt(
+                self.get_usage(obj),
+                help=self.help,
+                version=self.get_version(obj),
+                options_first=self.options_first,
+        )
         args = {k: v for k, v in args.items() if v is not None}
 
-        return Layer(
+        yield Layer(
                 values=args,
                 location='command line',
         )
@@ -177,13 +140,14 @@ class DocoptConfig(Config):
         sections = re.split('usage:', self.get_usage(obj), flags=re.IGNORECASE)
         return first(sections, '').strip()
 
+    def get_version(self, obj):
+        return getattr(obj, '__version__', self.version)
+
 
 class AppDirsConfig(Config):
-    tag = 'file'
 
     def __init__(self, name=None, format=None, slug=None, author=None, version=None, schema=None,
-            stem='conf', **kwargs):
-        super().__init__(**kwargs)
+            stem='conf'):
         self.name = name
         self.stem = stem
         self.slug = slug
@@ -199,10 +163,9 @@ class AppDirsConfig(Config):
                 Path(dirs.user_config_dir) / name,
                 Path(dirs.site_config_dir) / name,
         ]
-        return [
-                config_cls(p, schema=self.schema).load(obj)
-                for p in paths
-        ]
+        for p in paths:
+            file_config = config_cls(p, schema=self.schema)
+            yield from file_config.load(obj)
 
     def get_name_and_config_cls(self):
         if not self.name and not self.config_cls:
@@ -254,20 +217,21 @@ class AppDirsConfig(Config):
         
 
 class FileConfig(Config):
-    tag = 'file'
 
-    def __init__(self, path, schema=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, path, schema=None):
         self.path = Path(path)
         self.schema = schema
 
     def load(self, obj):
-        data = self._do_load()
+        try:
+            data = self._do_load()
+        except FileNotFoundError:
+            data = {}
 
         if callable(self.schema):
             data = self.schema(data)
 
-        return Layer(
+        yield Layer(
                 values=data,
                 location=self.path,
         )
@@ -297,52 +261,4 @@ class NtConfig(FileConfig):
     def _do_load(self):
         import nestedtext as nt
         return nt.load(self.path)
-
-
-
-class Layer:
-
-    def __init__(self, *, values, location):
-        # Values: any object that:
-        # - implements __getitem__ to either return value associated with Key, 
-        #   or raise KeyError
-        # - is a callable that takes a key as the only argument, and raises 
-        #   KeyError if not found
-        self.config = None
-        self.values = values
-        self.location = location
-
-    def __repr__(self):
-        return f'Layer(values={self.values!r}, location={self.location!r})'
-
-class PendingLayer:
-
-    def __init__(self, config):
-        self.config = config
-
-    def __repr__(self):
-        return f'PendingLayer(config={self.config!r})'
-
-def not_found(*raises):
-    """
-    Wrap the given function so that a KeyError is raised if any of the expected 
-    kinds of exceptions are caught.
-
-    This is meant to help implement the interface expected by `Layers.values`, 
-    i.e. a callable that raises a KeyError if a value could not successfully be 
-    found.
-    """
-
-    def decorator(f):
-
-        @functools.wraps(f)
-        def wrapped(*args, **kwargs):
-            try:
-                return f(*args, **kwargs)
-            except raises as err:
-                raise KeyError from err
-
-        return wrapped
-        
-    return decorator
 

@@ -10,7 +10,7 @@ from schema_helpers import *
             'expected': {str: eval},
         })
 )
-def test_attr(obj, expected):
+def test_config_attr(obj, expected):
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
@@ -21,6 +21,6 @@ def test_attr(obj, expected):
             'error': error,
         })
 )
-def test_attr_err(obj, attr, error):
+def test_config_attr_err(obj, attr, error):
     with error:
         getattr(obj, attr)

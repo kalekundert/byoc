@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from appcli import param, DictConfig
+from appcli import param, DefaultConfig
 
 def test_easy():
 
     class Foo:
         __config__ = [
-                DictConfig(a=1),
+                DefaultConfig(a=1),
         ]
 
         a = param()
@@ -18,8 +18,8 @@ def test_easy():
 def test_easy_2():
     class Foo:
         __config__ = [
-                DictConfig(a=1, b=1,    ),
-                DictConfig(a=2,      c=2),
+                DefaultConfig(a=1, b=1,    ),
+                DefaultConfig(a=2,      c=2),
         ]
 
         a = param()

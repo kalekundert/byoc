@@ -1,159 +1,75 @@
-test_config:
+test_default_composite_config:
   -
-    config:
-      > class DummyConfig(appcli.Config):
-      >     pass
-    key_group: None
-    cast_group: None
-    require_explicit_load: False
-  -
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-    key_group: 'a'
-    cast_group: 'a'
-    require_explicit_load: False
-
-  -
-    id: key_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     key_group = 'b'
-    key_group: 'b'
-    cast_group: 'a'
-    require_explicit_load: False
-  -
-    id: key_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     key_group = 'b'
-      >
-      > config = DummyConfig(tag='c')
-    key_group: 'b'
-    cast_group: 'c'
-    require_explicit_load: False
-  -
-    id: key_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     key_group = 'b'
-      >
-      > config = DummyConfig(tag='c', key_group='d')
-    key_group: 'd'
-    cast_group: 'c'
-    require_explicit_load: False
-  -
-    id: key_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     key_group = 'a'
-    key_group: 'a'
-    cast_group: None
-    require_explicit_load: False
-  -
-    id: key_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     key_group = 'a'
-      >
-      > config=DummyConfig(key_group='b')
-    key_group: 'b'
-    cast_group: None
-    require_explicit_load: False
-
-  -
-    id: cast_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     cast_group = 'b'
-    key_group: 'a'
-    cast_group: 'b'
-    require_explicit_load: False
-  -
-    id: cast_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     cast_group = 'b'
-      >
-      > config = DummyConfig(tag='c')
-    key_group: 'c'
-    cast_group: 'b'
-    require_explicit_load: False
-  -
-    id: cast_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     tag = 'a'
-      >     cast_group = 'b'
-      >
-      > config = DummyConfig(tag='c', cast_group='d')
-    key_group: 'c'
-    cast_group: 'd'
-    require_explicit_load: False
-  -
-    id: cast_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     cast_group = 'a'
-    key_group: None
-    cast_group: 'a'
-    require_explicit_load: False
-  -
-    id: cast_group
-    config:
-      > class DummyConfig(appcli.Config):
-      >     cast_group = 'a'
-      >
-      > config=DummyConfig(cast_group='b')
-    key_group: None
-    cast_group: 'b'
-    require_explicit_load: False
-
-  -
-    id: explicit_load
-    config:
-      > class DummyConfig(appcli.Config):
-      >     require_explicit_load = True
-    key_group: None
-    cast_group: None
-    require_explicit_load: True
-  -
-    id: explicit_load
-    config:
-      > class DummyConfig(appcli.Config):
-      >     require_explicit_load = True
-      >
-      > config = DummyConfig(autoload=True)
-    key_group: None
-    cast_group: None
-    require_explicit_load: False
-  -
-    id: explicit_load
-    config:
-      > class DummyConfig(appcli.Config):
-      >     pass
-      >
-      > config = DummyConfig(autoload=False)
-    key_group: None
-    cast_group: None
-    require_explicit_load: True
-
-test_dict_config:
-  -
-    id: dict
+    id: default
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.DictConfig(x=1)]
-    layer:
-      values: {'x': 1}
-      location: <string>:2
+      >     __config__ = [appcli.DefaultConfig(x=1)]
+    layers:
+      -
+        values: {'x': 1}
+        location: <string>:2
 
-test_attr_config:
+  -
+    id: composite
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigZ(appcli.CompositeConfig):
+      >     __config__ = [DummyConfigA()]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigZ()]
+    layers:
+      -
+        values: {'x': 1}
+        location: a
+  -
+    id: composite
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >
+      > class DummyConfigZ(appcli.CompositeConfig):
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigZ()]
+    layers:
+      -
+        values: {'x': 1}
+        location: a
+      -
+        values: {'x': 2}
+        location: b
+  -
+    id: composite
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.Layer(values={'x': 2}, location='a')
+      >
+      > class DummyConfigZ(appcli.CompositeConfig):
+      >     __config__ = [DummyConfigA()]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigZ()]
+    layers:
+      -
+        values: {'x': 1}
+        location: a
+      -
+        values: {'x': 2}
+        location: a
+
+test_attr_callback_config:
   -
     id: attr
     obj:
@@ -284,13 +200,47 @@ test_attr_config:
     expected:
       x: 1
 
+  -
+    id: callback
+    obj:
+      > def getter(key):
+      >     return 1
+      >
+      > class DummyObj:
+      >     __config__ = [appcli.CallbackConfig(getter)]
+      >     x = appcli.param()
+    expected:
+      x: 1
+  -
+    id: callback-not-found
+    obj:
+      > def getter(key):
+      >     raise KeyError
+      >
+      > class DummyObj:
+      >     __config__ = [appcli.CallbackConfig(getter)]
+      >     x = appcli.param(default=0)
+    expected:
+      x: 0
+  -
+    id: callback-not-found
+    obj:
+      > def getter(key):
+      >     raise ValueError
+      >
+      > class DummyObj:
+      >     __config__ = [appcli.CallbackConfig(getter, ValueError)]
+      >     x = appcli.param(default=0)
+    expected:
+      x: 0
+
 test_argparse_docopt_config:
   -
     obj:
       > class DummyObj:
       >     __config__ = [appcli.ArgparseConfig()]
-      >     usage = appcli.attr()
-      >     brief = appcli.attr()
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
       >
       >     def get_argparse(self):
       >         import argparse
@@ -328,8 +278,8 @@ test_argparse_docopt_config:
       >     app <x> [-y]
       > """
       >     __config__ = [appcli.DocoptConfig()]
-      >     usage = appcli.attr()
-      >     brief = appcli.attr()
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
     usage:
       > Do something.
       >
@@ -352,8 +302,8 @@ test_argparse_docopt_config:
       >     app <x> [-y]
       > """
       >     __config__ = [appcli.DocoptConfig(doc_attr='doc')]
-      >     usage = appcli.attr()
-      >     brief = appcli.attr()
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
     usage:
       > Usage:
       >     app <x> [-y]
@@ -378,6 +328,15 @@ test_file_config:
       values: {'x': 1}
       location: x.yml
   -
+    id: yaml-file-not-found
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig('not-found.yml')]
+    files:
+    layer:
+      values: {}
+      location: not-found.yml
+  -
     id: toml
     obj:
       > class DummyObj:
@@ -400,7 +359,7 @@ test_file_config:
       values: {'x': '1'}
       location: x.nt
   -
-    id: schema
+    id: nt-schema
     obj:
       > add_1 = lambda x: {k: int(x[k]) + 1 for k in x}
       > class DummyObj:
@@ -417,7 +376,7 @@ test_appdirs_config:
     obj:
       > class DummyObj:
       >     __config__ = [appcli.AppDirsConfig('conf.nt')]
-      >     dirs = appcli.attr()
+      >     dirs = appcli.config_attr()
     slug: 'dummyobj'
     author: None
     version: None
@@ -444,7 +403,7 @@ test_appdirs_config:
       >                 version='version',
       >             )
       >     ]
-      >     dirs = appcli.attr()
+      >     dirs = appcli.config_attr()
     slug: 'slug'
     author: 'author'
     version: 'version'

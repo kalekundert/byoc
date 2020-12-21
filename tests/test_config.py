@@ -21,26 +21,13 @@ def tmp_chdir(tmp_path):
 
 @parametrize_from_file(
         schema=Schema({
-            'config': exec_config,
-            'key_group': eval,
-            'cast_group': eval,
-            'require_explicit_load': eval,
-        })
-)
-def test_config(config, key_group, cast_group, require_explicit_load):
-    assert config.key_group == key_group
-    assert config.cast_group == cast_group
-    assert config.require_explicit_load == require_explicit_load
-
-@parametrize_from_file(
-        schema=Schema({
             'obj': exec_obj,
-            'layer': eval_layer,
+            'layers': eval_layers,
         })
 )
-def test_dict_config(obj, layer):
+def test_default_composite_config(obj, layers):
     appcli.init(obj)
-    assert appcli.model.get_layers(obj) == [layer]
+    assert appcli.model.get_layers(obj) == layers
 
 @parametrize_from_file(
         schema=Schema({
@@ -48,7 +35,7 @@ def test_dict_config(obj, layer):
             'expected': {str: eval},
         })
 )
-def test_attr_config(obj, expected):
+def test_attr_callback_config(obj, expected):
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
@@ -128,7 +115,7 @@ def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error)
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'files': {str: str},
+            'files': Or({str: str}, empty_dict),
             'layer': eval_layer,
         })
 )

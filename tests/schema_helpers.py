@@ -33,7 +33,7 @@ def eval_appcli(code, **locals):
     globals = dict(appcli=appcli)
     try:
         return eval(code, globals, locals)
-    except Exception as err1:
+    except Exception as err:
         raise Invalid(str(err)) from err
 
 def eval_layers(layers, **locals):
@@ -46,7 +46,7 @@ def eval_layer(layer, **locals):
         'location': str,
     }))
     layer = schema(layer)
-    layer = eval(layer) if isinstance(layer, str) else appcli.Layer(**layer)
+    layer = eval_appcli(layer, **locals) if isinstance(layer, str) else appcli.Layer(**layer)
     return LayerWrapper(layer)
 
 def exec_appcli(code):
@@ -110,7 +110,6 @@ def error(x):
     err_messages = x.get('message', [])
     if not isinstance(err_messages, list):
         err_messages = list(err_messages)
-    err_messages.append(no_templates)
 
     @contextmanager
     def raises():

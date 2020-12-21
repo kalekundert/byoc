@@ -1,4 +1,4 @@
-test_attr:
+test_config_attr:
   -
     id: keys
     obj:
@@ -8,8 +8,8 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig()]
-      >     x = appcli.attr()
-      >     y = appcli.attr('x')
+      >     x = appcli.config_attr()
+      >     y = appcli.config_attr('x')
     expected:
       x: 1
       y: 1
@@ -28,7 +28,7 @@ test_attr:
       >             DummyConfig(1),
       >             DummyConfig(2),
       >     ]
-      >     x = appcli.attr()
+      >     x = appcli.config_attr()
     expected:
       x: 1
   -
@@ -47,8 +47,8 @@ test_attr:
       >             DummyConfigX(),
       >             DummyConfigY(),
       >     ]
-      >     x = appcli.attr()
-      >     y = appcli.attr()
+      >     x = appcli.config_attr()
+      >     y = appcli.config_attr()
     expected:
       x: 1
       y: 2
@@ -62,7 +62,7 @@ test_attr:
       >
       > class Parent:
       >     __config__ = [DummyConfig()]
-      >     x = appcli.attr()
+      >     x = appcli.config_attr()
       >
       > class Child(Parent):
       >     pass
@@ -78,7 +78,7 @@ test_attr:
       >         return 1
       >
       > class Parent:
-      >     x = appcli.attr()
+      >     x = appcli.config_attr()
       >
       > class Child(Parent):
       >     __config__ = [DummyConfig()]
@@ -97,7 +97,7 @@ test_attr:
       >     __config__ = [DummyConfig()]
       >
       > class Child(Parent):
-      >     x = appcli.attr()
+      >     x = appcli.config_attr()
       >
       > obj = Child()
     expected:
@@ -112,7 +112,7 @@ test_attr:
       >
       > class Obj:
       >     __config__ = [DummyConfig()]
-      >     y = appcli.attr()
+      >     y = appcli.config_attr()
       >
       > obj = Obj()
       > obj.x = 1
@@ -123,7 +123,7 @@ test_attr:
       x: 1
       y: 2
 
-test_attr_err:
+test_config_attr_err:
 
   -
     obj:
@@ -132,13 +132,13 @@ test_attr_err:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig()]
-      >     x = appcli.attr()
+      >     x = appcli.config_attr()
     attr: x
     error:
       type: AttributeError
       message:
         - can't find config attribute
-        - getting 'x' attribute for <DummyObj object at 0x[0-9a-f]*>
+        - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
         - DummyConfig
 
 
