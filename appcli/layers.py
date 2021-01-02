@@ -41,7 +41,7 @@ def not_found(*raises):
         def wrapped(*args, **kwargs):
             try:
                 return f(*args, **kwargs)
-            except raises as err:
+            except tuple(raises) as err:
                 raise KeyError from err
 
         return wrapped
