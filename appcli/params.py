@@ -197,7 +197,8 @@ def make_map(configs, values, unused_keys_err=ValueError, sequence_len_err=Value
     if isinstance(values, Iterable) and not isinstance(values, str):
         configs, values = list(configs), list(values)
         try:
-            return dict(zip_equal(configs, values))
+            pairs = zip_equal(configs, values)
+            return {k: v for k, v in pairs if v is not ...}
         except UnequalIterablesError:
             raise sequence_len_err(configs, values) from None
 

@@ -339,6 +339,21 @@ test_make_map:
     values: [1]
     error:
       type: ValueError
+  -
+    id: list
+    configs: [a]
+    values: [...]
+    expected: {}
+  -
+    id: list
+    configs: [a, b]
+    values: [1, ...]
+    expected: {a: 1}
+  -
+    id: list
+    configs: [a, b]
+    values: [..., 2]
+    expected: {b: 2}
 
   -
     id: scalar
