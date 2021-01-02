@@ -6,9 +6,60 @@ from .model import SENTINEL
 from more_itertools import first, zip_equal, UnequalIterablesError
 from collections.abc import Mapping, Iterable
 
+# Caching
+# =======
+# - If load() called, recalculate
+# - If any configs/layers request it, recalculate
+#   - configs, or layers...
+#   - want to ignore configs that haven't been loaded yet; using layers is a 
+#     natural way to do that.
+#   - but if I'm going to iterate through each layer anyways, I might as well 
+#     just look up the value.
+#   - If looking up the value is expensive, the config can be responsible for 
+#     caching.
+#
+# 2020/12/24:
+# - Always cache values after load:
+#   - obj.meta.load_count / load_id / cache_id / cache_version
+#   - param.load_count
+#   - param.cached_value
+#
+#   - in param.__get__():
+#       # way to tell if this param is stale
+#       if obj.load_count == self.load_count:
+#           return self.cached_value
+#
+#       else:
+#           ...
+#           self.load_count = obj.load_count
+#
+# - give param() a `dynamic` attribute that causes it to recalculate its 
+#   attribute each time.
+#       
+
+# Not natural to get multiple values from a single param.
+
+# Would be nice to have way to get same parameter from two different keys.
+#
+# appcli.param()\
+#       .key(DocoptConfig, '--flag',     cast=lambda x: x)\
+#       .key(DocoptConfig, '--not-flag', cast=lambda x: not x)
+#
+# keys/casts specified as:
+# - scalar
+# - map
+# - list
+# - list of tuples
+#
+# map data structure:
+# - dict
+#   - key: Config object
+#   - value: list of key, cast pairs
+#
+
 class param:
 
-    def __init__(self, *keys, key=SENTINEL, default=SENTINEL, cast=lambda x: x, pick=first):
+    def __init__(self, *keys, key=SENTINEL, default=SENTINEL, ignore=SENTINEL, cast=lambda x: x, pick=first):
         if keys and key is not SENTINEL:
             err = ScriptError(
                     implicit=keys,
@@ -26,6 +77,7 @@ class param:
 
         self.value = SENTINEL
         self.default = default
+        self.ignore = ignore
         self.cast = cast
         self.pick = pick
 
@@ -54,8 +106,9 @@ class param:
             return self.pick(values)
 
     def __set__(self, obj, value):
-        model.init(obj)
-        model.get_overrides(obj)[self.name] = value
+        if value != self.ignore:
+            model.init(obj)
+            model.get_overrides(obj)[self.name] = value
 
     def __delete__(self, obj):
         model.init(obj)
