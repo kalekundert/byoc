@@ -301,7 +301,7 @@ test_argparse_docopt_config:
       > Usage:
       >     app <x> [-y]
       > """
-      >     __config__ = [appcli.DocoptConfig(doc_attr='doc')]
+      >     __config__ = [appcli.DocoptConfig(usage_attr='doc')]
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
     usage:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import inspect
+import sys, inspect
 from pathlib import Path
 from more_itertools import one, first
 from .layers import Layer, not_found
@@ -110,21 +110,31 @@ class ArgparseConfig(Config):
 class DocoptConfig(Config):
     autoload = False
 
-    def __init__(self, doc_attr='__doc__', help=True, version=None, options_first=False):
-        self.doc_attr = doc_attr
+    def __init__(self,
+            *,
+            usage_attr='__doc__',
+            usage_io=sys.stdout,
+            help=True,
+            version=None,
+            options_first=False,
+        ):
+        self.usage_attr = usage_attr
+        self.usage_io = usage_io
         self.help = help
         self.version = version
         self.options_first = options_first
 
     def load(self, obj):
-        import docopt
+        import sys, docopt, contextlib
 
-        args = docopt.docopt(
-                self.get_usage(obj),
-                help=self.help,
-                version=self.get_version(obj),
-                options_first=self.options_first,
-        )
+        with contextlib.redirect_stdout(self.get_usage_io(obj)):
+            args = docopt.docopt(
+                    self.get_usage(obj),
+                    help=self.help,
+                    version=self.get_version(obj),
+                    options_first=self.options_first,
+            )
+
         args = {k: v for k, v in args.items() if v is not None}
 
         yield Layer(
@@ -133,7 +143,14 @@ class DocoptConfig(Config):
         )
 
     def get_usage(self, obj):
-        return getattr(obj, self.doc_attr).format(obj)
+        usage = getattr(obj, self.usage_attr)
+        if callable(usage):
+            return usage()
+        else:
+            return usage.format(obj)
+
+    def get_usage_io(self, obj):
+        return getattr(obj, 'usage_io', self.usage_io)
 
     def get_brief(self, obj):
         import re
