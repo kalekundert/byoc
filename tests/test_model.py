@@ -21,24 +21,29 @@ class DummyConfig(appcli.Config):
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'init_layers': Or([str], empty_list),
-            'load_layers': Or([str], empty_list),
+            'init_layers': Or(eval_layers, empty_list),
+            'load_layers': Or(eval_layers, empty_list),
+            Optional('reload_layers', default=[]):
+                Or(eval_layers, empty_list),
         })
 )
-def test_init_load(obj, init_layers, load_layers):
-    locals = dict(
-            configs=appcli.model.get_configs(obj),
-    )
-
+def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
     appcli.init(obj)
-    assert appcli.model.get_layers(obj) == eval_layers(init_layers, **locals)
+    assert list(appcli.model.iter_layers(obj)) == init_layers
 
     try:
         obj.load()
     except AttributeError:
         appcli.load(obj)
 
-    assert appcli.model.get_layers(obj) == eval_layers(load_layers, **locals)
+    assert list(appcli.model.iter_layers(obj)) == load_layers
+
+    try:
+        obj.reload()
+    except AttributeError:
+        appcli.reload(obj)
+
+    assert list(appcli.model.iter_layers(obj)) == reload_layers or load_layers
 
 def test_get_configs():
 
@@ -57,45 +62,6 @@ def test_get_configs_err():
 
     assert err.match('object not configured for use with appcli')
     assert err.match(no_templates)
-
-@parametrize_from_file(
-        schema=Schema({
-            'config': exec_config,
-            'expected': Or([eval], empty_list),
-        })
-)
-def test_load_config(config, expected):
-    obj = DummyObj()
-    layers = appcli.model.load_config(config, obj)
-
-    expected = [
-            (config, value, loc)
-            for value, loc in expected
-    ]
-    actual = [
-            (x.config, x.values, x.location)
-            for x in layers
-    ]
-    assert actual == expected
-
-@parametrize_from_file(
-        schema=Schema({
-            'layers':   Or([eval_appcli], empty_list),
-            'expected': Or([eval_appcli], empty_list),
-        })
-)
-def test_iter_active_layers(layers, expected):
-
-    class Obj:
-        __config__ = []
-
-    obj = Obj()
-    appcli.init(obj)
-    appcli.model.get_meta(obj).layers = layers
-
-    expected = [LayerWrapper(x) for x in expected]
-    assert list(appcli.model.iter_active_layers(obj)) == expected
-
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,

@@ -6,7 +6,7 @@ An object-oriented framework for command-line apps.
 
 __version__ = '0.1.0'
 
-from .model import init, load
+from .model import init, load, reload
 from .params import param
 from .attrs import config_attr
 from .utils import lookup

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from .layers import Layer, PendingLayer
+from .layers import Layer, LayerGroup
 from .utils import lookup
 from .errors import ScriptError, ConfigError
 from collections.abc import Sequence
+from more_itertools import unique_justseen
 
 CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
@@ -12,43 +13,52 @@ SENTINEL = object()
 class Meta:
 
     def __init__(self):
-        self.layers = []
+        self.layer_groups = []
         self.overrides = {}
 
 def init(obj):
     if hasattr(obj, META_ATTR):
-        return
+        return False
 
     meta = Meta(); setattr(obj, META_ATTR, meta)
     configs = get_configs(obj)
 
-    # Modify the list of layers in-place and in reverse order so that 
-    # Config.load() can make use of values loaded by previous configs.
+    # Build the layer groups in reverse order so that Config.load() can make 
+    # use of values loaded by previous configs.
     for config in reversed(configs):
+        group = LayerGroup(config)
+        meta.layer_groups.insert(0, group)
+
         if config.autoload:
-            meta.layers[:0] = load_config(config, obj)
-        else:
-            meta.layers[:0] = [PendingLayer(config)]
+            group.load(obj)
+
+    return True
 
 def load(obj, config_cls=None):
     init(obj)
+    meta = get_meta(obj)
+
+    for group in reversed(meta.layer_groups):
+        if group.is_loaded:
+            continue
+        if config_cls and not isinstance(group.config, config_cls):
+            continue
+
+        group.load(obj)
+
+def reload(obj, config_cls=None):
+    if init(obj):
+        return
 
     meta = get_meta(obj)
-    meta.layers, existing = [], meta.layers
 
-    def load_layer(layer, obj):
-        if not isinstance(layer, PendingLayer):
-            return [layer]
+    for group in reversed(meta.layer_groups):
+        if not group.is_loaded:
+            continue
+        if config_cls and not isinstance(group.config, config_cls):
+            continue
 
-        if config_cls and not isinstance(layer.config, config_cls):
-            return [layer]
-
-        return load_config(layer.config, obj)
-
-    # Modify the list of layers in-place and in reverse order so that 
-    # Config.load() can make use of values loaded by previous configs.
-    for layer in reversed(existing):
-        meta.layers[:0] = load_layer(layer, obj)
+        group.load(obj)
 
 def get_configs(obj):
     try:
@@ -62,28 +72,15 @@ def get_configs(obj):
         err.blame += "{obj!r} has no '{config_attr}' attribute"
         raise err
 
-def load_config(config, obj):
-    layers = list(config.load(obj))
-
-    for layer in layers:
-        layer.config = config
-
-    return layers
-
 def get_meta(obj):
     return getattr(obj, META_ATTR)
-
-def get_layers(obj):
-    return get_meta(obj).layers
 
 def get_overrides(obj):
     return get_meta(obj).overrides
 
-def iter_active_layers(obj):
-    yield from (
-            x for x in get_layers(obj)
-            if not isinstance(x, PendingLayer)
-    )
+def iter_layers(obj):
+    for group in get_meta(obj).layer_groups:
+        yield from group
 
 def iter_values(obj, key_map, cast_map, default=SENTINEL):
     init(obj)
@@ -91,7 +88,7 @@ def iter_values(obj, key_map, cast_map, default=SENTINEL):
     locations = []
     have_value = False
 
-    for layer in iter_active_layers(obj):
+    for layer in iter_layers(obj):
         try:
             key = key_map[layer.config]
         except KeyError:
@@ -140,18 +137,11 @@ def iter_values(obj, key_map, cast_map, default=SENTINEL):
             err.blame += "nowhere to look for values"
 
         elif not locations:
-            if get_layers(obj):
-                err.blame += lambda e: '\n'.join((
-                    "the following configs were found, but may not have been loaded:",
-                    *(repr(x) for x in e.configs)
-                ))
-                err.hints += f"did you forget to call `appcli.load()`?"
-
-            else:
-                err.blame += lambda e: '\n'.join((
-                    "the following configs were found, but none yielded any layers:",
-                    *(repr(x) for x in e.configs)
-                ))
+            err.blame += lambda e: '\n'.join((
+                "the following configs were found, but none yielded any layers:",
+                *(repr(x) for x in e.configs)
+            ))
+            err.hints += f"did you forget to call `appcli.load()`?"
 
         else:
             err.info += lambda e: '\n'.join((

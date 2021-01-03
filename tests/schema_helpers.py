@@ -14,20 +14,11 @@ class LayerWrapper:
         return f'LayerWrapper({self.layer!r})'
 
     def __eq__(self, other):
-        if isinstance(self.layer, appcli.Layer):
-            return all((
-                    isinstance(other, appcli.Layer),
-                    self.layer.values == other.values,
-                    self.layer.location == str(other.location),
-            ))
-
-        if isinstance(self.layer, appcli.PendingLayer):
-            return all((
-                    isinstance(other, appcli.PendingLayer),
-                    self.layer.config is other.config,
-            ))
-
-        raise AssertionError(f"expected `Layer` or `PendingLayer`, not {self.layer}")
+        return all((
+                isinstance(other, appcli.Layer),
+                self.layer.values == other.values,
+                self.layer.location == str(other.location),
+        ))
 
 def eval_appcli(code, **locals):
     globals = dict(appcli=appcli)
