@@ -10,11 +10,16 @@ CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
 SENTINEL = object()
 
+# Move init_param_state() to init() instead of param.__get__() if I'm gonna 
+# need to find all params in init() anyways.
+
 class Meta:
 
     def __init__(self):
         self.layer_groups = []
         self.overrides = {}
+        self.param_states = {}
+        self.cache_version = 0
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -31,34 +36,42 @@ def init(obj):
 
         if config.autoload:
             group.load(obj)
+            meta.cache_version += 1
 
     return True
 
 def load(obj, config_cls=None):
     init(obj)
+
     meta = get_meta(obj)
+    meta.layer_groups, groups = [], meta.layer_groups
+    meta.cache_version += 1
 
-    for group in reversed(meta.layer_groups):
-        if group.is_loaded:
-            continue
-        if config_cls and not isinstance(group.config, config_cls):
-            continue
+    # Rebuild the `layer_groups` list from scratch so that Config.load() can't 
+    # make use of values loaded by upcoming configs.
+    for group in reversed(groups):
+        if not group.is_loaded and is_selected(group.config, config_cls):
+            group.load(obj)
 
-        group.load(obj)
+        meta.layer_groups.insert(0, group)
+        meta.cache_version += 1
 
 def reload(obj, config_cls=None):
     if init(obj):
         return
 
     meta = get_meta(obj)
+    meta.layer_groups, groups = [], meta.layer_groups
+    meta.cache_version += 1
 
-    for group in reversed(meta.layer_groups):
-        if not group.is_loaded:
-            continue
-        if config_cls and not isinstance(group.config, config_cls):
-            continue
+    # Rebuild the `layer_groups` list from scratch so that Config.load() can't 
+    # make use of values loaded by upcoming configs.
+    for group in reversed(groups):
+        if group.is_loaded and is_selected(group.config, config_cls):
+            group.load(obj)
 
-        group.load(obj)
+        meta.layer_groups.insert(0, group)
+        meta.cache_version += 1
 
 def get_configs(obj):
     try:
@@ -77,6 +90,20 @@ def get_meta(obj):
 
 def get_overrides(obj):
     return get_meta(obj).overrides
+
+def get_cache_version(obj):
+    return get_meta(obj).cache_version
+
+def get_param_state(obj, name):
+    return get_meta(obj).param_states[name]
+
+def init_param_state(obj, name, state):
+    """
+    Provide a state object for the given parameter.
+
+    It is safe to call this function any number of times.
+    """
+    get_meta(obj).param_states.setdefault(name, state)
 
 def iter_layers(obj):
     for group in get_meta(obj).layer_groups:
@@ -152,3 +179,7 @@ def iter_values(obj, key_map, default=SENTINEL):
             err.hints += "did you mean to provide a default?"
 
         raise err from None
+
+def is_selected(config, config_cls):
+    return not config_cls or isinstance(config, config_cls)
+

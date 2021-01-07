@@ -9,6 +9,13 @@ from collections.abc import Mapping, Iterable, Sequence
 
 class param:
 
+    class _State:
+
+        def __init__(self):
+            self.setattr_value = SENTINEL
+            self.cache_value = SENTINEL
+            self.cache_version = -1
+
     def __init__(self,
             *key_args,
             key=None,
@@ -18,6 +25,7 @@ class param:
             pick=first,
             get=lambda obj, x: x,
             set=lambda obj: None,
+            dynamic=False,
     ):
         if key_args and key is not None:
             err = ScriptError(
@@ -31,46 +39,59 @@ class param:
 
         self._keys = list(key_args) if key_args else key
         self._default = default
-        self._ignore = ignore
+        self._ignore = {SENTINEL, ignore}
         self._cast = cast
         self._pick = pick
         self._get = get
         self._set = set
-        self._key_map = None
+        self._dynamic = dynamic
 
     def __set_name__(self, cls, name):
         self._name = name
 
     def __get__(self, obj, cls=None):
+        self._init_obj(obj)
+        state = model.get_param_state(obj, self._name)
+
+        if state.setattr_value not in self._ignore:
+            return state.setattr_value
+
+        model_version = model.get_cache_version(obj)
+        is_cache_stale = (
+                state.cache_version != model_version or
+                self._dynamic
+        )
+        if is_cache_stale:
+            state.cache_value = self._calc_value(obj)
+            state.cache_version = model_version
+
+        return state.cache_value
+
+    def __set__(self, obj, value):
+        self._init_obj(obj)
+        state = model.get_param_state(obj, self._name)
+        state.setattr_value = value
+
+    def __delete__(self, obj):
+        self._init_obj(obj)
+        state = model.get_param_state(obj, self._name)
+        state.setattr_value = SENTINEL
+
+    def _init_obj(self, obj):
         model.init(obj)
+        model.init_param_state(obj, self._name, self._State())
 
-        try:
-            return model.get_overrides(obj)[self._name]
-        except KeyError:
-            pass
-
+    def _calc_value(self, obj):
         with AppcliError.add_info(
                 "getting '{param}' parameter for {obj!r}",
                 obj=obj,
                 param=self._name,
         ):
-            self._cache_key_map(obj)
-            values = model.iter_values(obj, self._key_map, self._default)
+            key_map = self._calc_key_map(obj)
+            values = model.iter_values(obj, key_map, self._default)
             return self._pick(values)
 
-    def __set__(self, obj, value):
-        if value != self._ignore:
-            model.init(obj)
-            model.get_overrides(obj)[self._name] = value
-
-    def __delete__(self, obj):
-        model.init(obj)
-        del model.get_overrides(obj)[self._name]
-
-    def _cache_key_map(self, obj):
-        if self._key_map is not None:
-            return self._key_map
-
+    def _calc_key_map(self, obj):
         configs = model.get_configs(obj)
 
         if _is_key_list(self._keys):
@@ -81,17 +102,18 @@ class param:
                         cast=self._cast,
                 )
 
-            self._key_map = _key_map_from_key_list(
+            return _key_map_from_key_list(
                     configs,
                     self._keys,
             )
 
         else:
-            self._key_map = _key_map_from_dict_equivs(
+            return _key_map_from_dict_equivs(
                     configs,
                     self._keys or self._name,
                     self._cast,
             )
+
 
 class Key:
 

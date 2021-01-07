@@ -375,67 +375,72 @@ test_init_load_reload:
       - appcli.Layer(values={}, location='a')
     load_layers:
       - appcli.Layer(values={}, location='a')
+
   -
     id: param-access
     obj:
-      # Access a value from an earlier layer.  This requires that the layers 
-      # are parsed in the correct order, and that the object is always kept 
-      # in a valid state.
-      > class DummyConfigA(appcli.Config):
+      > # Access a value from an earlier layer.  This requires that the layers 
+      > # are parsed in the correct order, and that the object is always kept 
+      > # in a valid state.
+      >
+      > class DummyConfig(appcli.Config):
+      >     def __init__(self, id):
+      >         self.id = id
+      >
       >     def load(self, obj):
       >         yield appcli.Layer(
-      >                 values={'x': obj.x + 1},
+      >                 values={'x': obj.x + self.id},
       >                 location='a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
-      >         yield appcli.Layer(
-      >                 values={'x': 1},
-      >                 location='b',
-      >         )
-      >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
-      >     x = appcli.param()
+      >     __config__ = [
+      >             DummyConfig('3'),
+      >             DummyConfig('2'),
+      >             DummyConfig('1'),
+      >     ]
+      >     x = appcli.param(default='')
+      >
     init_layers:
-        - appcli.Layer(values={'x': 2}, location='a')
-        - appcli.Layer(values={'x': 1}, location='b')
+        - appcli.Layer(values={'x': '123'}, location='a')
+        - appcli.Layer(values={'x': '12'},  location='a')
+        - appcli.Layer(values={'x': '1'},   location='a')
     load_layers:
-        - appcli.Layer(values={'x': 2}, location='a')
-        - appcli.Layer(values={'x': 1}, location='b')
+        - appcli.Layer(values={'x': '123'}, location='a')
+        - appcli.Layer(values={'x': '12'},  location='a')
+        - appcli.Layer(values={'x': '1'},   location='a')
   -
     id: param-access
     obj:
-      # Access a value from an earlier layer.  This requires that the layers 
-      # are parsed in the correct order, and that the object is always kept 
-      # in a valid state.
-      > class DummyConfigA(appcli.Config):
+      > # Access a value from an earlier layer.  This requires that the layers 
+      > # are parsed in the correct order, and that the object is always kept 
+      > # in a valid state.
+      >
+      > class DummyConfig(appcli.Config):
       >     autoload = False
+      >
+      >     def __init__(self, id):
+      >         self.id = id
       >
       >     def load(self, obj):
       >         yield appcli.Layer(
-      >                 values={'x': obj.x + 1},
+      >                 values={'x': obj.x + self.id},
       >                 location='a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
-      >     autoload = False
-      >
-      >     def load(self, obj):
-      >         yield appcli.Layer(
-      >                 values={'x': 1},
-      >                 location='b',
-      >         )
-      >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
-      >     x = appcli.param()
+      >     __config__ = [
+      >             DummyConfig('3'),
+      >             DummyConfig('2'),
+      >             DummyConfig('1'),
+      >     ]
+      >     x = appcli.param(default='')
       >
     init_layers:
     load_layers:
-        - appcli.Layer(values={'x': 2}, location='a')
-        - appcli.Layer(values={'x': 1}, location='b')
+        - appcli.Layer(values={'x': '123'}, location='a')
+        - appcli.Layer(values={'x': '12'},  location='a')
+        - appcli.Layer(values={'x': '1'},   location='a')
 
 test_iter_values:
   -

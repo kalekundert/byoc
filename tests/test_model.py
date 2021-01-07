@@ -28,6 +28,9 @@ class DummyConfig(appcli.Config):
         })
 )
 def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
+    if not reload_layers:
+        reload_layers = load_layers
+
     appcli.init(obj)
     assert list(appcli.model.iter_layers(obj)) == init_layers
 
@@ -43,7 +46,7 @@ def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
     except AttributeError:
         appcli.reload(obj)
 
-    assert list(appcli.model.iter_layers(obj)) == reload_layers or load_layers
+    assert list(appcli.model.iter_layers(obj)) == reload_layers
 
 def test_get_configs():
 
