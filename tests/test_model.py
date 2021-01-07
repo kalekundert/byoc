@@ -65,23 +65,20 @@ def test_get_configs_err():
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'key_map': Or({Coerce(int): eval}, empty_dict),
-            'cast_map': Or({Coerce(int): eval}, empty_dict),
+            'key_map': Or({Coerce(int): [eval]}, empty_dict),
             Optional('default', default=None): Or(None, eval),
             **error_or(
                 expected=Or([eval], empty_list),
             ),
         })
 )
-def test_iter_values(obj, key_map, cast_map, default, expected, error):
+def test_iter_values(obj, key_map, default, expected, error):
     configs = appcli.model.get_configs(obj)
     key_map = {configs[i]: v for i, v in key_map.items()}
-    cast_map = {configs[i]: v for i, v in cast_map.items()}
     kwargs = {} if default is None else dict(default=default)
 
     with error:
-        values = appcli.model.iter_values(
-                obj, key_map, cast_map, **kwargs)
+        values = appcli.model.iter_values(obj, key_map, **kwargs)
         assert list(values) == expected
 
 

@@ -3,66 +3,25 @@
 from . import model
 from .errors import AppcliError, ConfigError, ScriptError
 from .model import SENTINEL
+from .utils import noop
 from more_itertools import first, zip_equal, UnequalIterablesError
-from collections.abc import Mapping, Iterable
-
-# Caching
-# =======
-# - If load() called, recalculate
-# - If any configs/layers request it, recalculate
-#   - configs, or layers...
-#   - want to ignore configs that haven't been loaded yet; using layers is a 
-#     natural way to do that.
-#   - but if I'm going to iterate through each layer anyways, I might as well 
-#     just look up the value.
-#   - If looking up the value is expensive, the config can be responsible for 
-#     caching.
-#
-# 2020/12/24:
-# - Always cache values after load:
-#   - obj.meta.load_count / load_id / cache_id / cache_version
-#   - param.load_count
-#   - param.cached_value
-#
-#   - in param.__get__():
-#       # way to tell if this param is stale
-#       if obj.load_count == self.load_count:
-#           return self.cached_value
-#
-#       else:
-#           ...
-#           self.load_count = obj.load_count
-#
-# - give param() a `dynamic` attribute that causes it to recalculate its 
-#   attribute each time.
-#       
-
-# Not natural to get multiple values from a single param.
-
-# Would be nice to have way to get same parameter from two different keys.
-#
-# appcli.param()\
-#       .key(DocoptConfig, '--flag',     cast=lambda x: x)\
-#       .key(DocoptConfig, '--not-flag', cast=lambda x: not x)
-#
-# keys/casts specified as:
-# - scalar
-# - map
-# - list
-# - list of tuples
-#
-# map data structure:
-# - dict
-#   - key: Config object
-#   - value: list of key, cast pairs
-#
+from collections.abc import Mapping, Iterable, Sequence
 
 class param:
 
-    def __init__(self, *keys, key=SENTINEL, default=SENTINEL, ignore=SENTINEL, cast=lambda x: x, pick=first):
-        if keys and key is not SENTINEL:
+    def __init__(self,
+            *key_args,
+            key=None,
+            default=SENTINEL,
+            ignore=SENTINEL,
+            cast=None,
+            pick=first,
+            get=lambda obj, x: x,
+            set=lambda obj: None,
+    ):
+        if key_args and key is not None:
             err = ScriptError(
-                    implicit=keys,
+                    implicit=key_args,
                     explicit=key,
             )
             err.brief = "can't specify keys twice"
@@ -70,100 +29,172 @@ class param:
             err.info += lambda e: f"second specification: {e.explicit!r}"
             raise err
 
-        if keys:
-            self.keys = list(keys)
-        else:
-            self.keys = key if key is not SENTINEL else {}
-
-        self.value = SENTINEL
-        self.default = default
-        self.ignore = ignore
-        self.cast = cast
-        self.pick = pick
+        self._keys = list(key_args) if key_args else key
+        self._default = default
+        self._ignore = ignore
+        self._cast = cast
+        self._pick = pick
+        self._get = get
+        self._set = set
+        self._key_map = None
 
     def __set_name__(self, cls, name):
-        self.name = name
+        self._name = name
 
     def __get__(self, obj, cls=None):
         model.init(obj)
 
         try:
-            return model.get_overrides(obj)[self.name]
+            return model.get_overrides(obj)[self._name]
         except KeyError:
             pass
 
         with AppcliError.add_info(
                 "getting '{param}' parameter for {obj!r}",
                 obj=obj,
-                param=self.name,
+                param=self._name,
         ):
-            values = model.iter_values(
-                    obj,
-                    key_map=self.make_key_map(obj),
-                    cast_map=self.make_cast_map(obj),
-                    default=self.default,
-            )
-            return self.pick(values)
+            self._cache_key_map(obj)
+            values = model.iter_values(obj, self._key_map, self._default)
+            return self._pick(values)
 
     def __set__(self, obj, value):
-        if value != self.ignore:
+        if value != self._ignore:
             model.init(obj)
-            model.get_overrides(obj)[self.name] = value
+            model.get_overrides(obj)[self._name] = value
 
     def __delete__(self, obj):
         model.init(obj)
-        del model.get_overrides(obj)[self.name]
+        del model.get_overrides(obj)[self._name]
 
-    def make_key_map(self, obj):
+    def _cache_key_map(self, obj):
+        if self._key_map is not None:
+            return self._key_map
 
-        def sequence_len_err(configs, values):
+        configs = model.get_configs(obj)
+
+        if _is_key_list(self._keys):
+            if self._cast:
+                raise ScriptError(
+                        "can't specify both key=[appcli.Key] and cast=...; ambiguous",
+                        keys=self._keys,
+                        cast=self._cast,
+                )
+
+            self._key_map = _key_map_from_key_list(
+                    configs,
+                    self._keys,
+            )
+
+        else:
+            self._key_map = _key_map_from_dict_equivs(
+                    configs,
+                    self._keys or self._name,
+                    self._cast,
+            )
+
+class Key:
+
+    def __init__(self, config_cls, key, *, cast=noop):
+        self.config_cls = config_cls
+        self.key = key
+        self.cast = cast
+
+    def __repr__(self):
+        return f'appcli.Key({self.config_cls!r}, {self.key!r}, cast={self.cast!r})'
+
+    @property
+    def tuple(self):
+        return self.key, self.cast
+
+def _is_key_list(x):
+    return bool(x) and isinstance(x, Sequence) and \
+            all(isinstance(xi, Key) for xi in x)
+
+def _key_map_from_key_list(configs, keys):
+    map = {}
+
+    for config in configs:
+        for key in keys:
+            if isinstance(config, key.config_cls):
+                map.setdefault(config, []).append(key.tuple)
+
+    return map
+
+def _key_map_from_dict_equivs(configs, keys, casts=None):
+    def unused_keys_err(value_type):
+
+        def err_factory(configs, values, unused_keys):
             err = ConfigError(
-                configs=configs,
-                keys=values,
+                    value_type=value_type,
+                    configs=configs,
+                    values=values,
+                    unused_keys=unused_keys,
             )
-            err.brief = "number of keys must match the number of configs"
-            err.info += lambda e: '\n'.join(
-                    f"{len(e.groups)} configs:",
-                    *map(repr, e.groups),
-            )
-            err.blame += lambda e: '\n'.join(
-                    f"{len(e['keys'])} keys:",
-                    *map(repr, e['keys']),
-            )
+            debug(configs, unused_keys)
+            err.brief = "given {value_type} that don't correspond to any config"
+            err.info += lambda e: '\n'.join((
+                    f"configs:",
+                    *map(repr, e.configs),
+            ))
+            err.info += lambda e: '\n'.join((
+                    f"unused {value_type}:", *(
+                        f"{k!r}: {e['values'][k]}" for k in e.unused_keys
+                    )
+            ))
+            e = err.data
+            debug(
+            '\n'.join((
+                    f"unused {value_type}:", *(
+                        f"{k!r}: {e['values'][k]}" for k in e.unused_keys
+                    )
+            ))
+
+                    )
             return err
 
-        return make_map(
-                configs=model.get_configs(obj),
-                values=self.keys or self.name,
-                sequence_len_err=sequence_len_err,
-        )
+        return err_factory
 
-    def make_cast_map(self, obj):
+    def sequence_len_err(value_type):
 
-        def sequence_len_err(configs, values):
+        def err_factory(configs, values):
             err = ConfigError(
-                configs=configs,
-                functions=values,
+                    value_type=value_type,
+                    configs=configs,
+                    values=values,
             )
-            err.brief = "number of cast functions must match the number of configs"
-            err.info += lambda e: '\n'.join(
-                    f"{len(e.groups)} configs:",
-                    *map(repr, e.groups),
-            )
+            err.brief = "number of {value_type} must match the number of configs"
+            err.info += lambda e: '\n'.join((
+                    f"configs ({len(e.configs)}):",
+                    *map(repr, e.configs),
+            ))
             err.blame += lambda e: '\n'.join((
-                    f"{len(e.functions)} functions:",
-                    *map(repr, e.functions),
+                    f"{value_type} ({len(e['values'])}):",
+                    *map(repr, e['values']),
             ))
             return err
 
-        return make_map(
-                configs=model.get_configs(obj),
-                values=self.cast,
-                sequence_len_err=sequence_len_err,
-        )
+        return err_factory
 
+    key_map = _dict_from_equiv(
+            configs,
+            keys,
+            unused_keys_err=unused_keys_err('keys'),
+            sequence_len_err=sequence_len_err('keys'),
+    )
+    cast_map = _dict_from_equiv(
+            configs,
+            casts or noop,
+            unused_keys_err=unused_keys_err('cast functions'),
+            sequence_len_err=sequence_len_err('cast functions'),
+    )
 
-def make_map(configs, values, unused_keys_err=ValueError, sequence_len_err=ValueError):
+    return {
+            k: [(v, cast_map.get(k, noop))]
+            for k, v in key_map.items()
+    }
+
+def _dict_from_equiv(configs, values, unused_keys_err=ValueError, sequence_len_err=ValueError):
     # If the values are given as a dictionary, use the keys to identify the 
     # most appropriate value for each config.
     if isinstance(values, Mapping):

@@ -12,11 +12,48 @@ test_param:
       >     x1 = appcli.param('x')
       >     x2 = appcli.param(key='x')
       >     x3 = appcli.param(key={DummyConfig: 'x'})
+      >     x4 = appcli.param(key=[appcli.Key(DummyConfig, 'x')])
     expected:
       x: 1
       x1: 1
       x2: 1
       x3: 1
+      x4: 1
+
+  -
+    id: keys
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(
+      >             key=[
+      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >                 appcli.Key(DummyConfig, 'X', cast=lambda x: x-1),
+      >             ],
+      >     )
+    expected:
+      x: 2
+  -
+    id: keys
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'X': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(
+      >             key=[
+      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >                 appcli.Key(DummyConfig, 'X', cast=lambda x: x-1),
+      >             ],
+      >     )
+    expected:
+      x: 0
 
   -
     id: pick
@@ -69,6 +106,22 @@ test_param:
       > class DummyObj:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(cast=lambda x: x+1)
+    expected:
+      x: 2
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(
+      >             key=[
+      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             ],
+      >     )
     expected:
       x: 2
   -
@@ -246,7 +299,218 @@ test_param:
     expected:
       x: 1
 
-test_make_map:
+test_is_key_list:
+  -
+    given: {}
+    expected: False
+  -
+    given: []
+    expected: False
+  -
+    given: [appcli.Key(None, None)]
+    expected: True
+
+test_key_map_from_key_list:
+  -
+    id: empty
+    configs: [a, b]
+    keys:
+    expected: {}
+  -
+    id: 1-key
+    configs: [a, b]
+    keys:
+      - appcli.Key(A, 'k1', cast=lambda x: 1)
+    expected:
+      > {
+      >   a: [
+      >     ('k1', 1),
+      >   ],
+      > }
+  -
+    id: 2-keys
+    configs: [a, b]
+    keys:
+      - appcli.Key(A, 'k1', cast=lambda x: 1)
+      - appcli.Key(A, 'k2', cast=lambda x: 2)
+    expected:
+      > {
+      >   a: [
+      >     ('k1', 1),
+      >     ('k2', 2),
+      >   ],
+      > }
+  -
+    id: 2-keys
+    configs: [a, b]
+    keys:
+      - appcli.Key(A, 'k1', cast=lambda x: 1)
+      - appcli.Key(B, 'k2', cast=lambda x: 2)
+    expected:
+      > {
+      >   a: [
+      >     ('k1', 1),
+      >   ],
+      >   b: [
+      >     ('k2', 2),
+      >   ],
+      > }
+  -
+    id: inheritance
+    locals:
+      > class A1(appcli.Config): pass
+      > class A2(A1): pass
+      > a1, a2 = A1(), A2()
+    configs: [a1, a2]
+    keys:
+      - appcli.Key(A1, 'k1', cast=lambda x: 1)
+      - appcli.Key(A2, 'k2', cast=lambda x: 2)
+    expected:
+      > {
+      >   a1: [
+      >     ('k1', 1),
+      >   ],
+      >   a2: [
+      >     ('k1', 1),
+      >     ('k2', 2),
+      >   ],
+      > }
+
+test_key_map_from_dict_equivs:
+  -
+    id: empty
+    configs: []
+    keys: {}
+    casts: {}
+    expected: {}
+  -
+    id: dict-dict
+    configs: [a, b]
+    keys: {A: 'k1', B: 'k2'}
+    casts: {A: lambda x: 1, B: lambda x: 2}
+    expected: {a: [('k1', 1)], b: [('k2', 2)]}
+  -
+    id: dict-list
+    configs: [a, b]
+    keys: {A: 'k1', B: 'k2'}
+    casts: [lambda x: 1, lambda x: 2]
+    expected: {a: [('k1', 1)], b: [('k2', 2)]}
+  -
+    id: dict-scalar
+    configs: [a, b]
+    keys: {A: 'k1', B: 'k2'}
+    casts: lambda x: 1
+    expected: {a: [('k1', 1)], b: [('k2', 1)]}
+  -
+    id: dict-empty
+    configs: [a, b]
+    keys: {A: 'k1', B: 'k2'}
+    casts: {}
+    expected: {a: [('k1', 0)], b: [('k2', 0)]}
+  -
+    id: list-dict
+    configs: [a, b]
+    keys: ['k1', 'k2']
+    casts: {A: lambda x: 1, B: lambda x: 2}
+    expected: {a: [('k1', 1)], b: [('k2', 2)]}
+  -
+    id: list-list
+    configs: [a, b]
+    keys: ['k1', 'k2']
+    casts: [lambda x: 1, lambda x: 2]
+    expected: {a: [('k1', 1)], b: [('k2', 2)]}
+  -
+    id: list-scalar
+    configs: [a, b]
+    keys: ['k1', 'k2']
+    casts: lambda x: 1
+    expected: {a: [('k1', 1)], b: [('k2', 1)]}
+  -
+    id: list-empty
+    configs: [a, b]
+    keys: ['k1', 'k2']
+    casts: {}
+    expected: {a: [('k1', 0)], b: [('k2', 0)]}
+  -
+    id: scalar-dict
+    configs: [a, b]
+    keys: 'k'
+    casts: {A: lambda x: 1, B: lambda x: 2}
+    expected: {a: [('k', 1)], b: [('k', 2)]}
+  -
+    id: scalar-list
+    configs: [a, b]
+    keys: 'k'
+    casts: [lambda x: 1, lambda x: 2]
+    expected: {a: [('k', 1)], b: [('k', 2)]}
+  -
+    id: scalar-scalar
+    configs: [a, b]
+    keys: 'k'
+    casts: lambda x: 1
+    expected: {a: [('k', 1)], b: [('k', 1)]}
+  -
+    id: scalar-empty
+    configs: [a, b]
+    keys: 'k'
+    casts: {}
+    expected: {a: [('k', 0)], b: [('k', 0)]}
+  -
+    id: err-unused-keys
+    configs: [a]
+    keys: {B: 'k'}
+    casts: {}
+    error:
+      type: appcli.ConfigError
+      message:
+        - given keys that don't correspond to any config
+        - configs:
+        - <.*A object.*>
+        - unused keys:
+        - <.*B.*>: k
+  -
+    id: err-unused-casts
+    configs: [a]
+    keys: {A: 'k'}
+    casts: {B: int}
+    error:
+      type: appcli.ConfigError
+      message:
+        - given cast functions that don't correspond to any config
+        - configs:
+        - <.*A object.*>
+        - unused cast functions:
+        - (?s)<.*B.*>: <class 'int'>
+  -
+    id: err-len-keys
+    configs: [a]
+    keys: ['k1', 'k2']
+    casts: {}
+    error:
+      type: appcli.ConfigError
+      message:
+        - number of keys must match the number of configs
+        - configs \(1\):
+        - <.*A object.*>
+        - keys \(2\):
+        - k1
+        - k2
+  -
+    id: err-len-casts
+    configs: [a]
+    keys: {A: 'k'}
+    casts: [int, float]
+    error:
+      type: appcli.ConfigError
+      message:
+        - number of cast functions must match the number of configs
+        - configs \(1\):
+        - <.*A object.*>
+        - cast functions \(2\):
+        - <class 'int'>
+        - <class 'float'>
+
+test_dict_from_equiv:
   -
     id: dict-0
     configs: []

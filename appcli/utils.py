@@ -2,6 +2,9 @@
 
 from .errors import *
 
+def noop(x):
+    return x
+
 def first_specified(*values, **kwargs):
     unspecified = kwargs.get('sentinel', None)
 

@@ -82,41 +82,36 @@ def iter_layers(obj):
     for group in get_meta(obj).layer_groups:
         yield from group
 
-def iter_values(obj, key_map, cast_map, default=SENTINEL):
+def iter_values(obj, key_map, default=SENTINEL):
     init(obj)
 
     locations = []
     have_value = False
 
     for layer in iter_layers(obj):
-        try:
-            key = key_map[layer.config]
-        except KeyError:
-            continue
+        for key, cast in key_map.get(layer.config, []):
+            locations.append((key, x() if callable(x := layer.location) else x))
 
-        cast = cast_map.get(layer.config, lambda x: x)
-        locations.append((key, x() if callable(x := layer.location) else x))
-
-        try:
-            value = lookup(layer.values, key)
-        except KeyError:
-            pass
-        else:
             try:
-                yield cast(value)
-            except Exception as err1:
-                err2 = ConfigError(
-                        value=value,
-                        function=cast,
-                        key=key,
-                        location=layer.location,
-                )
-                err2.brief = "can't cast {value!r} using {function!r}"
-                err2.info += "read {key!r} from {location}"
-                err2.blame += str(err1)
-                raise err2 from err1
+                value = lookup(layer.values, key)
+            except KeyError:
+                pass
             else:
-                have_value = True
+                try:
+                    yield cast(value)
+                except Exception as err1:
+                    err2 = ConfigError(
+                            value=value,
+                            function=cast,
+                            key=key,
+                            location=layer.location,
+                    )
+                    err2.brief = "can't cast {value!r} using {function!r}"
+                    err2.info += "read {key!r} from {location}"
+                    err2.blame += str(err1)
+                    raise err2 from err1
+                else:
+                    have_value = True
 
     if default is not SENTINEL:
         have_value = True
@@ -128,7 +123,7 @@ def iter_values(obj, key_map, cast_map, default=SENTINEL):
                 "can't find value for parameter",
                 obj=obj,
                 locations=locations,
-                configs=configs,
+                key_map=key_map,
         )
 
         if not configs:
@@ -136,10 +131,13 @@ def iter_values(obj, key_map, cast_map, default=SENTINEL):
             err.blame += "`{obj.__class__.__qualname__}.{config_attr}` is empty"
             err.blame += "nowhere to look for values"
 
+        elif not key_map:
+            err.blame += "no configs are associated with this parameter"
+
         elif not locations:
             err.blame += lambda e: '\n'.join((
                 "the following configs were found, but none yielded any layers:",
-                *(repr(x) for x in e.configs)
+                *(repr(x) for x in e.key_map)
             ))
             err.hints += f"did you forget to call `appcli.load()`?"
 
