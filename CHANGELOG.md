@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2021-01-07)
+### Feature
+* Cache parameter values ([`c320d9e`](https://github.com/kalekundert/appcli/commit/c320d9e56cfd01e965b6c48a2e68ff1496ff44c8))
+
 ## v0.3.0 (2021-01-07)
 ### Feature
 * Allow multiple keys to be associated with a single config ([`556dfa4`](https://github.com/kalekundert/appcli/commit/556dfa420dff1b354f0d5f322d8b8a5747afb61a))
