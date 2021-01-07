@@ -90,7 +90,8 @@ def iter_values(obj, key_map, default=SENTINEL):
 
     for layer in iter_layers(obj):
         for key, cast in key_map.get(layer.config, []):
-            locations.append((key, x() if callable(x := layer.location) else x))
+            loc = layer.location
+            locations.append((key, loc() if callable(loc) else loc))
 
             try:
                 value = lookup(layer.values, key)

@@ -131,7 +131,6 @@ def _key_map_from_dict_equivs(configs, keys, casts=None):
                     values=values,
                     unused_keys=unused_keys,
             )
-            debug(configs, unused_keys)
             err.brief = "given {value_type} that don't correspond to any config"
             err.info += lambda e: '\n'.join((
                     f"configs:",
@@ -142,15 +141,6 @@ def _key_map_from_dict_equivs(configs, keys, casts=None):
                         f"{k!r}: {e['values'][k]}" for k in e.unused_keys
                     )
             ))
-            e = err.data
-            debug(
-            '\n'.join((
-                    f"unused {value_type}:", *(
-                        f"{k!r}: {e['values'][k]}" for k in e.unused_keys
-                    )
-            ))
-
-                    )
             return err
 
         return err_factory
