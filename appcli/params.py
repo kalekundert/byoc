@@ -54,18 +54,21 @@ class param:
         state = model.get_param_state(obj, self._name)
 
         if state.setattr_value not in self._ignore:
-            return state.setattr_value
+            value = state.setattr_value
 
-        model_version = model.get_cache_version(obj)
-        is_cache_stale = (
-                state.cache_version != model_version or
-                self._dynamic
-        )
-        if is_cache_stale:
-            state.cache_value = self._calc_value(obj)
-            state.cache_version = model_version
+        else:
+            model_version = model.get_cache_version(obj)
+            is_cache_stale = (
+                    state.cache_version != model_version or
+                    self._dynamic
+            )
+            if is_cache_stale:
+                state.cache_value = self._calc_value(obj)
+                state.cache_version = model_version
 
-        return state.cache_value
+            value = state.cache_value
+
+        return self._get(obj, value)
 
     def __set__(self, obj, value):
         self._init_obj(obj)
@@ -76,6 +79,10 @@ class param:
         self._init_obj(obj)
         state = model.get_param_state(obj, self._name)
         state.setattr_value = SENTINEL
+
+    def __call__(self, get):
+        self._get = get
+        return self
 
     def _init_obj(self, obj):
         model.init(obj)

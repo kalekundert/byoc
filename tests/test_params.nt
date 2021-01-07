@@ -134,6 +134,71 @@ test_param:
       x: 'not-casted'
 
   -
+    id: get
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1, 'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(get=lambda self, x: x + self.y)
+      >     y = appcli.param()
+      >
+      > obj = DummyObj()
+    expected:
+      x: 3
+  -
+    id: get
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(get=lambda self, x: x + self.y, default=1)
+      >     y = appcli.param()
+      >
+      > obj = DummyObj()
+    expected:
+      x: 3
+  -
+    id: get
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(get=lambda self, x: x + self.y)
+      >     y = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = 1
+    expected:
+      x: 3
+  -
+    id: get
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1, 'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     y = appcli.param()
+      >
+      >     @appcli.param()
+      >     def x(self, x):
+      >         return x + self.y
+      >
+      > obj = DummyObj()
+    expected:
+      x: 3
+
+  -
     id: set
     obj:
       > class DummyObj:
