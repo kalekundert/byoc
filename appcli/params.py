@@ -12,6 +12,7 @@ class param:
     class _State:
 
         def __init__(self):
+            self.key_map = None
             self.setattr_value = SENTINEL
             self.cache_value = SENTINEL
             self.cache_version = -1
@@ -50,8 +51,7 @@ class param:
         self._name = name
 
     def __get__(self, obj, cls=None):
-        self._init_obj(obj)
-        state = model.get_param_state(obj, self._name)
+        state = self._load_state(obj)
 
         if state.setattr_value not in self._ignore:
             value = state.setattr_value
@@ -71,22 +71,27 @@ class param:
         return self._get(obj, value)
 
     def __set__(self, obj, value):
-        self._init_obj(obj)
-        state = model.get_param_state(obj, self._name)
+        state = self._load_state(obj)
         state.setattr_value = value
+        self._set(obj)
 
     def __delete__(self, obj):
-        self._init_obj(obj)
-        state = model.get_param_state(obj, self._name)
+        state = self._load_state(obj)
         state.setattr_value = SENTINEL
 
     def __call__(self, get):
         self._get = get
         return self
 
-    def _init_obj(self, obj):
+    def _load_state(self, obj):
         model.init(obj)
-        model.init_param_state(obj, self._name, self._State())
+        return model.init_param_state(obj, self._name, self._State())
+
+    def _load_key_map(self, obj):
+        state = self._load_state(obj)
+        if state.key_map is None:
+            state.key_map = self._calc_key_map(obj)
+        return state.key_map
 
     def _calc_value(self, obj):
         with AppcliError.add_info(
@@ -94,7 +99,7 @@ class param:
                 obj=obj,
                 param=self._name,
         ):
-            key_map = self._calc_key_map(obj)
+            key_map = self._load_key_map(obj)
             values = model.iter_values(obj, key_map, self._default)
             return self._pick(values)
 
@@ -120,7 +125,6 @@ class param:
                     self._keys or self._name,
                     self._cast,
             )
-
 
 class Key:
 

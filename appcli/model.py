@@ -10,14 +10,10 @@ CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
 SENTINEL = object()
 
-# Move init_param_state() to init() instead of param.__get__() if I'm gonna 
-# need to find all params in init() anyways.
-
 class Meta:
 
-    def __init__(self):
-        self.layer_groups = []
-        self.overrides = {}
+    def __init__(self, obj):
+        self.layer_groups = [LayerGroup(x) for x in get_configs(obj)]
         self.param_states = {}
         self.cache_version = 0
 
@@ -25,53 +21,37 @@ def init(obj):
     if hasattr(obj, META_ATTR):
         return False
 
-    meta = Meta(); setattr(obj, META_ATTR, meta)
-    configs = get_configs(obj)
+    setattr(obj, META_ATTR, Meta(obj))
 
-    # Build the layer groups in reverse order so that Config.load() can make 
-    # use of values loaded by previous configs.
-    for config in reversed(configs):
-        group = LayerGroup(config)
-        meta.layer_groups.insert(0, group)
-
-        if config.autoload:
-            group.load(obj)
-            meta.cache_version += 1
-
+    _load_groups(
+            obj,
+            predicate=lambda g: g.config.autoload,
+            force_callback=lambda p: p._default is not SENTINEL
+    )
     return True
 
 def load(obj, config_cls=None):
     init(obj)
 
-    meta = get_meta(obj)
-    meta.layer_groups, groups = [], meta.layer_groups
-    meta.cache_version += 1
-
-    # Rebuild the `layer_groups` list from scratch so that Config.load() can't 
-    # make use of values loaded by upcoming configs.
-    for group in reversed(groups):
-        if not group.is_loaded and is_selected(group.config, config_cls):
-            group.load(obj)
-
-        meta.layer_groups.insert(0, group)
-        meta.cache_version += 1
+    _load_groups(
+            obj,
+            predicate=lambda g: (
+                not g.is_loaded and
+                _is_selected_by_cls(g.config, config_cls)
+            ),
+    )
 
 def reload(obj, config_cls=None):
     if init(obj):
         return
 
-    meta = get_meta(obj)
-    meta.layer_groups, groups = [], meta.layer_groups
-    meta.cache_version += 1
-
-    # Rebuild the `layer_groups` list from scratch so that Config.load() can't 
-    # make use of values loaded by upcoming configs.
-    for group in reversed(groups):
-        if group.is_loaded and is_selected(group.config, config_cls):
-            group.load(obj)
-
-        meta.layer_groups.insert(0, group)
-        meta.cache_version += 1
+    _load_groups(
+            obj,
+            predicate=lambda g: (
+                g.is_loaded and 
+                _is_selected_by_cls(g.config, config_cls)
+            ),
+    )
 
 def get_configs(obj):
     try:
@@ -88,11 +68,20 @@ def get_configs(obj):
 def get_meta(obj):
     return getattr(obj, META_ATTR)
 
-def get_overrides(obj):
-    return get_meta(obj).overrides
-
 def get_cache_version(obj):
     return get_meta(obj).cache_version
+
+def get_params(obj):
+    from .params import param
+
+    params = {}
+
+    for cls in reversed(obj.__class__.__mro__):
+        for k, v in cls.__dict__.items():
+            if isinstance(v, param):
+                params[k] = v
+
+    return params
 
 def get_param_state(obj, name):
     return get_meta(obj).param_states[name]
@@ -103,15 +92,13 @@ def init_param_state(obj, name, state):
 
     It is safe to call this function any number of times.
     """
-    get_meta(obj).param_states.setdefault(name, state)
+    return get_meta(obj).param_states.setdefault(name, state)
 
 def iter_layers(obj):
     for group in get_meta(obj).layer_groups:
         yield from group
 
 def iter_values(obj, key_map, default=SENTINEL):
-    init(obj)
-
     locations = []
     have_value = False
 
@@ -180,6 +167,37 @@ def iter_values(obj, key_map, default=SENTINEL):
 
         raise err from None
 
-def is_selected(config, config_cls):
+
+def _load_groups(obj, predicate, force_callback=lambda p: False):
+    meta = get_meta(obj)
+    meta.layer_groups, groups = [], meta.layer_groups
+    meta.cache_version += 1
+    updated_configs = set()
+
+    # Rebuild the `layer_groups` list from scratch and iterate through the 
+    # groups in reverse order so that each config, when being loaded, can make 
+    # use of values loaded by previous configs but not upcoming ones.
+    for group in reversed(groups):
+        if predicate(group):
+            group.load(obj)
+            updated_configs.add(group.config)
+
+        meta.layer_groups.insert(0, group)
+        meta.cache_version += 1
+
+    callbacks = set()
+
+    for param in get_params(obj).values():
+        key_map = param._load_key_map(obj)
+        is_param_affected = updated_configs.intersection(key_map.keys())
+
+        if is_param_affected or force_callback(param):
+            callbacks.add(param._set)
+
+    for callback in callbacks:
+        callback(obj)
+
+def _is_selected_by_cls(config, config_cls):
     return not config_cls or isinstance(config, config_cls)
+
 

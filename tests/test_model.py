@@ -80,6 +80,8 @@ def test_iter_values(obj, key_map, default, expected, error):
     key_map = {configs[i]: v for i, v in key_map.items()}
     kwargs = {} if default is None else dict(default=default)
 
+    appcli.init(obj)
+
     with error:
         values = appcli.model.iter_values(obj, key_map, **kwargs)
         assert list(values) == expected

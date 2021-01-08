@@ -225,8 +225,138 @@ test_param:
     expected:
       x: 2
   -
-    id: set
+    id: set-callback
     obj:
+      > class DummyObj:
+      >     __config__ = []
+      >
+      >     def __init__(self):
+      >         self.y = []
+      >
+      >     def _calc_y(self):
+      >         self.y.append(self.x)
+      >
+      >     x = appcli.param(set=_calc_y)
+      >
+      > obj = DummyObj()
+      > obj.x = 1
+      > obj.x = 2
+      >
+    expected:
+      x: 2
+      y: [1, 2]
+  -
+    id: set-callback-default
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >
+      >     def __init__(self):
+      >         self.z = []
+      >
+      >     def _calc_z(self):
+      >         self.z.append((self.x, self.y))
+      >
+      >     x = appcli.param(set=_calc_z, default=1)
+      >     y = appcli.param(set=_calc_z, default=2)
+      >
+      > obj = DummyObj()
+    expected:
+      x: 1
+      y: 2
+      z: [(1, 2)]
+  -
+    id: set-callback-init
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1, 'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >
+      >     def __init__(self):
+      >         self.z = []
+      >
+      >     def _calc_z(self):
+      >         self.z.append((self.x, self.y))
+      >
+      >     x = appcli.param(set=_calc_z)
+      >     y = appcli.param(set=_calc_z)
+      >
+      > obj = DummyObj()
+    expected:
+      x: 1
+      y: 2
+      z: [(1, 2)]
+  -
+    id: set-callback-load
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1, 'y': 2}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >
+      >     def __init__(self):
+      >         self.z = []
+      >
+      >     def _calc_z(self):
+      >         self.z.append((self.x, self.y))
+      >
+      >     x = appcli.param(set=_calc_z)
+      >     y = appcli.param(set=_calc_z)
+      >
+      > obj = DummyObj()
+      > appcli.load(obj)
+    expected:
+      x: 1
+      y: 2
+      z: [(1, 2)]
+  -
+    id: set-callback-reload
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values=self.value, location='a')
+      >
+      > config = DummyConfig()
+      > config.value = {'x': 1, 'y': 2}
+      >
+      > class DummyObj:
+      >     __config__ = [config]
+      >
+      >     def __init__(self):
+      >         self.z = []
+      >
+      >     def _calc_z(self):
+      >         self.z.append((self.x, self.y))
+      >
+      >     x = appcli.param(set=_calc_z)
+      >     y = appcli.param(set=_calc_z)
+      >
+      > obj = DummyObj()
+      >
+      > # Need to manually call init(), because calling reload() on an
+      > # uninitialized object is the same as just calling init().
+      > appcli.init(obj)
+      >
+      > config.value['x'] = 3
+      > config.value['y'] = 4
+      >
+      > appcli.reload(obj)
+    expected:
+      x: 3
+      y: 4
+      z: [(1, 2), (3, 4)]
+  -
+    id: set-decoy
+    obj:
+      > # Setting a parameter for one instance shouldn't affect other 
+      > # instances.
+      >
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
       >         yield appcli.Layer(values={'x': 1}, location='a')
@@ -235,8 +365,6 @@ test_param:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param()
       >
-      > # Setting a parameter for one instance shouldn't affect other 
-      > # instances.
       > decoy = DummyObj()
       > decoy.x = 2
       >
@@ -244,7 +372,7 @@ test_param:
     expected:
       x: 1
   -
-    id: set
+    id: set-decoy
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
@@ -260,8 +388,11 @@ test_param:
     expected:
       x: 1
   -
-    id: set
+    id: set-decoy
     obj:
+      > # The value of a parameter should be kept even if the object is 
+      > # shallow-copied.
+      >
       > from copy import copy
       >
       > class DummyObj:
