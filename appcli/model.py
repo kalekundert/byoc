@@ -83,9 +83,6 @@ def get_params(obj):
 
     return params
 
-def get_param_state(obj, name):
-    return get_meta(obj).param_states[name]
-
 def init_param_state(obj, name, state):
     """
     Provide a state object for the given parameter.

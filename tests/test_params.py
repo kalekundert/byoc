@@ -25,6 +25,24 @@ def test_param_init_err():
     assert err.match(r"first specification:  'x'")
     assert err.match(r"second specification: 'y'")
 
+def test_param_duplicate_cast_err():
+    class DummyConfig(appcli.Config):
+        def load(self, obj):
+            yield appcli.Layer(values={'x': 1}, location='a')
+
+    class DummyObj:
+        __config__ = [DummyConfig()]
+        x = appcli.param(
+                key=[appcli.Key(DummyConfig, 'x')],
+                cast=int,
+        )
+
+    with pytest.raises(appcli.ScriptError) as err:
+        obj = DummyObj()
+        obj.x
+
+    assert err.match(r"can't specify both key=\[appcli.Key\] and cast=...; ambiguous")
+
 @pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_reload(dynamic):
 

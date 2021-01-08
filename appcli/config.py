@@ -254,7 +254,7 @@ class FileConfig(Config):
         )
 
     def _do_load(self, app):
-        pass
+        raise NotImplementedError
 
 class YamlConfig(FileConfig):
     suffixes = '.yml', '.yaml'
