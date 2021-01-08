@@ -4,7 +4,7 @@
 An object-oriented framework for command-line apps.
 """
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 from .app import App, FromParams
 from .model import init, load, reload

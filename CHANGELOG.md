@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2021-01-08)
+### Feature
+* Add an easy way to toggle boolean parameters ([`ea7ba89`](https://github.com/kalekundert/appcli/commit/ea7ba8980848a0f6c46f2d0f293769ff76490ad3))
+* Add a metaclass for circumventing the constructor ([`3120f36`](https://github.com/kalekundert/appcli/commit/3120f3617ac3dad668e788ecc7ac2ca75e1cd136))
+* Add callback for when parameter value is changed ([`3a37468`](https://github.com/kalekundert/appcli/commit/3a37468ac729e6d202c32059030a299bb386945d))
+
 ## v0.5.0 (2021-01-07)
 ### Feature
 * Add callback for parameter access ([`7c3bcf5`](https://github.com/kalekundert/appcli/commit/7c3bcf50164b6cc8633cc39037d626abd8b724df))
