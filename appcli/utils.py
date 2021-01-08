@@ -25,6 +25,9 @@ def first_specified(*values, **kwargs):
         raise err from None
 
 def lookup(x, key, sep='.'):
+    if callable(key):
+        return key(x)
+
     for subkey in key.split(sep):
         x = x(subkey) if callable(x) else x[subkey]
     return x

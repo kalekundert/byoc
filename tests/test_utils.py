@@ -31,7 +31,7 @@ def test_first_specified_err(args, kwargs):
 @parametrize_from_file(
         schema=Schema({
             'x': eval,
-            'key': str,
+            'key': eval,
             'expected': eval,
         })
 )

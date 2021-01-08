@@ -62,22 +62,30 @@ test_lookup:
 
   -
     x: {'a': 1}
-    key: a
+    key: 'a'
     expected: 1
   -
     x: {'a': {'b': 1}}
-    key: a.b
+    key: 'a.b'
     expected: 1
   -
     x: str.upper
-    key: a
+    key: 'a'
     expected: 'A'
   -
     x: {'a': str.upper}
-    key: a.b
+    key: 'a.b'
     expected: 'B'
   -
     x: lambda x: {'b': x}
-    key: a.b
+    key: 'a.b'
     expected: 'a'
+  -
+    x: {'a': 1, 'b': 2}
+    key: lambda x: x['a']
+    expected: 1
+  -
+    x: {'a': 1, 'b': 2}
+    key: lambda x: (x['a'], x['b'])
+    expected: 1, 2
 
