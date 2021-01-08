@@ -17,13 +17,14 @@ class param:
             self.cache_value = SENTINEL
             self.cache_version = -1
 
-    def __init__(self,
+    def __init__(
+            self,
             *key_args,
             key=None,
-            default=SENTINEL,
-            ignore=SENTINEL,
             cast=None,
             pick=first,
+            default=SENTINEL,
+            ignore=SENTINEL,
             get=lambda obj, x: x,
             set=lambda obj: None,
             dynamic=False,
@@ -39,10 +40,10 @@ class param:
             raise err
 
         self._keys = list(key_args) if key_args else key
-        self._default = default
-        self._ignore = {SENTINEL, ignore}
         self._cast = cast
         self._pick = pick
+        self._default = default
+        self._ignore = {SENTINEL, ignore}
         self._get = get
         self._set = set
         self._dynamic = dynamic
@@ -123,7 +124,7 @@ class param:
             return _key_map_from_dict_equivs(
                     configs,
                     self._keys or self._name,
-                    self._cast,
+                    self._cast or noop,
             )
 
 class Key:
@@ -154,7 +155,7 @@ def _key_map_from_key_list(configs, keys):
 
     return map
 
-def _key_map_from_dict_equivs(configs, keys, casts=None):
+def _key_map_from_dict_equivs(configs, keys, casts):
     def unused_keys_err(value_type):
 
         def err_factory(configs, values, unused_keys):
@@ -207,7 +208,7 @@ def _key_map_from_dict_equivs(configs, keys, casts=None):
     )
     cast_map = _dict_from_equiv(
             configs,
-            casts or noop,
+            casts,
             unused_keys_err=unused_keys_err('cast functions'),
             sequence_len_err=sequence_len_err('cast functions'),
     )

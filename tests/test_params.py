@@ -114,6 +114,42 @@ def test_param_cache_instance_key_map():
     obj = DummyObj()
     assert obj.x == 1
 
+def test_param_cache_get():
+    # Test to make sure that the get function is called on every parameter 
+    # access, even if the underlying value is cached.
+    
+    class DummyConfig(appcli.Config):
+
+        def load(self, obj):
+            yield appcli.Layer(values=self.values, location='fg')
+    
+    config = DummyConfig()
+    config.values = {'x': 1}
+
+    class DummyObj:
+        __config__ = [config]
+
+        def __init__(self):
+            self.y = 0
+
+        def _update_y(self, x):
+            self.y += 1
+            return x
+
+        x = appcli.param(get=_update_y)
+    
+    obj = DummyObj()
+    assert obj.y == 0
+
+    assert obj.x == 1
+    assert obj.y == 1
+
+    assert obj.x == 1
+    assert obj.y == 2
+
+    assert obj.x == 1
+    assert obj.y == 3
+
 @parametrize_from_file(
         schema=Schema({
             'given': eval_appcli,
