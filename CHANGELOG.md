@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2021-01-07)
+### Feature
+* Add callback for parameter access ([`7c3bcf5`](https://github.com/kalekundert/appcli/commit/7c3bcf50164b6cc8633cc39037d626abd8b724df))
+
 ## v0.4.0 (2021-01-07)
 ### Feature
 * Cache parameter values ([`c320d9e`](https://github.com/kalekundert/appcli/commit/c320d9e56cfd01e965b6c48a2e68ff1496ff44c8))
