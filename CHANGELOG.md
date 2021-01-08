@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.0 (2021-01-08)
+### Feature
+* Allows keys to be arbitrary callables ([`87a0b9c`](https://github.com/kalekundert/appcli/commit/87a0b9ce73a08c816109bbbce522811ef8655cf0))
+
 ## v0.6.0 (2021-01-08)
 ### Feature
 * Add an easy way to toggle boolean parameters ([`ea7ba89`](https://github.com/kalekundert/appcli/commit/ea7ba8980848a0f6c46f2d0f293769ff76490ad3))
