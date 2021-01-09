@@ -44,23 +44,42 @@ def test_attr_callback_config(obj, expected):
             'obj': exec_obj,
             'usage': str,
             'brief': str,
-            'argv': shlex.split,
-            'layer': eval_layer,
+            'invocations': [{
+                'argv': shlex.split,
+                'layer': eval_layer,
+            }],
         })
 )
-def test_argparse_docopt_config(monkeypatch, obj, usage, brief, argv, layer):
-    # These attributes should be available even before init() is called.
-    assert obj.usage == usage
-    assert obj.brief == brief
+def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
+    from copy import copy
 
-    # Make sure the command-line isn't read until load() is called.
-    monkeypatch.setattr(sys, 'argv', [])
-    appcli.init(obj)
+    for invocation in invocations:
+        print(invocation)
 
-    monkeypatch.setattr(sys, 'argv', argv)
-    appcli.load(obj)
+        test_obj = copy(obj)
+        test_argv = invocation['argv']
+        test_layer = invocation['layer']
 
-    assert list(appcli.model.iter_layers(obj)) == [layer]
+        # Clear `sys.argv` so that if the command-line is accessed prematurely, 
+        # e.g. in `init()` rather than `load()`, an error is raised.  Note that 
+        # `sys.argv[0]` needs to be present, because `argparse` checks this 
+        # when generating usage text.
+        monkeypatch.setattr(sys, 'argv', ['app'])
+
+        # These attributes should be available even before `init()` is called.  
+        # Note that accessing these attributes may trigger `init()`, e.g. if 
+        # the usage text contains default values based on parameters.
+        assert test_obj.usage == usage
+        assert test_obj.brief == brief
+
+        # Make sure that calling `init()` (if it wasn't implicitly called 
+        # above) doesn't cause the command line to be read.
+        appcli.init(test_obj)
+
+        monkeypatch.setattr(sys, 'argv', test_argv)
+        appcli.load(test_obj)
+
+        assert list(appcli.model.iter_layers(test_obj)) == [test_layer]
 
 @parametrize_from_file(
         schema=Schema({

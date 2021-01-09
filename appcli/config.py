@@ -80,9 +80,8 @@ class AttrConfig(Config):
 class ArgparseConfig(Config):
     autoload = False
 
-    def __init__(self, parser_getter='get_argparse'):
+    def __init__(self, parser_getter=lambda self: self.get_argparse()):
         self.parser_getter = parser_getter
-        self.parser = None
 
     def load(self, obj):
         import docopt
@@ -96,9 +95,8 @@ class ArgparseConfig(Config):
         )
 
     def get_parser(self, obj):
-        if not self.parser:
-            self.parser = getattr(obj, self.parser_getter)()
-        return self.parser
+        # Might make sense to try caching the parser in the given object.
+        return self.parser_getter(obj)
 
     def get_usage(self, obj):
         return self.get_parser(obj).format_help()
@@ -112,13 +110,13 @@ class DocoptConfig(Config):
 
     def __init__(self,
             *,
-            usage_attr='__doc__',
+            usage_getter=lambda self: self.__doc__,
             usage_io=sys.stdout,
             help=True,
             version=None,
             options_first=False,
         ):
-        self.usage_attr = usage_attr
+        self.usage_getter = usage_getter
         self.usage_io = usage_io
         self.help = help
         self.version = version
@@ -143,11 +141,10 @@ class DocoptConfig(Config):
         )
 
     def get_usage(self, obj):
-        usage = getattr(obj, self.usage_attr)
-        if callable(usage):
-            return usage()
-        else:
-            return usage.format(obj)
+        from mako.template import Template
+        usage = self.usage_getter(obj)
+        template = Template(usage)
+        return template.render(app=obj)
 
     def get_usage_io(self, obj):
         return getattr(obj, 'usage_io', self.usage_io)

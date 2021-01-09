@@ -236,6 +236,7 @@ test_attr_callback_config:
 
 test_argparse_docopt_config:
   -
+    id: argparse
     obj:
       > class DummyObj:
       >     __config__ = [appcli.ArgparseConfig()]
@@ -249,7 +250,7 @@ test_argparse_docopt_config:
       >         p.add_argument('-y', action='store_true')
       >         return p
     usage:
-      > usage: pytest [-h] [-y] x
+      > usage: app [-h] [-y] x
       >
       > Do something
       >
@@ -262,11 +263,19 @@ test_argparse_docopt_config:
       >
     brief:
       > Do something
-    argv:
-      > ./app x -y
-    layer:
-      values: {'x': 'x', 'y': True}
-      location: command line
+    invocations:
+      -
+        argv:
+          > ./app x
+        layer:
+          values: {'x': 'x', 'y': False}
+          location: command line
+      -
+        argv:
+          > ./app x -y
+        layer:
+          values: {'x': 'x', 'y': True}
+          location: command line
   -
     id: docopt
     obj:
@@ -288,11 +297,19 @@ test_argparse_docopt_config:
       >
     brief:
       > Do something.
-    argv:
-      > ./app x -y
-    layer:
-      values: {'<x>': 'x', '-y': True}
-      location: command line
+    invocations:
+      -
+        argv:
+          > ./app x
+        layer:
+          values: {'<x>': 'x', '-y': False}
+          location: command line
+      -
+        argv:
+          > ./app x -y
+        layer:
+          values: {'<x>': 'x', '-y': True}
+          location: command line
   -
     id: docopt
     obj:
@@ -301,7 +318,9 @@ test_argparse_docopt_config:
       > Usage:
       >     app <x> [-y]
       > """
-      >     __config__ = [appcli.DocoptConfig(usage_attr='doc')]
+      >     __config__ = [
+      >             appcli.DocoptConfig(usage_getter=lambda self: self.doc),
+      >     ]
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
     usage:
@@ -309,11 +328,58 @@ test_argparse_docopt_config:
       >     app <x> [-y]
       >
     brief:
-    argv:
-      > ./app x
-    layer:
-      values: {'<x>': 'x', '-y': False}
-      location: command line
+    invocations:
+      -
+        argv:
+          > ./app x
+        layer:
+          values: {'<x>': 'x', '-y': False}
+          location: command line
+      -
+        argv:
+          > ./app x -y
+        layer:
+          values: {'<x>': 'x', '-y': True}
+          location: command line
+  -
+    id: docopt-mako
+    obj:
+      > class DummyObj:
+      >     """\
+      > Usage:
+      >     app <x> [-y Y]
+      >
+      > Options:
+      >     -y Y  [default: ${app.y.upper()}]
+      > """
+      >     __config__ = [appcli.DocoptConfig()]
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
+      >
+      >     y = appcli.param('-y', default='a')
+    usage:
+      > Usage:
+      >     app <x> [-y Y]
+      >
+      > Options:
+      >     -y Y  [default: A]
+      >
+    brief:
+    invocations:
+      -
+        argv:
+          > ./app x
+        layer:
+          values: {'<x>': 'x', '-y': 'A'}
+          location: command line
+      -
+        argv:
+          > ./app x -y b
+        layer:
+          values: {'<x>': 'x', '-y': 'b'}
+          location: command line
+
+
 
 test_file_config:
   -
