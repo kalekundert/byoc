@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.8.0 (2021-01-09)
+### Feature
+* Use mako to render docopt usage text ([`9780f98`](https://github.com/kalekundert/appcli/commit/9780f98449fbbca0d0ed8b42aefa57f4d7feb019))
+
 ## v0.7.0 (2021-01-08)
 ### Feature
 * Allows keys to be arbitrary callables ([`87a0b9c`](https://github.com/kalekundert/appcli/commit/87a0b9ce73a08c816109bbbce522811ef8655cf0))
