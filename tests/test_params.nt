@@ -508,6 +508,135 @@ test_param:
     expected:
       x: 1
 
+  -
+    id: inherited-param-key
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1, 'y': 2}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param('y')
+    expected:
+      x: 2
+  -
+    id: inherited-param-key
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(key={DummyConfig: 'y'})
+    expected:
+      x: 1
+  -
+    id: inherited-param-cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y')
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(cast=lambda x: x+1)
+    expected:
+      x: 2
+  -
+    id: inherited-param-pick
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >         yield appcli.Layer(values={'x': 0, 'y': 2}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y')
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(pick=list)
+    expected:
+      x: [1, 2]
+  -
+    id: inherited-param-default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y', default=1)
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(default=2)
+    expected:
+      x: 2
+  -
+    id: inherited-param-ignore
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y')
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(ignore=None)
+      >
+      > obj = DummyObj()
+      > obj.x = None
+    expected:
+      x: 1
+  -
+    id: inherited-param-get
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y')
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(get=lambda self, x: x+1)
+    expected:
+      x: 2
+  -
+    id: inherited-param-set
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param('y')
+      >
+      > class DummyObj(ParentObj):
+      >     def _calc_z(self):
+      >         self.z = self.x + 1
+      >     x = appcli.inherited_param(set=_calc_z)
+    expected:
+      x: 1
+      z: 2
+
+
 test_is_key_list:
   -
     given: {}

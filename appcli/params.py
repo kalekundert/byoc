@@ -29,21 +29,11 @@ class param:
             set=lambda obj: None,
             dynamic=False,
     ):
-        if key_args and key is not None:
-            err = ScriptError(
-                    implicit=key_args,
-                    explicit=key,
-            )
-            err.brief = "can't specify keys twice"
-            err.info += lambda e: f"first specification:  {', '.join(repr(x) for x in e.implicit)}"
-            err.info += lambda e: f"second specification: {e.explicit!r}"
-            raise err
-
-        self._keys = list(key_args) if key_args else key
+        self._keys = _merge_key_args(key_args, key)
         self._cast = cast
         self._pick = pick
         self._default = default
-        self._ignore = {SENTINEL, ignore}
+        self._ignore = ignore
         self._get = get
         self._set = set
         self._dynamic = dynamic
@@ -54,7 +44,7 @@ class param:
     def __get__(self, obj, cls=None):
         state = self._load_state(obj)
 
-        if state.setattr_value not in self._ignore:
+        if state.setattr_value not in {SENTINEL, self._ignore}:
             value = state.setattr_value
 
         else:
@@ -134,6 +124,19 @@ class Key:
     @property
     def tuple(self):
         return self.key, self.cast
+
+def _merge_key_args(implicit, explicit):
+    if implicit and explicit is not None:
+        err = ScriptError(
+                implicit=implicit,
+                explicit=explicit,
+        )
+        err.brief = "can't specify keys twice"
+        err.info += lambda e: f"first specification:  {', '.join(repr(x) for x in e.implicit)}"
+        err.info += lambda e: f"second specification: {e.explicit!r}"
+        raise err
+
+    return list(implicit) if implicit else explicit
 
 def _is_key_list(x):
     return bool(x) and isinstance(x, Sequence) and \
