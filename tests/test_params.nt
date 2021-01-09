@@ -635,6 +635,21 @@ test_param:
     expected:
       x: 1
       z: 2
+  -
+    id: inherited-param-toggle
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 0, 'y': True}, location='a')
+      >
+      > class ParentObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.toggle_param('y', default=True)
+      >
+      > class DummyObj(ParentObj):
+      >     x = appcli.inherited_param(toggle={DummyConfig})
+    expected:
+      x: False
 
 
 test_is_key_list:

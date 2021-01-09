@@ -74,6 +74,20 @@ class param:
         self._get = get
         return self
 
+    def _override(self, args, kwargs, skip=frozenset()):
+        # Make sure the override arguments match the constructor:
+        import inspect
+        sig = inspect.signature(self.__init__)
+        sig.bind(*args, **kwargs)
+
+        # Apply the given arguments to this object:
+        if args or 'key' in kwargs:
+            self._keys = _merge_key_args(args, kwargs.pop('key', None))
+
+        for key in kwargs.copy():
+            if key not in skip:
+                setattr(self, f'_{key}', kwargs.pop(key))
+
     def _load_state(self, obj):
         model.init(obj)
         return model.init_param_state(obj, self._name, self._State())
@@ -137,6 +151,11 @@ def _merge_key_args(implicit, explicit):
         raise err
 
     return list(implicit) if implicit else explicit
+
+def _match_args(f, args, kwargs):
+    import inspect
+    sig = inspect.signature(f)
+
 
 def _is_key_list(x):
     return bool(x) and isinstance(x, Sequence) and \
