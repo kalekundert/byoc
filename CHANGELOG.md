@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.9.0 (2021-01-09)
+### Feature
+* Treat cast=... as a default when a key list is given ([`4567ad5`](https://github.com/kalekundert/appcli/commit/4567ad5236143e7b9299aeeebe408be6687aacbd))
+
 ## v0.8.0 (2021-01-09)
 ### Feature
 * Use mako to render docopt usage text ([`9780f98`](https://github.com/kalekundert/appcli/commit/9780f98449fbbca0d0ed8b42aefa57f4d7feb019))
