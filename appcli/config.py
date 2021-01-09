@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, inspect
+import sys, re, inspect
 from pathlib import Path
 from more_itertools import one, first
 from .layers import Layer, not_found
@@ -133,7 +133,12 @@ class DocoptConfig(Config):
                     options_first=self.options_first,
             )
 
-        args = {k: v for k, v in args.items() if v is not None}
+        # If not specified:
+        # - options with arguments will be None.
+        # - options without arguments (i.e. flags) will be False.
+        # - variable-number positional argument (i.e. [<x>...]) will be []
+        not_specified = [None, False, []]
+        args = {k: v for k, v in args.items() if v not in not_specified}
 
         yield Layer(
                 values=args,
@@ -143,8 +148,9 @@ class DocoptConfig(Config):
     def get_usage(self, obj):
         from mako.template import Template
         usage = self.usage_getter(obj)
-        template = Template(usage)
-        return template.render(app=obj)
+        usage = Template(usage).render(app=obj)
+        usage = re.sub(r' *$', '', usage, flags=re.MULTILINE)
+        return usage
 
     def get_usage_io(self, obj):
         return getattr(obj, 'usage_io', self.usage_io)

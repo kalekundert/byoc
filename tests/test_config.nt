@@ -284,7 +284,7 @@ test_argparse_docopt_config:
       > Do something.
       >
       > Usage:
-      >     app <x> [-y]
+      >     app <x> [<y>...] [-z]
       > """
       >     __config__ = [appcli.DocoptConfig()]
       >     usage = appcli.config_attr()
@@ -293,7 +293,7 @@ test_argparse_docopt_config:
       > Do something.
       >
       > Usage:
-      >     app <x> [-y]
+      >     app <x> [<y>...] [-z]
       >
     brief:
       > Do something.
@@ -302,13 +302,19 @@ test_argparse_docopt_config:
         argv:
           > ./app x
         layer:
-          values: {'<x>': 'x', '-y': False}
+          values: {'<x>': 'x'}
           location: command line
       -
         argv:
-          > ./app x -y
+          > ./app x -z
         layer:
-          values: {'<x>': 'x', '-y': True}
+          values: {'<x>': 'x', '-z': True}
+          location: command line
+      -
+        argv:
+          > ./app x y -z
+        layer:
+          values: {'<x>': 'x', '<y>': ['y'], '-z': True}
           location: command line
   -
     id: docopt
@@ -333,7 +339,7 @@ test_argparse_docopt_config:
         argv:
           > ./app x
         layer:
-          values: {'<x>': 'x', '-y': False}
+          values: {'<x>': 'x'}
           location: command line
       -
         argv:
@@ -378,8 +384,6 @@ test_argparse_docopt_config:
         layer:
           values: {'<x>': 'x', '-y': 'b'}
           location: command line
-
-
 
 test_file_config:
   -
