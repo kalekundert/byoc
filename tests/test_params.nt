@@ -529,6 +529,17 @@ test_key_map_from_key_list:
     id: 1-key
     configs: [a, b]
     keys:
+      - appcli.Key(A, 'k1')
+    expected:
+      > {
+      >   a: [
+      >     ('k1', 0),
+      >   ],
+      > }
+  -
+    id: 1-key
+    configs: [a, b]
+    keys:
       - appcli.Key(A, 'k1', cast=lambda x: 1)
     expected:
       > {
@@ -584,6 +595,38 @@ test_key_map_from_key_list:
       >     ('k2', 2),
       >   ],
       > }
+  -
+    id: cast
+    configs: [a, b]
+    keys:
+      - appcli.Key(A, 'k1')
+      - appcli.Key(B, 'k2', cast=lambda x: 2)
+    cast: lambda x: 1
+    expected:
+      > {
+      >   a: [
+      >     ('k1', 1),
+      >   ],
+      >   b: [
+      >     ('k2', 2),
+      >   ],
+      > }
+  -
+    id: cast-err
+    configs: [a, b]
+    keys:
+      - appcli.Key(A, 'k1')
+      - appcli.Key(B, 'k2', cast=lambda x: 2)
+    cast: [lambda x: 1]
+    error:
+      type: appcli.ScriptError
+      message:
+        - cast=\.\.\. must be callable when specified with key=\[appcli.Key\]
+        - keys:
+        - appcli.Key\(A, 'k1', cast=None\)
+        - appcli.Key\(B, 'k2', cast=<function <lambda>.*>\)
+        - cast:
+        - \[<function <lambda>.*>\]
 
 test_key_map_from_dict_equivs:
   -

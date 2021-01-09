@@ -25,24 +25,6 @@ def test_param_init_err():
     assert err.match(r"first specification:  'x'")
     assert err.match(r"second specification: 'y'")
 
-def test_param_duplicate_cast_err():
-    class DummyConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.Layer(values={'x': 1}, location='a')
-
-    class DummyObj:
-        __config__ = [DummyConfig()]
-        x = appcli.param(
-                key=[appcli.Key(DummyConfig, 'x')],
-                cast=int,
-        )
-
-    with pytest.raises(appcli.ScriptError) as err:
-        obj = DummyObj()
-        obj.x
-
-    assert err.match(r"can't specify both key=\[appcli.Key\] and cast=...; ambiguous")
-
 @pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_reload(dynamic):
 
@@ -182,19 +164,20 @@ def test_is_key_list(given, expected):
             Optional('locals', default=''): str,
             'configs': str,
             'keys': Or([str], empty_list),
+            Optional('cast', default='lambda x: x'): eval,
             **error_or(
                 expected=str,
             ),
         })
 )
-def test_key_map_from_key_list(locals, configs, keys, expected, error):
+def test_key_map_from_key_list(locals, configs, keys, cast, expected, error):
     shared = locals_or_ab(locals)
     configs = eval(configs, {}, shared)
     keys = [eval(x, {}, shared) for x in keys]
     expected = eval(expected or 'None', shared)
 
     with error:
-        map = appcli.params._key_map_from_key_list(configs, keys)
+        map = appcli.params._key_map_from_key_list(configs, keys, cast)
         assert wrap_key_map(map, 0) == expected
 
 @parametrize_from_file(

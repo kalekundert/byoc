@@ -108,16 +108,10 @@ class param:
         configs = model.get_configs(obj)
 
         if _is_key_list(self._keys):
-            if self._cast:
-                raise ScriptError(
-                        "can't specify both key=[appcli.Key] and cast=...; ambiguous",
-                        keys=self._keys,
-                        cast=self._cast,
-                )
-
             return _key_map_from_key_list(
                     configs,
                     self._keys,
+                    self._cast or noop,
             )
 
         else:
@@ -129,13 +123,13 @@ class param:
 
 class Key:
 
-    def __init__(self, config_cls, key, *, cast=noop):
+    def __init__(self, config_cls, key, *, cast=None):
         self.config_cls = config_cls
         self.key = key
         self.cast = cast
 
     def __repr__(self):
-        return f'appcli.Key({self.config_cls!r}, {self.key!r}, cast={self.cast!r})'
+        return f'appcli.Key({self.config_cls.__name__}, {self.key!r}, cast={self.cast!r})'
 
     @property
     def tuple(self):
@@ -145,15 +139,26 @@ def _is_key_list(x):
     return bool(x) and isinstance(x, Sequence) and \
             all(isinstance(xi, Key) for xi in x)
 
-def _key_map_from_key_list(configs, keys):
-    map = {}
+def _key_map_from_key_list(configs, keys, default_cast):
+    if not callable(default_cast):
+        err = ScriptError(
+                keys=keys,
+                cast=default_cast,
+        )
+        err.brief = "cast=... must be callable when specified with key=[appcli.Key]"
+        err.info += lambda e: '\n'.join(("keys:", *map(repr, e['keys'])))
+        err.blame += "cast:\n{cast}"
+        raise err
+
+    key_map = {}
 
     for config in configs:
         for key in keys:
             if isinstance(config, key.config_cls):
-                map.setdefault(config, []).append(key.tuple)
+                item = key.key, key.cast or default_cast
+                key_map.setdefault(config, []).append(item)
 
-    return map
+    return key_map
 
 def _key_map_from_dict_equivs(configs, keys, casts):
     def unused_keys_err(value_type):
