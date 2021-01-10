@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.1 (2021-01-10)
+### Fix
+* Debug error message ([`5eded00`](https://github.com/kalekundert/appcli/commit/5eded004abdba1b613fbce9f1f13e089a3ed5528))
+
 ## v0.10.0 (2021-01-10)
 ### Feature
 * Add support for mutable default values ([`88894b6`](https://github.com/kalekundert/appcli/commit/88894b698b0cf40f01d591d51175961b20518b39))
