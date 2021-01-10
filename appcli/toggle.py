@@ -2,7 +2,7 @@
 
 from more_itertools import partition, first
 from . import model
-from .params import param, SENTINEL, _dict_from_equiv
+from .params import param, UNSPECIFIED, _dict_from_equiv
 from .errors import ConfigError
 
 class Toggle:
@@ -42,8 +42,8 @@ class toggle_param(param):
             key=None,
             cast=None,
             toggle=None,
-            default=SENTINEL,
-            ignore=SENTINEL,
+            default=UNSPECIFIED,
+            ignore=UNSPECIFIED,
             get=lambda obj, x: x,
             set=lambda obj: None,
             dynamic=False,

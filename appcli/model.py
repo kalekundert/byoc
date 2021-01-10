@@ -8,7 +8,7 @@ from more_itertools import unique_justseen
 
 CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
-SENTINEL = object()
+UNSPECIFIED = object()
 
 class Meta:
 
@@ -26,7 +26,7 @@ def init(obj):
     _load_groups(
             obj,
             predicate=lambda g: g.config.autoload,
-            force_callback=lambda p: p._load_default(obj) is not SENTINEL
+            force_callback=lambda p: p._load_default(obj) is not UNSPECIFIED
     )
     return True
 
@@ -90,7 +90,7 @@ def iter_layers(obj):
     for group in get_meta(obj).layer_groups:
         yield from group
 
-def iter_values(obj, key_map, default=SENTINEL):
+def iter_values(obj, key_map, default=UNSPECIFIED):
     locations = []
     have_value = False
 
@@ -120,7 +120,7 @@ def iter_values(obj, key_map, default=SENTINEL):
                 else:
                     have_value = True
 
-    if default is not SENTINEL:
+    if default is not UNSPECIFIED:
         have_value = True
         yield default
 

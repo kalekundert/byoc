@@ -2,7 +2,7 @@
 
 from . import model
 from .errors import AppcliError, ConfigError, ScriptError
-from .model import SENTINEL
+from .model import UNSPECIFIED
 from .utils import noop
 from more_itertools import first, zip_equal, UnequalIterablesError
 from collections.abc import Mapping, Iterable, Sequence
@@ -13,8 +13,8 @@ class param:
 
         def __init__(self, default):
             self.key_map = None
-            self.setattr_value = SENTINEL
-            self.cache_value = SENTINEL
+            self.setattr_value = UNSPECIFIED
+            self.cache_value = UNSPECIFIED
             self.cache_version = -1
             self.default_value = default
 
@@ -24,9 +24,9 @@ class param:
             key=None,
             cast=None,
             pick=first,
-            default=SENTINEL,
-            default_factory=SENTINEL,
-            ignore=SENTINEL,
+            default=UNSPECIFIED,
+            default_factory=UNSPECIFIED,
+            ignore=UNSPECIFIED,
             get=lambda obj, x: x,
             set=lambda obj: None,
             dynamic=False,
@@ -46,7 +46,7 @@ class param:
     def __get__(self, obj, cls=None):
         state = self._load_state(obj)
 
-        if state.setattr_value not in {SENTINEL, self._ignore}:
+        if state.setattr_value not in {UNSPECIFIED, self._ignore}:
             value = state.setattr_value
 
         else:
@@ -70,7 +70,7 @@ class param:
 
     def __delete__(self, obj):
         state = self._load_state(obj)
-        state.setattr_value = SENTINEL
+        state.setattr_value = UNSPECIFIED
 
     def __call__(self, get):
         self._get = get
@@ -88,8 +88,8 @@ class param:
 
         if 'default' in kwargs or 'default_factory' in kwargs:
             self._default_factory = _merge_default_args(
-                    kwargs.pop('default', SENTINEL),
-                    kwargs.pop('default_factory', SENTINEL),
+                    kwargs.pop('default', UNSPECIFIED),
+                    kwargs.pop('default_factory', UNSPECIFIED),
             )
 
         for key in kwargs.copy():
@@ -171,8 +171,8 @@ def _merge_key_args(implicit, explicit):
     return list(implicit) if implicit else explicit
 
 def _merge_default_args(instance, factory):
-    have_instance = instance is not SENTINEL
-    have_factory = factory is not SENTINEL
+    have_instance = instance is not UNSPECIFIED
+    have_factory = factory is not UNSPECIFIED
 
     if have_instance and have_factory:
         err = ScriptError(
