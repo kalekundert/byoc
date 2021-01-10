@@ -2,6 +2,7 @@
 
 import sys, re, inspect
 from pathlib import Path
+from textwrap import dedent
 from more_itertools import one, first
 from .layers import Layer, not_found
 from ..utils import lookup, first_specified
@@ -148,6 +149,7 @@ class DocoptConfig(Config):
     def get_usage(self, obj):
         from mako.template import Template
         usage = self.usage_getter(obj)
+        usage = dedent(usage)
         usage = Template(usage).render(app=obj)
         usage = re.sub(r' *$', '', usage, flags=re.MULTILINE)
         return usage

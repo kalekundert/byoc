@@ -281,11 +281,11 @@ test_argparse_docopt_config:
     obj:
       > class DummyObj:
       >     """\
-      > Do something.
+      >     Do something.
       >
-      > Usage:
-      >     app <x> [<y>...] [-z]
-      > """
+      >     Usage:
+      >         app <x> [<y>...] [-z]
+      >     """
       >     __config__ = [appcli.DocoptConfig()]
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
