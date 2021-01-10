@@ -434,9 +434,22 @@ test_param:
       > obj = copy(obj)
     expected:
       x: 2
+  -
+    id: set-non-hashable
+    obj:
+      > # The code used to have a bug that prevented non-hashable objects from 
+      > # being assigned to parameters.  This test is to prevent regressions.
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x = [1]
+    expected:
+      x: [1]
 
   -
-    id: inherit
+    id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
@@ -453,7 +466,7 @@ test_param:
     expected:
       x: 1
   -
-    id: inherit
+    id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
@@ -469,7 +482,7 @@ test_param:
     expected:
       x: 1
   -
-    id: inherit
+    id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
@@ -486,7 +499,7 @@ test_param:
       x: 1
 
   -
-    id: pending
+    id: autoload
     obj:
       > class PendingConfig(appcli.Config):
       >     autoload = False
@@ -503,7 +516,7 @@ test_param:
     expected:
       x: 2
   -
-    id: pending
+    id: autoload
     obj:
       > class PendingConfig(appcli.Config):
       >     autoload = False

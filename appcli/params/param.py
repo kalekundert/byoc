@@ -46,7 +46,8 @@ class param:
     def __get__(self, obj, cls=None):
         state = self._load_state(obj)
 
-        if state.setattr_value not in {UNSPECIFIED, self._ignore}:
+        if state.setattr_value is not UNSPECIFIED and \
+                state.setattr_value != self._ignore:
             value = state.setattr_value
 
         else:
