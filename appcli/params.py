@@ -11,11 +11,12 @@ class param:
 
     class _State:
 
-        def __init__(self):
+        def __init__(self, default):
             self.key_map = None
             self.setattr_value = SENTINEL
             self.cache_value = SENTINEL
             self.cache_version = -1
+            self.default_value = default
 
     def __init__(
             self,
@@ -24,6 +25,7 @@ class param:
             cast=None,
             pick=first,
             default=SENTINEL,
+            default_factory=SENTINEL,
             ignore=SENTINEL,
             get=lambda obj, x: x,
             set=lambda obj: None,
@@ -32,7 +34,7 @@ class param:
         self._keys = _merge_key_args(key_args, key)
         self._cast = cast
         self._pick = pick
-        self._default = default
+        self._default_factory = _merge_default_args(default, default_factory)
         self._ignore = ignore
         self._get = get
         self._set = set
@@ -80,9 +82,15 @@ class param:
         sig = inspect.signature(self.__init__)
         sig.bind(*args, **kwargs)
 
-        # Apply the given arguments to this object:
+        # Override the attributes referenced by the arguments:
         if args or 'key' in kwargs:
             self._keys = _merge_key_args(args, kwargs.pop('key', None))
+
+        if 'default' in kwargs or 'default_factory' in kwargs:
+            self._default_factory = _merge_default_args(
+                    kwargs.pop('default', SENTINEL),
+                    kwargs.pop('default_factory', SENTINEL),
+            )
 
         for key in kwargs.copy():
             if key not in skip:
@@ -90,13 +98,22 @@ class param:
 
     def _load_state(self, obj):
         model.init(obj)
-        return model.init_param_state(obj, self._name, self._State())
+        states = model.get_param_states(obj)
+
+        if self._name not in states:
+            default = self._default_factory()
+            states[self._name] = self._State(default)
+
+        return states[self._name]
 
     def _load_key_map(self, obj):
         state = self._load_state(obj)
         if state.key_map is None:
             state.key_map = self._calc_key_map(obj)
         return state.key_map
+
+    def _load_default(self, obj):
+        return self._load_state(obj).default_value
 
     def _calc_value(self, obj):
         with AppcliError.add_info(
@@ -105,7 +122,8 @@ class param:
                 param=self._name,
         ):
             key_map = self._load_key_map(obj)
-            values = model.iter_values(obj, key_map, self._default)
+            default = self._load_default(obj)
+            values = model.iter_values(obj, key_map, default)
             return self._pick(values)
 
     def _calc_key_map(self, obj):
@@ -152,10 +170,24 @@ def _merge_key_args(implicit, explicit):
 
     return list(implicit) if implicit else explicit
 
-def _match_args(f, args, kwargs):
-    import inspect
-    sig = inspect.signature(f)
+def _merge_default_args(instance, factory):
+    have_instance = instance is not SENTINEL
+    have_factory = factory is not SENTINEL
 
+    if have_instance and have_factory:
+        err = ScriptError(
+                instance=instance,
+                explicit=explicit,
+        )
+        err.brief = "can't specify 'default' and 'default_factory'"
+        err.info += "default: {instance}"
+        err.info += "default_factory: {factory}"
+        raise err
+
+    if have_factory:
+        return factory
+    else:
+        return lambda: instance
 
 def _is_key_list(x):
     return bool(x) and isinstance(x, Sequence) and \

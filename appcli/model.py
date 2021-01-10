@@ -26,7 +26,7 @@ def init(obj):
     _load_groups(
             obj,
             predicate=lambda g: g.config.autoload,
-            force_callback=lambda p: p._default is not SENTINEL
+            force_callback=lambda p: p._load_default(obj) is not SENTINEL
     )
     return True
 
@@ -83,13 +83,8 @@ def get_params(obj):
 
     return params
 
-def init_param_state(obj, name, state):
-    """
-    Provide a state object for the given parameter.
-
-    It is safe to call this function any number of times.
-    """
-    return get_meta(obj).param_states.setdefault(name, state)
+def get_param_states(obj):
+    return get_meta(obj).param_states
 
 def iter_layers(obj):
     for group in get_meta(obj).layer_groups:
