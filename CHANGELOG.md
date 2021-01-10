@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.0 (2021-01-10)
+### Feature
+* Add support for mutable default values ([`88894b6`](https://github.com/kalekundert/appcli/commit/88894b698b0cf40f01d591d51175961b20518b39))
+* Make `inherited_param` compatible with all param subclasses ([`c65272f`](https://github.com/kalekundert/appcli/commit/c65272fd803e39607ef60d37b1f1161331431a1a))
+* Implement `inherited_param` ([`518e80c`](https://github.com/kalekundert/appcli/commit/518e80c5012ce55af6de37d83e2d97c143b01163))
+
+### Fix
+* Correctly handle unspecified docopt flags ([`30328c5`](https://github.com/kalekundert/appcli/commit/30328c51157a581b6d5291cbc20cf4fc23cb8b06))
+
+### Documentation
+* Outline the README file ([`e3cd57d`](https://github.com/kalekundert/appcli/commit/e3cd57d78936749c113fe0e66a70cfb57896589c))
+
 ## v0.9.0 (2021-01-09)
 ### Feature
 * Treat cast=... as a default when a key list is given ([`4567ad5`](https://github.com/kalekundert/appcli/commit/4567ad5236143e7b9299aeeebe408be6687aacbd))
