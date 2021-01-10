@@ -177,7 +177,7 @@ def _merge_default_args(instance, factory):
     if have_instance and have_factory:
         err = ScriptError(
                 instance=instance,
-                explicit=explicit,
+                factory=factory,
         )
         err.brief = "can't specify 'default' and 'default_factory'"
         err.info += "default: {instance}"

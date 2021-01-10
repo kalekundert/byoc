@@ -25,6 +25,13 @@ def test_param_init_err():
     assert err.match(r"first specification:  'x'")
     assert err.match(r"second specification: 'y'")
 
+    with pytest.raises(appcli.ScriptError) as err:
+        appcli.param(default=1, default_factory=list)
+
+    assert err.match(r"can't specify 'default' and 'default_factory'")
+    assert err.match(r"default: 1")
+    assert err.match(r"default_factory: <class 'list'>")
+
 @pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_reload(dynamic):
 
