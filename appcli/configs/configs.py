@@ -4,8 +4,8 @@ import sys, re, inspect
 from pathlib import Path
 from more_itertools import one, first
 from .layers import Layer, not_found
-from .utils import lookup, first_specified
-from .errors import ConfigError
+from ..utils import lookup, first_specified
+from ..errors import ConfigError
 
 class Config:
     autoload = True
@@ -17,7 +17,7 @@ class Config:
 class CompositeConfig(Config):
 
     def load(self, obj):
-        from .model import get_configs
+        from ..model import get_configs
         for config in get_configs(self):
             yield from config.load(obj)
 

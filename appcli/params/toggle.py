@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 from more_itertools import partition, first
-from . import model
-from .params import param, UNSPECIFIED, _dict_from_equiv
-from .errors import ConfigError
+from .. import model
+from .param import param, UNSPECIFIED, _dict_from_equiv
+from ..errors import ConfigError
 
 class Toggle:
 

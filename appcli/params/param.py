@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from . import model
-from .errors import AppcliError, ConfigError, ScriptError
-from .model import UNSPECIFIED
-from .utils import noop
+from .. import model
+from ..errors import AppcliError, ConfigError, ScriptError
+from ..model import UNSPECIFIED
+from ..utils import noop
 from more_itertools import first, zip_equal, UnequalIterablesError
 from collections.abc import Mapping, Iterable, Sequence
 

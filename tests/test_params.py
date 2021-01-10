@@ -157,7 +157,7 @@ def test_param_cache_get():
         })
 )
 def test_is_key_list(given, expected):
-    assert appcli.params._is_key_list(given) == expected
+    assert appcli.params.param._is_key_list(given) == expected
 
 @parametrize_from_file(
         schema=Schema({
@@ -177,7 +177,7 @@ def test_key_map_from_key_list(locals, configs, keys, cast, expected, error):
     expected = eval(expected or 'None', shared)
 
     with error:
-        map = appcli.params._key_map_from_key_list(configs, keys, cast)
+        map = appcli.params.param._key_map_from_key_list(configs, keys, cast)
         assert wrap_key_map(map, 0) == expected
 
 @parametrize_from_file(
@@ -197,7 +197,7 @@ def test_key_map_from_dict_equivs(locals, configs, keys, casts, expected, error)
     expected = eval(expected or 'None', shared)
 
     with error:
-        map = appcli.params._key_map_from_dict_equivs(configs, keys, casts)
+        map = appcli.params.param._key_map_from_dict_equivs(configs, keys, casts)
         assert wrap_key_map(map, 0) == expected
 
 @parametrize_from_file(
@@ -216,7 +216,7 @@ def test_dict_from_equiv(locals, configs, values, expected, error):
     expected = eval(expected or 'None', shared)
 
     with error:
-        assert appcli.params._dict_from_equiv(configs, values) == expected
+        assert appcli.params.param._dict_from_equiv(configs, values) == expected
 
 
 def locals_or_ab(locals):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .layers import Layer, LayerGroup
+from .configs.layers import LayerGroup
 from .utils import lookup
 from .errors import ScriptError, ConfigError
 from collections.abc import Sequence
@@ -72,7 +72,7 @@ def get_cache_version(obj):
     return get_meta(obj).cache_version
 
 def get_params(obj):
-    from .params import param
+    from . import param
 
     params = {}
 

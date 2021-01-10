@@ -506,7 +506,7 @@ test_appdirs_config_get_name_and_config_cls:
       message:
         - can't specify `AppDirsConfig.name` and `AppDirsConfig.format`
         - name: 'conf.yml'
-        - format: <class 'appcli.config.TomlConfig'>
+        - format: <class 'appcli.*TomlConfig'>
         - use `AppDirsConfig.stem` to change the filename used by `AppDirsConfig.format`
   -
     id: error
@@ -516,9 +516,9 @@ test_appdirs_config_get_name_and_config_cls:
       message:
         - can't find FileConfig subclass to load 'conf.xyz'
         - found these subclasses:
-        - <class 'appcli.config.YamlConfig'>: .yml .yaml
-        - <class 'appcli.config.TomlConfig'>: .toml
-        - <class 'appcli.config.NtConfig'>: .nt
+        - <class 'appcli.*YamlConfig'>: .yml .yaml
+        - <class 'appcli.*TomlConfig'>: .toml
+        - <class 'appcli.*NtConfig'>: .nt
 
   -
     id: name

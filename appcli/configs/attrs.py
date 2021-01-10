@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from . import model
-from .errors import AppcliError, ConfigError
+from .. import model
+from ..errors import AppcliError, ConfigError
 
 class config_attr:
 
