@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.11.0 (2021-01-11)
+### Feature
+* Automatically dedent docopt usage text ([`25164d7`](https://github.com/kalekundert/appcli/commit/25164d7abf827fbcf25464aff6be397a53aa7fc0))
+
+### Fix
+* Allow params to be set to non-hashable values ([`9571c04`](https://github.com/kalekundert/appcli/commit/9571c04853d8a0dc7dd149850c8def30071b0810))
+
 ## v0.10.1 (2021-01-10)
 ### Fix
 * Debug error message ([`5eded00`](https://github.com/kalekundert/appcli/commit/5eded004abdba1b613fbce9f1f13e089a3ed5528))
