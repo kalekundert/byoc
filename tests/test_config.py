@@ -147,6 +147,129 @@ def test_file_config(tmp_chdir, obj, files, layer):
     appcli.init(obj)
     assert list(appcli.model.iter_layers(obj)) == [layer]
 
+@parametrize_from_file
+def test_on_load(prepare, load, expected):
+
+    class DummyConfig(appcli.Config):
+        def load(self, obj):
+            yield appcli.Layer(values={}, location=self.__class__.__name__)
+
+    class A(DummyConfig):
+        pass
+
+    class A1(A):
+        pass
+
+    class A2(A):
+        pass
+
+    class B(DummyConfig):
+        autoload = False
+
+    class B1(B):
+        pass
+
+    class B2(B):
+        pass
+
+    class DummyObj:
+        __config__ = [A1(), A2(), B1(), B2()]
+
+        def __init__(self):
+            self.calls = set()
+
+        @appcli.on_load
+        def on_default(self):
+            self.calls.add('default')
+
+        @appcli.on_load(DummyConfig)
+        def on_dummy_config(self):
+            self.calls.add('DummyConfig')
+
+        @appcli.on_load(A)
+        def on_a(self):
+            self.calls.add('A')
+
+        @appcli.on_load(A1)
+        def on_a1(self):
+            self.calls.add('A1')
+
+        @appcli.on_load(A2)
+        def on_a2(self):
+            self.calls.add('A2')
+
+        @appcli.on_load(B)
+        def on_b(self):
+            self.calls.add('B')
+
+        @appcli.on_load(B1)
+        def on_b1(self):
+            self.calls.add('B1')
+
+        @appcli.on_load(B2)
+        def on_b2(self):
+            self.calls.add('B2')
+
+    obj = DummyObj()
+
+    exec_appcli(prepare, **locals())
+    obj.calls = set()
+
+    exec_appcli(load, **locals())
+    assert obj.calls == set(expected or [])
+
+def test_on_load_inheritance():
+
+    class DummyConfig(appcli.Config):
+        def load(self, obj):
+            yield appcli.Layer(values={}, location='a')
+
+    class P:
+        __config__ = [DummyConfig()]
+
+        def __init__(self):
+            self.calls = set()
+
+        @appcli.on_load
+        def a(self):
+            self.calls.add('P/a')
+
+        @appcli.on_load
+        def b(self):
+            self.calls.add('P/b')
+
+        @appcli.on_load
+        def c(self):
+            self.calls.add('P/c')
+
+    class F1(P):
+
+        @appcli.on_load
+        def a(self):
+            self.calls.add('F1/a')
+
+        @appcli.on_load
+        def b(self):
+            self.calls.add('F1/b')
+
+    class F2(F1):
+
+        @appcli.on_load
+        def a(self):
+            self.calls.add('F2/a')
+
+    p = P()
+    f1 = F1()
+    f2 = F2()
+
+    appcli.init(p)
+    appcli.init(f1)
+    appcli.init(f2)
+
+    assert p.calls  == { 'P/a',  'P/b', 'P/c'}
+    assert f1.calls == {'F1/a', 'F1/b', 'P/c'}
+    assert f2.calls == {'F2/a', 'F1/b', 'P/c'}
+
 @parametrize_from_file(
         schema=Schema({
             'f': lambda x: exec_appcli(x)['f'],

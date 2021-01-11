@@ -572,6 +572,179 @@ test_appdirs_config_get_name_and_config_cls:
     name: my-conf.nt
     config_cls: appcli.NtConfig
 
+test_on_load:
+  -
+    id: init
+    prepare:
+    load:
+      > appcli.init(obj)
+    expected:
+      - default
+      - DummyConfig
+      - A
+      - A1
+      - A2
+
+  -
+    id: load
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B1
+      - B2
+  -
+    id: load-a
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, A)
+    expected:
+  -
+    id: load-a1
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, A1)
+    expected:
+  -
+    id: load-a2
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, A2)
+    expected:
+  -
+    id: load-b
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, B)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B1
+      - B2
+  -
+    id: load-b1
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, B1)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B1
+  -
+    id: load-b2
+    prepare:
+      > appcli.init(obj)
+    load:
+      > appcli.load(obj, B2)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B2
+
+  -
+    id: reload
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj)
+    expected:
+      - default
+      - DummyConfig
+      - A
+      - A1
+      - A2
+      - B
+      - B1
+      - B2
+  -
+    id: reload-a
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, A)
+    expected:
+      - default
+      - DummyConfig
+      - A
+      - A1
+      - A2
+  -
+    id: reload-a1
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, A1)
+    expected:
+      - default
+      - DummyConfig
+      - A
+      - A1
+  -
+    id: reload-a2
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, A2)
+    expected:
+      - default
+      - DummyConfig
+      - A
+      - A2
+  -
+    id: reload-b
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, B)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B1
+      - B2
+  -
+    id: reload-b1
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, B1)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B1
+  -
+    id: reload-b2
+    prepare:
+      > appcli.load(obj)
+    load:
+      > appcli.reload(obj, B2)
+    expected:
+      - default
+      - DummyConfig
+      - B
+      - B2
+
+  -
+    id: direct
+    prepare:
+    load:
+      > obj.on_default()
+    expected:
+      - default
+
 test_not_found:
   -
     f: f = lambda x: x+1

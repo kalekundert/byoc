@@ -8,6 +8,7 @@ from more_itertools import unique_justseen
 
 CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
+
 UNSPECIFIED = object()
 
 class Meta:
@@ -16,6 +17,7 @@ class Meta:
         self.layer_groups = [LayerGroup(x) for x in get_configs(obj)]
         self.param_states = {}
         self.cache_version = 0
+        self.load_callbacks = get_load_callbacks(obj).values()
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -71,17 +73,17 @@ def get_meta(obj):
 def get_cache_version(obj):
     return get_meta(obj).cache_version
 
-def get_params(obj):
-    from . import param
+def get_load_callbacks(obj):
+    from .configs.on_load import OnLoad
 
-    params = {}
+    hits = {}
 
     for cls in reversed(obj.__class__.__mro__):
         for k, v in cls.__dict__.items():
-            if isinstance(v, param):
-                params[k] = v
+            if isinstance(v, OnLoad):
+                hits[k] = v
 
-    return params
+    return hits
 
 def get_param_states(obj):
     return get_meta(obj).param_states
@@ -177,17 +179,9 @@ def _load_groups(obj, predicate, force_callback=lambda p: False):
         meta.layer_groups.insert(0, group)
         meta.cache_version += 1
 
-    callbacks = set()
-
-    for param in get_params(obj).values():
-        key_map = param._load_key_map(obj)
-        is_param_affected = updated_configs.intersection(key_map.keys())
-
-        if is_param_affected or force_callback(param):
-            callbacks.add(param._set)
-
-    for callback in callbacks:
-        callback(obj)
+    for callback in meta.load_callbacks:
+        if callback.is_relevant(updated_configs):
+            callback(obj)
 
 def _is_selected_by_cls(config, config_cls):
     return not config_cls or isinstance(config, config_cls)

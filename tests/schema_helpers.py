@@ -40,23 +40,23 @@ def eval_layer(layer, **locals):
     layer = eval_appcli(layer, **locals) if isinstance(layer, str) else appcli.Layer(**layer)
     return LayerWrapper(layer)
 
-def exec_appcli(code):
-    globals = dict(appcli=appcli)
+def exec_appcli(code, **locals):
+    globals = dict(appcli=appcli, **locals)
     try:
         exec(code, globals)
     except Exception as err:
         raise Invalid(str(err)) from err
     return globals
 
-def exec_obj(code):
-    locals = exec_appcli(code) 
+def exec_obj(code, **locals):
+    locals = exec_appcli(code, **locals) 
     try:
         return locals['obj']
     except KeyError:
         return locals['DummyObj']()
 
-def exec_config(code):
-    locals = exec_appcli(code) 
+def exec_config(code, **locals):
+    locals = exec_appcli(code, **locals) 
     try:
         return locals['config']
     except KeyError:

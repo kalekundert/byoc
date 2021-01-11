@@ -28,7 +28,6 @@ class param:
             default_factory=UNSPECIFIED,
             ignore=UNSPECIFIED,
             get=lambda obj, x: x,
-            set=lambda obj: None,
             dynamic=False,
     ):
         self._keys = _merge_key_args(key_args, key)
@@ -37,7 +36,6 @@ class param:
         self._default_factory = _merge_default_args(default, default_factory)
         self._ignore = ignore
         self._get = get
-        self._set = set
         self._dynamic = dynamic
 
     def __set_name__(self, cls, name):
@@ -69,7 +67,6 @@ class param:
     def __set__(self, obj, value):
         state = self._load_state(obj)
         state.setattr_value = value
-        self._set(obj)
 
     def __delete__(self, obj):
         state = self._load_state(obj)

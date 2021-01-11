@@ -45,7 +45,6 @@ class toggle_param(param):
             default=UNSPECIFIED,
             ignore=UNSPECIFIED,
             get=lambda obj, x: x,
-            set=lambda obj: None,
             dynamic=False,
     ):
         super().__init__(
@@ -56,7 +55,6 @@ class toggle_param(param):
             default=default,
             ignore=ignore,
             get=get,
-            set=set,
             dynamic=dynamic,
         )
         self._toggle = toggle
