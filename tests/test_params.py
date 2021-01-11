@@ -157,6 +157,21 @@ def test_param_cache_get():
     assert obj.x == 1
     assert obj.y == 3
 
+def test_param_set_non_comparable():
+    class NonComparable:
+        def __eq__(self, other):
+            raise AssertionError
+
+    class DummyObj:
+        __config__ = []
+        x = appcli.param()
+
+    obj = DummyObj()
+    obj.x = NonComparable()
+
+    # This attribute access should not attempt any comparisons.
+    obj.x
+
 @parametrize_from_file(
         schema=Schema({
             'given': eval_appcli,
