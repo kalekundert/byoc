@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.0 (2021-01-11)
+### Feature
+* Add `@on_load` and remove `param(set=...)` ([`49b4e14`](https://github.com/kalekundert/appcli/commit/49b4e1439bb41da8e4f2f2941c76d42b8f2a71e5))
+
+### Fix
+* Don't compare to ignore unless necessary ([`bd70420`](https://github.com/kalekundert/appcli/commit/bd704204e7afe8c29b6cbdf028d8259a5f0f028a))
+
 ## v0.11.0 (2021-01-11)
 ### Feature
 * Automatically dedent docopt usage text ([`25164d7`](https://github.com/kalekundert/appcli/commit/25164d7abf827fbcf25464aff6be397a53aa7fc0))
