@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.13.0 (2021-01-21)
+### Feature
+* Rename App metaclass ([`7f52a35`](https://github.com/kalekundert/appcli/commit/7f52a35ffe2b2d970c85b96a56dcc97fa759ceee))
+
+### Fix
+* Only count first paragraph as part of brief ([`39d91d2`](https://github.com/kalekundert/appcli/commit/39d91d2ef052e929bc5a7487308dae65f28d8239))
+
 ## v0.12.0 (2021-01-11)
 ### Feature
 * Add `@on_load` and remove `param(set=...)` ([`49b4e14`](https://github.com/kalekundert/appcli/commit/49b4e1439bb41da8e4f2f2941c76d42b8f2a71e5))
