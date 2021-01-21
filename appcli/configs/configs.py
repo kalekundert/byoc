@@ -159,8 +159,12 @@ class DocoptConfig(Config):
 
     def get_brief(self, obj):
         import re
-        sections = re.split('usage:', self.get_usage(obj), flags=re.IGNORECASE)
-        return first(sections, '').strip()
+        sections = re.split(
+                '\n\n|usage:',
+                self.get_usage(obj),
+                flags=re.IGNORECASE,
+        )
+        return first(sections, '').replace('\n', ' ').strip()
 
     def get_version(self, obj):
         return getattr(obj, '__version__', self.version)
