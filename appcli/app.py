@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-class FromParams(type):
+class AppMeta(type):
     """
     A metaclass that allows a class to be instantiated either in the usual way, 
     or without calling the constructor.  The latter is useful if the object 
@@ -19,7 +19,7 @@ class FromParams(type):
         self.__init__(*args, **kwargs)
         return self
 
-class App(metaclass=FromParams):
+class App(metaclass=AppMeta):
     pass
 
 
