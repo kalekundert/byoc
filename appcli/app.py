@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from . import model
+
 class AppMeta(type):
     """
     A metaclass that allows a class to be instantiated either in the usual way, 
@@ -20,7 +22,12 @@ class AppMeta(type):
         return self
 
 class App(metaclass=AppMeta):
-    pass
+
+    def load(self):
+        model.load(self)
+
+    def reload(self):
+        model.reload(self)
 
 
 
