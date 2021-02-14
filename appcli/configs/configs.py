@@ -137,7 +137,7 @@ class DocoptConfig(Config):
         # If not specified:
         # - options with arguments will be None.
         # - options without arguments (i.e. flags) will be False.
-        # - variable-number positional argument (i.e. [<x>...]) will be []
+        # - variable-number positional arguments (i.e. [<x>...]) will be []
         not_specified = [None, False, []]
         args = {k: v for k, v in args.items() if v not in not_specified}
 
@@ -150,7 +150,7 @@ class DocoptConfig(Config):
         from mako.template import Template
         usage = self.usage_getter(obj)
         usage = dedent(usage)
-        usage = Template(usage).render(app=obj)
+        usage = Template(usage, strict_undefined=True).render(app=obj)
         usage = re.sub(r' *$', '', usage, flags=re.MULTILINE)
         return usage
 
