@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.15.1 (2021-02-17)
+### Fix
+* Respect default cast argument when using Key() ([`0442d69`](https://github.com/kalekundert/appcli/commit/0442d6954ae86a58a0e4371f28ab48f5db3c1207))
+
 ## v0.15.0 (2021-02-17)
 ### Feature
 * Add an environment variable config ([`3c89019`](https://github.com/kalekundert/appcli/commit/3c89019d316727aecff319d982e6c012eca1ce8f))
