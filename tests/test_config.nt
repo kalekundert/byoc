@@ -5,9 +5,10 @@ test_default_composite_config:
       > class DummyObj:
       >     __config__ = [appcli.DefaultConfig(x=1)]
     layers:
-      -
-        values: {'x': 1}
-        location: <string>:2
+      0:
+        -
+          values: {'x': 1}
+          location: <string>:2
 
   -
     id: composite
@@ -22,9 +23,10 @@ test_default_composite_config:
       > class DummyObj:
       >     __config__ = [DummyConfigZ()]
     layers:
-      -
-        values: {'x': 1}
-        location: a
+      0:
+        -
+          values: {'x': 1}
+          location: a
   -
     id: composite
     obj:
@@ -42,12 +44,13 @@ test_default_composite_config:
       > class DummyObj:
       >     __config__ = [DummyConfigZ()]
     layers:
-      -
-        values: {'x': 1}
-        location: a
-      -
-        values: {'x': 2}
-        location: b
+      0:
+        -
+          values: {'x': 1}
+          location: a
+        -
+          values: {'x': 2}
+          location: b
   -
     id: composite
     obj:
@@ -62,12 +65,13 @@ test_default_composite_config:
       > class DummyObj:
       >     __config__ = [DummyConfigZ()]
     layers:
-      -
-        values: {'x': 1}
-        location: a
-      -
-        values: {'x': 2}
-        location: a
+      0:
+        -
+          values: {'x': 1}
+          location: a
+        -
+          values: {'x': 2}
+          location: a
 
 test_attr_callback_config:
   -
@@ -456,12 +460,13 @@ test_appdirs_config:
       site/conf.nt:
         > y: 2
     layers:
-      -
-        values: {'x': '1'}
-        location: user/conf.nt
-      -
-        values: {'y': '2'}
-        location: site/conf.nt
+      0:
+        -
+          values: {'x': '1'}
+          location: user/conf.nt
+        -
+          values: {'y': '2'}
+          location: site/conf.nt
   -
     obj:
       > class DummyObj:
@@ -483,12 +488,13 @@ test_appdirs_config:
       site/conf.nt:
         > y: 2
     layers:
-      -
-        values: {'x': '1'}
-        location: user/conf.nt
-      -
-        values: {'y': '2'}
-        location: site/conf.nt
+      0:
+        -
+          values: {'x': '1'}
+          location: user/conf.nt
+        -
+          values: {'y': '2'}
+          location: site/conf.nt
 
 test_appdirs_config_get_name_and_config_cls:
   -

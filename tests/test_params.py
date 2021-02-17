@@ -19,13 +19,6 @@ def test_param(obj, expected):
 
 def test_param_init_err():
     with pytest.raises(appcli.ScriptError) as err:
-        appcli.param('x', key='y')
-
-    assert err.match(r"can't specify keys twice")
-    assert err.match(r"first specification:  'x'")
-    assert err.match(r"second specification: 'y'")
-
-    with pytest.raises(appcli.ScriptError) as err:
         appcli.param(default=1, default_factory=list)
 
     assert err.match(r"can't specify 'default' and 'default_factory'")
@@ -55,6 +48,7 @@ def test_param_cache_reload(dynamic):
     class DummyObj:
         __config__ = [fg, BackgroundConfig()]
         x = appcli.param(dynamic=dynamic)
+
     
     obj = DummyObj()
     assert obj.x == 1
@@ -171,74 +165,6 @@ def test_param_set_non_comparable():
 
     # This attribute access should not attempt any comparisons.
     obj.x
-
-@parametrize_from_file(
-        schema=Schema({
-            'given': eval_appcli,
-            'expected': eval,
-        })
-)
-def test_is_key_list(given, expected):
-    assert appcli.params.param._is_key_list(given) == expected
-
-@parametrize_from_file(
-        schema=Schema({
-            Optional('locals', default=''): str,
-            'configs': str,
-            'keys': Or([str], empty_list),
-            Optional('cast', default='lambda x: x'): eval,
-            **error_or(
-                expected=str,
-            ),
-        })
-)
-def test_key_map_from_key_list(locals, configs, keys, cast, expected, error):
-    shared = locals_or_ab(locals)
-    configs = eval(configs, {}, shared)
-    keys = [eval(x, {}, shared) for x in keys]
-    expected = eval(expected or 'None', shared)
-
-    with error:
-        map = appcli.params.param._key_map_from_key_list(configs, keys, cast)
-        assert wrap_key_map(map, 0) == expected
-
-@parametrize_from_file(
-        schema=Schema({
-            Optional('locals', default=''): str,
-            **error_or(
-                expected=str,
-            ),
-            str: str,
-        })
-)
-def test_key_map_from_dict_equivs(locals, configs, keys, casts, expected, error):
-    shared = locals_or_ab(locals)
-    configs = eval(configs, {}, shared)
-    keys = eval(keys, {}, shared)
-    casts = eval(casts, {}, shared)
-    expected = eval(expected or 'None', shared)
-
-    with error:
-        map = appcli.params.param._key_map_from_dict_equivs(configs, keys, casts)
-        assert wrap_key_map(map, 0) == expected
-
-@parametrize_from_file(
-        schema=Schema({
-            Optional('locals', default=''): str,
-            **error_or(
-                expected=str,
-            ),
-            str: str,
-        })
-)
-def test_dict_from_equiv(locals, configs, values, expected, error):
-    shared = locals_or_ab(locals)
-    configs = eval(configs, {}, shared)
-    values = eval(values, {}, shared)
-    expected = eval(expected or 'None', shared)
-
-    with error:
-        assert appcli.params.param._dict_from_equiv(configs, values) == expected
 
 
 def locals_or_ab(locals):

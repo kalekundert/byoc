@@ -27,7 +27,7 @@ def tmp_chdir(tmp_path):
 )
 def test_default_composite_config(obj, layers):
     appcli.init(obj)
-    assert list(appcli.model.iter_layers(obj)) == layers
+    assert collect_layers(obj) == layers
 
 @parametrize_from_file(
         schema=Schema({
@@ -79,7 +79,7 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
         monkeypatch.setattr(sys, 'argv', test_argv)
         appcli.load(test_obj)
 
-        assert list(appcli.model.iter_layers(test_obj)) == [test_layer]
+        assert collect_layers(test_obj) == {0: [test_layer]}
 
 @parametrize_from_file(
         schema=Schema({
@@ -116,7 +116,7 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert obj.dirs.version == version
 
     appcli.init(obj)
-    assert list(appcli.model.iter_layers(obj)) == layers
+    assert collect_layers(obj) == layers
 
 @parametrize_from_file(
         schema=Schema({
@@ -145,7 +145,7 @@ def test_file_config(tmp_chdir, obj, files, layer):
         path.write_text(content)
 
     appcli.init(obj)
-    assert list(appcli.model.iter_layers(obj)) == [layer]
+    assert collect_layers(obj) == {0: [layer]}
 
 @parametrize_from_file
 def test_on_load(prepare, load, expected):

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from more_itertools import partition, first
 from .. import model
-from .param import param, UNSPECIFIED, _dict_from_equiv
+from .param import param, UNSPECIFIED
+from ..utils import noop
 from ..errors import ConfigError
+from more_itertools import partition, first
 
 class Toggle:
 
@@ -38,9 +39,8 @@ class toggle_param(param):
 
     def __init__(
             self,
-            *key_args,
-            key=None,
-            cast=None,
+            *keys,
+            cast=noop,
             toggle=None,
             default=UNSPECIFIED,
             ignore=UNSPECIFIED,
@@ -48,8 +48,7 @@ class toggle_param(param):
             dynamic=False,
     ):
         super().__init__(
-            *key_args,
-            key=key,
+            *keys,
             cast=cast,
             pick=pick_toggled,
             default=default,
@@ -59,14 +58,13 @@ class toggle_param(param):
         )
         self._toggle = toggle
 
-    def _calc_key_map(self, obj):
-        key_map = super()._calc_key_map(obj)
+    def _calc_bound_keys(self, obj):
+        bound_keys = super()._calc_bound_keys(obj)
 
-        for config in key_map:
-            if any((isinstance(config, x) for x in self._toggle)):
-                key_map[config] = [
-                        (key, lambda x: Toggle(cast(x)))
-                        for key, cast in key_map[config]
-                ]
+        for bound_key in bound_keys:
+            config = bound_key.bound_config.config
+            if any(isinstance(config, x) for x in self._toggle):
+                cast = bound_key.cast
+                bound_key.cast = lambda x: Toggle(cast(x))
 
-        return key_map
+        return bound_keys

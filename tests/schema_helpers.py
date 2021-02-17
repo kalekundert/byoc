@@ -2,7 +2,7 @@
 
 import appcli
 import pytest
-from voluptuous import Schema, And, Or, Optional, Invalid
+from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from contextlib import contextmanager
 
 class LayerWrapper:
@@ -28,7 +28,12 @@ def eval_appcli(code, **locals):
         raise Invalid(str(err)) from err
 
 def eval_layers(layers, **locals):
-    schema = Schema([lambda x: eval_layer(x, **locals)])
+    schema = Schema({
+        Coerce(int): Or(
+            [lambda x: eval_layer(x, **locals)],
+            empty_list,
+        ),
+    })
     return schema(layers)
 
 def eval_layer(layer, **locals):
@@ -61,6 +66,13 @@ def exec_config(code, **locals):
         return locals['config']
     except KeyError:
         return locals['DummyConfig']()
+
+def collect_layers(obj):
+    bound_configs = appcli.model.get_bound_configs(obj)
+    return {
+            i: bound_config.layers
+            for i, bound_config in enumerate(bound_configs)
+    }
 
 empty_list = And('', lambda x: [])
 empty_dict = And('', lambda x: {})

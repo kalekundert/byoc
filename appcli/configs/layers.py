@@ -2,22 +2,6 @@
 
 import functools
 
-class LayerGroup:
-
-    def __init__(self, config):
-        self.config = config
-        self.layers = []
-        self.is_loaded = False
-
-    def __iter__(self):
-        yield from self.layers
-
-    def load(self, obj):
-        self.layers = list(self.config.load(obj))
-        for layer in self.layers:
-            layer.config = self.config
-        self.is_loaded = True
-
 class Layer:
 
     def __init__(self, *, values, location):
@@ -32,7 +16,6 @@ class Layer:
 
     def __repr__(self):
         return f'Layer(values={self.values!r}, location={self.location!r})'
-
 
 def not_found(*raises):
     """

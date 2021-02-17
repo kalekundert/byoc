@@ -10,15 +10,45 @@ test_param:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param()
       >     x1 = appcli.param('x')
-      >     x2 = appcli.param(key='x')
-      >     x3 = appcli.param(key={DummyConfig: 'x'})
-      >     x4 = appcli.param(key=[appcli.Key(DummyConfig, 'x')])
+      >     x2 = appcli.param(appcli.Key(DummyConfig, 'x'))
     expected:
       x: 1
       x1: 1
       x2: 1
-      x3: 1
-      x4: 1
+  -
+    id: keys
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'y': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     x = appcli.param()
+      >     y = appcli.param()
+      >
+      >     x1 = appcli.param('x', 'z')
+      >     y1 = appcli.param('z', 'y')
+      >
+      >     x2 = appcli.param(
+      >             appcli.Key(DummyConfigA, 'x'),
+      >             appcli.Key(DummyConfigB, 'y'),
+      >     )
+      >     y2 = appcli.param(
+      >             appcli.Key(DummyConfigB, 'y'),
+      >             appcli.Key(DummyConfigA, 'x'),
+      >     )
+    expected:
+      x: 1
+      y: 2
+      x1: 1
+      y1: 2
+      x2: 1
+      y2: 2
   -
     id: keys
     obj:
@@ -29,10 +59,8 @@ test_param:
       > class DummyObj:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(
-      >             key=[
-      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
-      >                 appcli.Key(DummyConfig, 'X', cast=lambda x: x-1),
-      >             ],
+      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             appcli.Key(DummyConfig, 'y', cast=lambda x: x-1),
       >     )
     expected:
       x: 2
@@ -46,10 +74,8 @@ test_param:
       > class DummyObj:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(
-      >             key=[
-      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
-      >                 appcli.Key(DummyConfig, 'y', cast=lambda y: y-1),
-      >             ],
+      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             appcli.Key(DummyConfig, 'y', cast=lambda y: y-1),
       >     )
     expected:
       x: 0
@@ -63,10 +89,14 @@ test_param:
       > class DummyObj:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(
-      >             key=lambda d: (d['x'], d['y']),
+      >             lambda d: (d['x'], d['y']),
+      >     )
+      >     y = appcli.param(
+      >             appcli.Key(DummyConfig, lambda d: (d['y'], d['x'])),
       >     )
     expected:
       x: 1, 2
+      y: 2, 1
 
   -
     id: pick
@@ -146,9 +176,7 @@ test_param:
       > class DummyObj:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(
-      >             key=[
-      >                 appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
-      >             ],
+      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
       >     )
     expected:
       x: 2
@@ -425,21 +453,6 @@ test_param:
     expected:
       x: 2
   -
-    id: inherited-param-key
-    obj:
-      > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 0, 'y': 1}, location='a')
-      >
-      > class ParentObj:
-      >     __config__ = [DummyConfig()]
-      >     x = appcli.param()
-      >
-      > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(key={DummyConfig: 'y'})
-    expected:
-      x: 1
-  -
     id: inherited-param-cast
     obj:
       > class DummyConfig(appcli.Config):
@@ -533,382 +546,3 @@ test_param:
       >     x = appcli.inherited_param(toggle={DummyConfig})
     expected:
       x: False
-
-test_is_key_list:
-  -
-    given: {}
-    expected: False
-  -
-    given: []
-    expected: False
-  -
-    given: [appcli.Key(None, None)]
-    expected: True
-
-test_key_map_from_key_list:
-  -
-    id: empty
-    configs: [a, b]
-    keys:
-    expected: {}
-  -
-    id: 1-key
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1')
-    expected:
-      > {
-      >   a: [
-      >     ('k1', 0),
-      >   ],
-      > }
-  -
-    id: 1-key
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1', cast=lambda x: 1)
-    expected:
-      > {
-      >   a: [
-      >     ('k1', 1),
-      >   ],
-      > }
-  -
-    id: 2-keys
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1', cast=lambda x: 1)
-      - appcli.Key(A, 'k2', cast=lambda x: 2)
-    expected:
-      > {
-      >   a: [
-      >     ('k1', 1),
-      >     ('k2', 2),
-      >   ],
-      > }
-  -
-    id: 2-keys
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1', cast=lambda x: 1)
-      - appcli.Key(B, 'k2', cast=lambda x: 2)
-    expected:
-      > {
-      >   a: [
-      >     ('k1', 1),
-      >   ],
-      >   b: [
-      >     ('k2', 2),
-      >   ],
-      > }
-  -
-    id: inheritance
-    locals:
-      > class A1(appcli.Config): pass
-      > class A2(A1): pass
-      > a1, a2 = A1(), A2()
-    configs: [a1, a2]
-    keys:
-      - appcli.Key(A1, 'k1', cast=lambda x: 1)
-      - appcli.Key(A2, 'k2', cast=lambda x: 2)
-    expected:
-      > {
-      >   a1: [
-      >     ('k1', 1),
-      >   ],
-      >   a2: [
-      >     ('k1', 1),
-      >     ('k2', 2),
-      >   ],
-      > }
-  -
-    id: cast
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1')
-      - appcli.Key(B, 'k2', cast=lambda x: 2)
-    cast: lambda x: 1
-    expected:
-      > {
-      >   a: [
-      >     ('k1', 1),
-      >   ],
-      >   b: [
-      >     ('k2', 2),
-      >   ],
-      > }
-  -
-    id: cast-err
-    configs: [a, b]
-    keys:
-      - appcli.Key(A, 'k1')
-      - appcli.Key(B, 'k2', cast=lambda x: 2)
-    cast: [lambda x: 1]
-    error:
-      type: appcli.ScriptError
-      message:
-        - cast=\.\.\. must be callable when specified with key=\[appcli.Key\]
-        - keys:
-        - appcli.Key\(A, 'k1', cast=None\)
-        - appcli.Key\(B, 'k2', cast=<function <lambda>.*>\)
-        - cast:
-        - \[<function <lambda>.*>\]
-
-test_key_map_from_dict_equivs:
-  -
-    id: empty
-    configs: []
-    keys: {}
-    casts: {}
-    expected: {}
-  -
-    id: dict-dict
-    configs: [a, b]
-    keys: {A: 'k1', B: 'k2'}
-    casts: {A: lambda x: 1, B: lambda x: 2}
-    expected: {a: [('k1', 1)], b: [('k2', 2)]}
-  -
-    id: dict-list
-    configs: [a, b]
-    keys: {A: 'k1', B: 'k2'}
-    casts: [lambda x: 1, lambda x: 2]
-    expected: {a: [('k1', 1)], b: [('k2', 2)]}
-  -
-    id: dict-scalar
-    configs: [a, b]
-    keys: {A: 'k1', B: 'k2'}
-    casts: lambda x: 1
-    expected: {a: [('k1', 1)], b: [('k2', 1)]}
-  -
-    id: dict-empty
-    configs: [a, b]
-    keys: {A: 'k1', B: 'k2'}
-    casts: {}
-    expected: {a: [('k1', 0)], b: [('k2', 0)]}
-  -
-    id: list-dict
-    configs: [a, b]
-    keys: ['k1', 'k2']
-    casts: {A: lambda x: 1, B: lambda x: 2}
-    expected: {a: [('k1', 1)], b: [('k2', 2)]}
-  -
-    id: list-list
-    configs: [a, b]
-    keys: ['k1', 'k2']
-    casts: [lambda x: 1, lambda x: 2]
-    expected: {a: [('k1', 1)], b: [('k2', 2)]}
-  -
-    id: list-scalar
-    configs: [a, b]
-    keys: ['k1', 'k2']
-    casts: lambda x: 1
-    expected: {a: [('k1', 1)], b: [('k2', 1)]}
-  -
-    id: list-empty
-    configs: [a, b]
-    keys: ['k1', 'k2']
-    casts: {}
-    expected: {a: [('k1', 0)], b: [('k2', 0)]}
-  -
-    id: scalar-dict
-    configs: [a, b]
-    keys: 'k'
-    casts: {A: lambda x: 1, B: lambda x: 2}
-    expected: {a: [('k', 1)], b: [('k', 2)]}
-  -
-    id: scalar-list
-    configs: [a, b]
-    keys: 'k'
-    casts: [lambda x: 1, lambda x: 2]
-    expected: {a: [('k', 1)], b: [('k', 2)]}
-  -
-    id: scalar-scalar
-    configs: [a, b]
-    keys: 'k'
-    casts: lambda x: 1
-    expected: {a: [('k', 1)], b: [('k', 1)]}
-  -
-    id: scalar-empty
-    configs: [a, b]
-    keys: 'k'
-    casts: {}
-    expected: {a: [('k', 0)], b: [('k', 0)]}
-  -
-    id: err-unused-keys
-    configs: [a]
-    keys: {B: 'k'}
-    casts: {}
-    error:
-      type: appcli.ConfigError
-      message:
-        - given keys that don't correspond to any config
-        - configs:
-        - <.*A object.*>
-        - unused keys:
-        - <.*B.*>: k
-  -
-    id: err-unused-casts
-    configs: [a]
-    keys: {A: 'k'}
-    casts: {B: int}
-    error:
-      type: appcli.ConfigError
-      message:
-        - given cast functions that don't correspond to any config
-        - configs:
-        - <.*A object.*>
-        - unused cast functions:
-        - (?s)<.*B.*>: <class 'int'>
-  -
-    id: err-len-keys
-    configs: [a]
-    keys: ['k1', 'k2']
-    casts: {}
-    error:
-      type: appcli.ConfigError
-      message:
-        - number of keys must match the number of configs
-        - configs \(1\):
-        - <.*A object.*>
-        - keys \(2\):
-        - k1
-        - k2
-  -
-    id: err-len-casts
-    configs: [a]
-    keys: {A: 'k'}
-    casts: [int, float]
-    error:
-      type: appcli.ConfigError
-      message:
-        - number of cast functions must match the number of configs
-        - configs \(1\):
-        - <.*A object.*>
-        - cast functions \(2\):
-        - <class 'int'>
-        - <class 'float'>
-
-test_dict_from_equiv:
-  -
-    id: dict-0
-    configs: []
-    values: {}
-    expected: {}
-  -
-    id: dict-0
-    configs: [a]
-    values: {}
-    expected: {}
-  -
-    id: dict-0
-    configs: []
-    values: {A: 1}
-    error:
-      type: ValueError
-  -
-    id: dict-1
-    configs: [a]
-    values: {A: 1}
-    expected: {a: 1}
-  -
-    id: dict-1
-    configs: [a]
-    values: {B: 2}
-    error:
-      type: ValueError
-  -
-    id: dict-1
-    configs: [a]
-    values: {A: 1, B: 2}
-    error:
-      type: ValueError
-  -
-    id: dict-2
-    configs: [a, b]
-    values: {A: 1, B: 2}
-    expected: {a: 1, b: 2}
-  -
-    id: dict-2
-    locals:
-      > class A(appcli.Config): pass
-      > a1, a2 = A(), A()
-    configs: [a1, a2]
-    values: {A: 1}
-    expected: {a1: 1, a2: 1}
-  -
-    id: dict-inheritance
-    locals:
-      > class A1(appcli.Config): pass
-      > class A2(A1): pass
-      > a1, a2 = A1(), A2()
-    configs: [a1, a2]
-    values: {A1: 1, A2: 2}
-    expected: {a1: 1, a2: 2}
-  -
-    id: dict-inheritance
-    locals:
-      > class A1(appcli.Config): pass
-      > class A2(A1): pass
-      > a2 = A2()
-    configs: [a2]
-    values: {A1: 1}
-    expected: {a2: 1}
-
-  -
-    id: list
-    configs: []
-    values: []
-    expected: dict()
-  -
-    id: list
-    configs: [a]
-    values: [1]
-    expected: {a: 1}
-  -
-    id: list
-    configs: [a, b]
-    values: [1, 2]
-    expected: {a: 1, b: 2}
-  -
-    id: list
-    configs: [a]
-    values: [1, 2]
-    error:
-      type: ValueError
-  -
-    id: list
-    configs: [a, b]
-    values: [1]
-    error:
-      type: ValueError
-  -
-    id: list
-    configs: [a]
-    values: [...]
-    expected: {}
-  -
-    id: list
-    configs: [a, b]
-    values: [1, ...]
-    expected: {a: 1}
-  -
-    id: list
-    configs: [a, b]
-    values: [..., 2]
-    expected: {b: 2}
-
-  -
-    id: scalar
-    configs: []
-    values: 'foo'
-    expected: {}
-  -
-    id: scalar
-    configs: [a]
-    values: 'foo'
-    expected: {a: 'foo'}
-  -
-    id: scalar
-    configs: [a, b]
-    values: 'foo'
-    expected: {a: 'foo', b: 'foo'}
