@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.15.0 (2021-02-17)
+### Feature
+* Add an environment variable config ([`3c89019`](https://github.com/kalekundert/appcli/commit/3c89019d316727aecff319d982e6c012eca1ce8f))
+
 ## v0.14.0 (2021-02-17)
 ### Feature
 * Allow parameters to control config order ([`12b8656`](https://github.com/kalekundert/appcli/commit/12b86563ebed29644533fd7ee895ae955bb26e87))
