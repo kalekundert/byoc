@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.14.0 (2021-02-17)
+### Feature
+* Allow parameters to control config order ([`12b8656`](https://github.com/kalekundert/appcli/commit/12b86563ebed29644533fd7ee895ae955bb26e87))
+* Add convenience methods to load/reload app objects ([`f07de2b`](https://github.com/kalekundert/appcli/commit/f07de2b10fa88679535cd737fb4ea335dafb0268))
+* Improve error reporting for mako templates ([`853f8b9`](https://github.com/kalekundert/appcli/commit/853f8b95f6345d9074cca820d4ea246a43f3f008))
+
 ## v0.13.0 (2021-01-21)
 ### Feature
 * Rename App metaclass ([`7f52a35`](https://github.com/kalekundert/appcli/commit/7f52a35ffe2b2d970c85b96a56dcc97fa759ceee))
