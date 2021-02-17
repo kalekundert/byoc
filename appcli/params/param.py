@@ -135,7 +135,11 @@ class param:
 
         if all(are_key_objs):
             return [
-                    model.BoundKey(bound_config, key.key, cast=key.cast)
+                    model.BoundKey(
+                        bound_config,
+                        key.key,
+                        key.cast or self._cast,
+                    )
                     for key in keys
                     for bound_config in bound_configs
                     if isinstance(bound_config.config, key.config_cls)
@@ -154,7 +158,7 @@ class param:
 
         if len(keys) == 1:
             return [
-                    model.BoundKey(bound_config, keys[0], cast=self._cast)
+                    model.BoundKey(bound_config, keys[0], self._cast)
                     for bound_config in bound_configs
             ]
 
@@ -175,13 +179,13 @@ class param:
             return err
 
         return [
-                model.BoundKey(bound_config, key, cast=self._cast)
+                model.BoundKey(bound_config, key, self._cast)
                 for bound_config, key in zip(bound_configs, keys)
         ]
 
 class Key:
 
-    def __init__(self, config_cls, key, *, cast=noop):
+    def __init__(self, config_cls, key, *, cast=None):
         self.config_cls = config_cls
         self.key = key
         self.cast = cast

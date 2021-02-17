@@ -37,7 +37,7 @@ class BoundConfig:
 
 class BoundKey:
     
-    def __init__(self, bound_config, key, *, cast=noop):
+    def __init__(self, bound_config, key, cast):
         self.bound_config = bound_config
         self.key = key
         self.cast = cast

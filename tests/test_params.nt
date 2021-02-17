@@ -177,6 +177,22 @@ test_param:
       >     __config__ = [DummyConfig()]
       >     x = appcli.param(
       >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             cast=lambda x: x-1,
+      >     )
+    expected:
+      x: 2
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param(
+      >             appcli.Key(DummyConfig, 'x'),
+      >             cast=lambda x: x+1,
       >     )
     expected:
       x: 2
