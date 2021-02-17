@@ -3,9 +3,10 @@
 import appcli
 import pytest
 import parametrize_from_file
-import sys, shlex
+import sys, os, shlex
 
 from voluptuous import Schema
+from unittest import mock
 from schema_helpers import *
 
 @pytest.fixture
@@ -80,6 +81,17 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
         appcli.load(test_obj)
 
         assert collect_layers(test_obj) == {0: [test_layer]}
+
+@mock.patch.dict(os.environ, {"x": "1"})
+def test_environment_config():
+    class DummyObj:
+        __config__ = [
+                appcli.EnvironmentConfig(),
+        ]
+        x = appcli.param()
+
+    obj = DummyObj()
+    assert obj.x == "1"
 
 @parametrize_from_file(
         schema=Schema({

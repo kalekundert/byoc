@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, re, inspect
+import sys, os, re, inspect
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
@@ -77,6 +77,14 @@ class AttrConfig(Config):
                 location=f'{inspect.getmodule(cls).__name__}.{cls.__qualname__}.{self.attr}',
         )
 
+
+class EnvironmentConfig(Config):
+
+    def load(self, obj):
+        yield Layer(
+                values=os.environ,
+                location="environment",
+        )
 
 class ArgparseConfig(Config):
     autoload = False
