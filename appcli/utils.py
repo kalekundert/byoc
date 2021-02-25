@@ -28,6 +28,9 @@ def lookup(x, key, sep='.'):
     if callable(key):
         return key(x)
 
-    for subkey in key.split(sep):
+    subkeys = key.split(sep) if isinstance(key, str) else key
+
+    for subkey in subkeys:
         x = x(subkey) if callable(x) else x[subkey]
+
     return x
