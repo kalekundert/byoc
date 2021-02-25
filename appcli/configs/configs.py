@@ -253,12 +253,26 @@ class AppDirsConfig(Config):
 class FileConfig(Config):
 
     def __init__(self, path, schema=None):
-        self.path = Path(path)
+        """
+        path: can be an path, or a callable that takes the object as it's only 
+        argument and returns a path.  The purpose of specifying a callable is 
+        usually to read the path from an attribute of the object, e.g. ``lambda 
+        self: self.path``
+        """
+        self._path = path
         self.schema = schema
 
+    def get_path(self, obj):
+        if callable(self._path):
+            return Path(self._path(obj))
+        else:
+            return Path(self._path)
+
     def load(self, obj):
+        path = self.get_path(obj)
+
         try:
-            data = self._do_load()
+            data = self._do_load(path)
         except FileNotFoundError:
             data = {}
 
@@ -267,32 +281,32 @@ class FileConfig(Config):
 
         yield Layer(
                 values=data,
-                location=self.path,
+                location=path,
         )
 
-    def _do_load(self, app):
+    def _do_load(self, path):
         raise NotImplementedError
 
 class YamlConfig(FileConfig):
     suffixes = '.yml', '.yaml'
 
-    def _do_load(self):
+    def _do_load(self, path):
         import yaml
-        with open(self.path) as f:
+        with open(path) as f:
             return yaml.safe_load(f)
 
 
 class TomlConfig(FileConfig):
     suffixes = '.toml',
 
-    def _do_load(self):
+    def _do_load(self, path):
         import toml
-        return toml.load(self.path)
+        return toml.load(path)
 
 class NtConfig(FileConfig):
     suffixes = '.nt',
 
-    def _do_load(self):
+    def _do_load(self, path):
         import nestedtext as nt
-        return nt.load(self.path)
+        return nt.load(path)
 

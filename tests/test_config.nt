@@ -402,6 +402,19 @@ test_file_config:
       values: {'x': 1}
       location: x.yml
   -
+    id: yaml-path-getter
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig(lambda self: self.p)]
+      >     p = 'x.yml'
+      >
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+  -
     id: yaml-file-not-found
     obj:
       > class DummyObj:
