@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.16.0 (2021-03-05)
+### Feature
+* Make key names optional ([`3a50d13`](https://github.com/kalekundert/appcli/commit/3a50d13c0c32966dfb22155f3caba58a30da992d))
+* Allow subkeys to be specified using tuples ([`ac970dc`](https://github.com/kalekundert/appcli/commit/ac970dc6d6587f0b294596d8b84cb92f60540011))
+* Teach FileConfig to read paths from attributes ([`328544c`](https://github.com/kalekundert/appcli/commit/328544cdfac14d19455dcc4cb3b0f11499adceb9))
+
 ## v0.15.1 (2021-02-17)
 ### Fix
 * Respect default cast argument when using Key() ([`0442d69`](https://github.com/kalekundert/appcli/commit/0442d6954ae86a58a0e4371f28ab48f5db3c1207))
