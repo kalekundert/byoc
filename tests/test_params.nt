@@ -51,6 +51,43 @@ test_param:
       y2: 2
   -
     id: keys
+    # Test that the configs are queried in the order they appear in the 
+    # `__config__` variable, when the order specified by the keys is not 
+    # determinative (e.g. if one key refers to multiple configs).
+    obj:
+      > class DummyMixin:
+      >     pass
+      >
+      > class DummyConfigA(appcli.Config, DummyMixin):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >
+      > class DummyConfigB(appcli.Config, DummyMixin):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     x = appcli.param()
+      >
+      >     x1 = appcli.param(
+      >             appcli.Key(DummyMixin, 'x'),
+      >     )
+      >     x2 = appcli.param(
+      >             appcli.Key(DummyConfigA, 'x'),
+      >             appcli.Key(DummyConfigB, 'x'),
+      >     )
+      >     x3 = appcli.param(
+      >             appcli.Key(DummyConfigB, 'x'),
+      >             appcli.Key(DummyConfigA, 'x'),
+      >     )
+    expected:
+      x: 1
+      x1: 1
+      x2: 1
+      x3: 2
+  -
+    id: keys
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
