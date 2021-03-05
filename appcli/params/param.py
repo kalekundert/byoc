@@ -129,7 +129,13 @@ class param:
             return self._pick(values)
 
     def _calc_bound_keys(self, obj):
-        keys = self._keys or [self._name]
+        from appcli import Config
+        from inspect import isclass
+
+        keys = [
+                Key(x) if isclass(x) and issubclass(x, Config) else x
+                for x in self._keys or [self._name]
+        ]
         bound_configs = model.get_bound_configs(obj)
         are_key_objs = [isinstance(x, Key) for x in keys]
 
@@ -137,7 +143,7 @@ class param:
             return [
                     model.BoundKey(
                         bound_config,
-                        key.key,
+                        key.key or self._name,
                         key.cast or self._cast,
                     )
                     for key in keys
@@ -185,7 +191,7 @@ class param:
 
 class Key:
 
-    def __init__(self, config_cls, key, *, cast=None):
+    def __init__(self, config_cls, key=None, *, cast=None):
         self.config_cls = config_cls
         self.key = key
         self.cast = cast
