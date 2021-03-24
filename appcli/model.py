@@ -40,10 +40,16 @@ class BoundKey:
     def __init__(self, bound_config, key, cast):
         self.bound_config = bound_config
         self.key = key
-        self.cast = cast
+
+        try:
+            iter(cast)
+        except TypeError:
+            self.casts = [cast]
+        else:
+            self.casts = cast
 
     def __repr__(self):
-        return f'BoundKey({self.bound_config!r}, key={self.key!r}, cast={self.cast!r})'
+        return f'BoundKey({self.bound_config!r}, key={self.key!r}, casts={self.casts!r})'
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -135,21 +141,23 @@ def iter_values(obj, bound_keys, default=UNSPECIFIED):
             except KeyError:
                 pass
             else:
-                try:
-                    yield bound_key.cast(value)
-                except Exception as err1:
-                    err2 = ConfigError(
-                            value=value,
-                            function=bound_key.cast,
-                            key=bound_key.key,
-                            location=locations[-1][1],
-                    )
-                    err2.brief = "can't cast {value!r} using {function!r}"
-                    err2.info += "read {key!r} from {location}"
-                    err2.blame += str(err1)
-                    raise err2 from err1
-                else:
-                    have_value = True
+                for cast in bound_key.casts:
+                    try:
+                        value = cast(value)
+                    except Exception as err1:
+                        err2 = ConfigError(
+                                value=value,
+                                function=cast,
+                                key=bound_key.key,
+                                location=locations[-1][1],
+                        )
+                        err2.brief = "can't cast {value!r} using {function!r}"
+                        err2.info += "read {key!r} from {location}"
+                        err2.blame += str(err1)
+                        raise err2 from err1
+
+                have_value = True
+                yield value
 
     if default is not UNSPECIFIED:
         have_value = True

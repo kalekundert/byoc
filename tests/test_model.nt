@@ -877,28 +877,8 @@ test_iter_values:
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 'z'}, location='a')
-      >
-      > class DummyObj:
-      >     __config__ = [DummyConfig()]
-    bound_keys:
-      -
-        config: 0
-        key: x
-        cast: int
-    error:
-      type: appcli.ConfigError
-      message:
-        - can't cast 'z' using <class 'int'>
-        - read 'x' from a
-        - invalid literal for int\(\) with base 10: 'z'
-  -
-    id: cast
-    obj:
-      > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 1}, location='A')
-      >         yield appcli.Layer(values={'x': 2}, location='A')
+      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.Layer(values={'x': 2}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig()]
@@ -935,6 +915,46 @@ test_iter_values:
     expected:
       - 2
       - 3
+  -
+    id: cast-compose
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': '1'}, location='a')
+      >         yield appcli.Layer(values={'x': '1,2'}, location='a')
+      >         yield appcli.Layer(values={'x': '1,2,3'}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    bound_keys:
+      -
+        config: 0
+        key: x
+        cast: [lambda x: x.split(','), lambda x: x[-1], int]
+    expected:
+      - 1
+      - 2
+      - 3
+  -
+    id: cast-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={'x': 'z'}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+    bound_keys:
+      -
+        config: 0
+        key: x
+        cast: int
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't cast 'z' using <class 'int'>
+        - read 'x' from a
+        - invalid literal for int\(\) with base 10: 'z'
 
   -
     id: default

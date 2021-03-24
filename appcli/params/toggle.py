@@ -64,7 +64,6 @@ class toggle_param(param):
         for bound_key in bound_keys:
             config = bound_key.bound_config.config
             if any(isinstance(config, x) for x in self._toggle):
-                cast = bound_key.cast
-                bound_key.cast = lambda x: Toggle(cast(x))
+                bound_key.casts = [*bound_key.casts, Toggle]
 
         return bound_keys
