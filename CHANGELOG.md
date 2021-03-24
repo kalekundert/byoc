@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.17.0 (2021-03-24)
+### Feature
+* Add `SelfConfig` ([`39e3f3b`](https://github.com/kalekundert/appcli/commit/39e3f3b6126e93892f005d66121143adb570ede8))
+* Make it easier to compose cast functions ([`2ef93e2`](https://github.com/kalekundert/appcli/commit/2ef93e2899921bfa25bea0ccf76fe40b88cefad4))
+* Force layer values to be collections ([`dd82715`](https://github.com/kalekundert/appcli/commit/dd827158a7d69b28ca2bfbc95b493a1d79845d2d))
+
 ## v0.16.0 (2021-03-05)
 ### Feature
 * Make key names optional ([`3a50d13`](https://github.com/kalekundert/appcli/commit/3a50d13c0c32966dfb22155f3caba58a30da992d))
