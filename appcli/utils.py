@@ -31,6 +31,6 @@ def lookup(x, key, sep='.'):
     subkeys = key.split(sep) if isinstance(key, str) else key
 
     for subkey in subkeys:
-        x = x(subkey) if callable(x) else x[subkey]
+        x = x[subkey]
 
     return x

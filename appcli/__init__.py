@@ -13,7 +13,7 @@ from .params.param import param, Key
 from .params.toggle import toggle_param, pick_toggled, Toggle as toggle
 from .params.inherited import inherited_param
 from .configs.configs import *
-from .configs.layers import Layer, not_found
+from .configs.layers import Layer, dict_like
 from .configs.attrs import config_attr
 from .configs.on_load import on_load
 from .errors import *

@@ -764,10 +764,11 @@ test_on_load:
     expected:
       - default
 
-test_not_found:
+test_dict_like:
   -
     f: f = lambda x: x+1
-    error: none
+    x: 1
+    expected: 2
   -
     f:
       > def f(x):

@@ -119,13 +119,16 @@ def get_param_states(obj):
     return get_meta(obj).param_states
 
 def iter_values(obj, bound_keys, default=UNSPECIFIED):
+    # It's important that this function is a generator.  This allows the `pick` 
+    # argument to `param()` to pick a value without necessarily calculating 
+    # every possible value (which could be expensive).
+
     locations = []
     have_value = False
 
     for bound_key in bound_keys:
         for layer in bound_key.bound_config:
-            loc = layer.location
-            locations.append((bound_key.key, loc() if callable(loc) else loc))
+            locations.append((bound_key.key, layer.location))
 
             try:
                 value = lookup(layer.values, bound_key.key)

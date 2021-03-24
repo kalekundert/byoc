@@ -5,7 +5,6 @@ import pytest
 import parametrize_from_file
 import sys, os, shlex
 
-from voluptuous import Schema
 from unittest import mock
 from schema_helpers import *
 
@@ -286,11 +285,26 @@ def test_on_load_inheritance():
         schema=Schema({
             'f': lambda x: exec_appcli(x)['f'],
             Optional('raises', default=[]): [eval],
-            'error': error,
+            **error_or(
+                x=eval,
+                expected=eval,
+            ),
         })
 )
-def test_not_found(f, raises, error):
+@pytest.mark.parametrize(
+        'factory', [
+            pytest.param(
+                lambda f, raises: appcli.dict_like(*raises)(f),
+                id='decorator',
+            ),
+            pytest.param(
+                lambda f, raises: appcli.dict_like(f, *raises),
+                id='constructor',
+            ),
+        ]
+)
+def test_dict_like(factory, f, raises, x, expected, error):
     with error:
-        g = appcli.not_found(*raises)(f)
-        assert g(1) == 2
+        g = factory(f, raises)
+        assert g[x] == expected
 

@@ -80,18 +80,6 @@ test_lookup:
     key: 'a', 1
     expected: 'c'
   -
-    x: str.upper
-    key: 'a'
-    expected: 'A'
-  -
-    x: {'a': str.upper}
-    key: 'a.b'
-    expected: 'B'
-  -
-    x: lambda x: {'b': x}
-    key: 'a.b'
-    expected: 'a'
-  -
     x: {'a': 1, 'b': 2}
     key: lambda x: x['a']
     expected: 1

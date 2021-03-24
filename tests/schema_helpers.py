@@ -3,7 +3,6 @@
 import appcli
 import pytest
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
-from contextlib import contextmanager
 
 class LayerWrapper:
 
@@ -105,6 +104,7 @@ def error_or(**expected):
 # Something to think about: I'd like to put a version of this function in the 
 # `parametrize_from_file` package.  I need a general way to specify the local 
 # variables, though.
+
 def error(x):
     if x == 'none':
         return nullcontext()
@@ -114,13 +114,24 @@ def error(x):
     if not isinstance(err_messages, list):
         err_messages = list(err_messages)
 
-    @contextmanager
-    def raises():
-        with pytest.raises(err_type) as err:
-            yield
+    # Normally I'd use `@contextmanager` to make a context manager like this, 
+    # but generator-based context managers cannot be reused.  This is a problem 
+    # for tests, because if a test using this context manager is parametrized, 
+    # the same context manager instance will need to be reused multiple times.  
+    # The only way to support this is to implement the context manager from 
+    # scratch.
 
-        for msg in err_messages:
-            err.match(msg)
+    class expect_error:
 
-    return raises()
+        def __enter__(self):
+            self.raises = pytest.raises(err_type)
+            self.err = self.raises.__enter__()
+
+        def __exit__(self, *args):
+            if self.raises.__exit__(*args):
+                for msg in err_messages:
+                    self.err.match(msg)
+                return True
+
+    return expect_error()
 

@@ -1,42 +1,70 @@
 #!/usr/bin/env python3
 
 import functools
+from inspect import isclass
 
 class Layer:
 
     def __init__(self, *, values, location):
-        # Values: any object that:
-        # - implements __getitem__ to either return value associated with Key, 
-        #   or raise KeyError
-        # - is a callable that takes a key as the only argument, and raises 
-        #   KeyError if not found
+        # Values:
+        # - object that implements `__getitem__()` to either return value 
+        #   associated with key, or raise KeyError.
+        # - callable that takes no arguments and returns an object matching the 
+        #   above description.
+        #
+        # Location:
+        # - string
+        # - callable that takes no arguments and returns a string.
         self.config = None
-        self.values = values
-        self.location = location
+        self._values = values
+        self._location = location
+        self._are_values_deferred = callable(values)
+        self._is_location_deferred = callable(location)
 
     def __repr__(self):
-        return f'Layer(values={self.values!r}, location={self.location!r})'
+        return f'Layer(values={self._values!r}, location={self._location!r})'
 
-def not_found(*raises):
-    """
-    Wrap the given function so that a KeyError is raised if any of the expected 
-    kinds of exceptions are caught.
+    @property
+    def values(self):
+        if self._are_values_deferred:
+            self._values = self._values()
+            self._are_values_deferred = False
+        return self._values
 
-    This is meant to help implement the interface expected by `Layers.values`, 
-    i.e. a callable that raises a KeyError if a value could not successfully be 
-    found.
-    """
+    @property
+    def location(self):
+        if self._is_location_deferred:
+            self._location = self._location()
+            self._is_location_deferred = False
+        return self._location
 
-    def decorator(f):
 
-        @functools.wraps(f)
-        def wrapped(*args, **kwargs):
+def dict_like(*args):
+
+    # I want this function to be usable as a decorator, but I also want to 
+    # avoid exposing `__call__()` so that these objects don't look like 
+    # deferred values to `Layer`.  These competing requirements necessitate an 
+    # awkward layering of wrapper functions and classes.
+    
+    class dict_like:
+
+        def __init__(self, f, *raises):
+            self.f = f
+            self.raises = raises
+
+        def __getitem__(self, key):
             try:
-                return f(*args, **kwargs)
-            except tuple(raises) as err:
+                return self.f(key)
+            except tuple(self.raises) as err:
                 raise KeyError from err
 
-        return wrapped
-        
-    return decorator
+    is_exception = lambda x: isclass(x) and issubclass(x, Exception)
 
+    if not args:
+        return lambda f: dict_like(f)
+
+    elif is_exception(args[0]):
+        return lambda f: dict_like(f, *args)
+
+    else:
+        return dict_like(*args)

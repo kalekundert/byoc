@@ -706,6 +706,53 @@ test_iter_values:
     expected:
       - 1
   -
+    id: layers-deferred-values
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values=lambda: obj.values,  # not yet defined
+      >                 location='a',
+      >         )
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >
+      > obj = DummyObj()
+      > obj.values = {'x': 1}
+    bound_keys:
+      -
+        config: 0
+        key: x
+    expected:
+      - 1
+  -
+    id: layers-deferred-loc
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(
+      >                 values={'x': 1},
+      >                 location=lambda: obj.loc,  # not yet defined
+      >         )
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >
+      > obj = DummyObj()
+      > obj.loc = 'a'
+    bound_keys:
+      -
+        config: 0
+        key: y
+    error:
+      type: appcli.ConfigError
+      message:
+        - can't find value for parameter
+        - the following locations were searched
+        - a: y
+        - did you mean to provide a default\?
+  -
     id: layers-autoload
     obj:
       > class DummyConfigA(appcli.Config):

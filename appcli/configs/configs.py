@@ -4,7 +4,7 @@ import sys, os, re, inspect
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
-from .layers import Layer, not_found
+from .layers import Layer, dict_like
 from ..utils import lookup, first_specified
 from ..errors import ConfigError
 
@@ -36,7 +36,7 @@ class CallbackConfig(Config):
             location = location(obj)
 
         yield Layer(
-                values=not_found(*self.raises)(self.callback),
+                values=dict_like(*self.raises)(self.callback),
                 location=location
         )
 
@@ -54,6 +54,7 @@ class DefaultConfig(Config):
                 location=self.location,
         )
 
+
 class AttrConfig(Config):
     """
     Read parameters from another attribute of the object.
@@ -65,16 +66,15 @@ class AttrConfig(Config):
 
     def load(self, obj):
 
-        @not_found(AttributeError)
+        @dict_like(AttributeError)
         def getter(key):
             x = getattr(obj, self.attr)
             x = self.func(obj, x)
             return lookup(x, key)
 
-        cls = obj.__class__
         yield Layer(
                 values=getter,
-                location=f'{inspect.getmodule(cls).__name__}.{cls.__qualname__}.{self.attr}',
+                location=_guess_module_path(obj),
         )
 
 
@@ -85,6 +85,7 @@ class EnvironmentConfig(Config):
                 values=os.environ,
                 location="environment",
         )
+
 
 class ArgparseConfig(Config):
     autoload = False
@@ -303,6 +304,7 @@ class TomlConfig(FileConfig):
         import toml
         return toml.load(path)
 
+
 class NtConfig(FileConfig):
     suffixes = '.nt',
 
@@ -310,3 +312,9 @@ class NtConfig(FileConfig):
         import nestedtext as nt
         return nt.load(path)
 
+
+def _guess_module_path(x):
+    try:
+        return inspect.getmodule(x).__file__
+    except Exception:
+        return '???'
