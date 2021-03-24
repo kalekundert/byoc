@@ -73,7 +73,21 @@ test_default_composite_config:
           values: {'x': 2}
           location: a
 
-test_attr_callback_config:
+test_self_attr_callback_config:
+  -
+    id: self
+    obj:
+      > from appcli import SelfConfig, Key
+      >
+      > class DummyObj:
+      >     __config__ = [SelfConfig()]
+      >     x = appcli.param(
+      >             Key(SelfConfig, lambda self: self.y),
+      >     )
+      >     y = 1
+    expected:
+      x: 1
+
   -
     id: attr
     obj:

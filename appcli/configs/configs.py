@@ -23,6 +23,60 @@ class CompositeConfig(Config):
             yield from config.load(obj)
 
 
+class SelfConfig(Config):
+    """
+    This config simply provides access to the object associated with the 
+    parameter in question.  By using callable keys, you can access any 
+    attribute on the object.  If the object also happens to implement 
+    `__getitem__()`, it will be used to lookup string keys.
+
+    Example:
+
+    >>> class MyApp:
+    ...     __config__ = [SelfConfig]
+    ...     
+    ...     x = appcli.param(
+    ...             Key(SelfConfig, lambda self: self._helper()),
+    ...     )
+    ...     
+    ...     def _helper(self):
+    ...         return 42
+    ...
+    >>> app = MyApp()
+    >>> app.x
+    42
+    """
+
+    def load(self, obj):
+        yield Layer(
+                values=obj,
+                location=_guess_module_path(obj),
+        )
+
+
+class AttrConfig(Config):
+    """
+    Read parameters from another attribute of the object.
+    """
+
+    def __init__(self, attr, f=lambda obj, x: x):
+        self.attr = attr
+        self.func = f
+
+    def load(self, obj):
+
+        @dict_like(AttributeError)
+        def getter(key):
+            x = getattr(obj, self.attr)
+            x = self.func(obj, x)
+            return lookup(x, key)
+
+        yield Layer(
+                values=getter,
+                location=_guess_module_path(obj),
+        )
+
+
 class CallbackConfig(Config):
 
     def __init__(self, callback, *raises, location=None):
@@ -52,29 +106,6 @@ class DefaultConfig(Config):
         yield Layer(
                 values=self.dict,
                 location=self.location,
-        )
-
-
-class AttrConfig(Config):
-    """
-    Read parameters from another attribute of the object.
-    """
-
-    def __init__(self, attr, f=lambda obj, x: x):
-        self.attr = attr
-        self.func = f
-
-    def load(self, obj):
-
-        @dict_like(AttributeError)
-        def getter(key):
-            x = getattr(obj, self.attr)
-            x = self.func(obj, x)
-            return lookup(x, key)
-
-        yield Layer(
-                values=getter,
-                location=_guess_module_path(obj),
         )
 
 

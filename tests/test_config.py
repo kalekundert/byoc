@@ -35,7 +35,7 @@ def test_default_composite_config(obj, layers):
             'expected': {str: eval},
         })
 )
-def test_attr_callback_config(obj, expected):
+def test_self_attr_callback_config(obj, expected):
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
