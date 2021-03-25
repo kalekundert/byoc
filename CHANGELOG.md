@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.18.0 (2021-03-25)
+### Feature
+* Use `Getter` classes to pick values ([`aa18b52`](https://github.com/kalekundert/appcli/commit/aa18b525339048603d0f7d75b93add1b020b1232))
+
 ## v0.17.0 (2021-03-24)
 ### Feature
 * Add `SelfConfig` ([`39e3f3b`](https://github.com/kalekundert/appcli/commit/39e3f3b6126e93892f005d66121143adb570ede8))
