@@ -28,6 +28,7 @@ def test_toggle(layers, expected, error):
 
     configs = []
     toggles = set()
+    keys = []
 
     for i, layer in enumerate(layers):
 
@@ -36,16 +37,12 @@ def test_toggle(layers, expected, error):
             location = str(i+1)
 
         configs.append(DerivedConfig())
-
-        if layer['toggle']:
-            toggles.add(DerivedConfig)
+        keys.append(appcli.Key(DerivedConfig, toggle=layer['toggle']))
 
     class DummyObj:
         __config__ = configs
 
-        flag = appcli.toggle_param(
-                toggle=toggles,
-        )
+        flag = appcli.toggle_param(*keys)
 
     obj = DummyObj()
     with error:

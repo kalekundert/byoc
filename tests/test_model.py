@@ -68,34 +68,30 @@ def test_get_configs_err():
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'bound_keys': Or([{
-                'config': Coerce(int),
-                'key': str,
-                Optional('cast', default='lambda x: x'): eval,
-            }], empty_list),
-            Optional('default', default=None): Or(None, eval),
+            Optional('obj', default='class DummyObj: __config__ = []'): str,
+            Optional('param', default=''): str,
+            'getters': Or([str], empty_list),
+            Optional('default', default=''): str,
             **error_or(**{
                 'expected': Or([eval], empty_list),
             }),
         })
 )
-def test_iter_values(obj, bound_keys, default, expected, error):
+def test_iter_values(obj, param, getters, default, expected, error):
+    globals = {}
+    obj = exec_obj(obj, globals)
+    param = find_param(obj, param)
+    getters = [eval_appcli(x, globals) for x in getters]
+
     appcli.init(obj)
 
-    bound_configs = appcli.model.get_bound_configs(obj)
-    bound_keys = [
-            appcli.model.BoundKey(
-                bound_configs[bk['config']],
-                key=bk['key'],
-                cast=bk['cast'],
-            )
-            for bk in bound_keys
-    ]
-    kwargs = {} if default is None else dict(default=default)
+    for getter in getters:
+        getter.bind(obj, param)
+
+    kwargs = {'default': eval(default)} if default else {}
 
     with error:
-        values = appcli.model.iter_values(obj, bound_keys, **kwargs)
+        values = appcli.model.iter_values(obj, getters, **kwargs)
         assert list(values) == expected
 
 

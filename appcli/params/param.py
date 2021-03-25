@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 from .. import model
-from ..errors import AppcliError, ConfigError, ScriptError
 from ..model import UNSPECIFIED
+from ..getters import Getter, Key, ImplicitKey
 from ..utils import noop
+from ..errors import AppcliError, ConfigError, ScriptError
 from more_itertools import first
 
 class param:
@@ -11,7 +12,7 @@ class param:
     class _State:
 
         def __init__(self, default):
-            self.bound_keys = []
+            self.getters = []
             self.setattr_value = UNSPECIFIED
             self.cache_value = UNSPECIFIED
             self.cache_version = -1
@@ -107,12 +108,12 @@ class param:
 
         return self._get(obj, value)
 
-    def _load_bound_keys(self, obj):
+    def _load_getters(self, obj):
         state = self._load_state(obj)
         model_version = model.get_cache_version(obj)
         if state.cache_version != model_version:
-            state.bound_keys = self._calc_bound_keys(obj)
-        return state.bound_keys
+            state.getters = self._calc_getters(obj)
+        return state.getters
 
     def _load_default(self, obj):
         return self._load_state(obj).default_value
@@ -123,52 +124,43 @@ class param:
                 obj=obj,
                 param=self._name,
         ):
-            bound_keys = self._load_bound_keys(obj)
+            getters = self._load_getters(obj)
             default = self._load_default(obj)
-            values = model.iter_values(obj, bound_keys, default)
+            values = model.iter_values(obj, getters, default)
             return self._pick(values)
 
-    def _calc_bound_keys(self, obj):
+    def _calc_getters(self, obj):
         from appcli import Config
         from inspect import isclass
 
         keys = [
                 Key(x) if isclass(x) and issubclass(x, Config) else x
-                for x in self._keys or [self._name]
+                for x in self._keys or [self._get_default_key()]
         ]
         bound_configs = model.get_bound_configs(obj)
-        are_key_objs = [isinstance(x, Key) for x in keys]
+        are_getters = [isinstance(x, Getter) for x in keys]
 
-        if all(are_key_objs):
-            return [
-                    model.BoundKey(
-                        bound_config,
-                        key.key or self._name,
-                        key.cast or self._cast,
-                    )
-                    for key in keys
-                    for bound_config in bound_configs
-                    if isinstance(bound_config.config, key.config_cls)
-            ]
+        if all(are_getters):
+            getters = keys
 
-        if any(are_key_objs):
+        elif any(are_getters):
             err = ConfigError(
                     keys=keys,
             )
-            err.brief = "can't mix regular keys (e.g. strings) with Key objects"
+            err.brief = "can't mix string keys with Key/Method/Func/Value objects"
             err.info = lambda e: '\n'.join((
                     "keys:",
                     *map(repr, e['keys']),
             ))
             raise err
 
-        if len(keys) == 1:
-            return [
-                    model.BoundKey(bound_config, keys[0], self._cast)
+        elif len(keys) == 1:
+            getters = [
+                    ImplicitKey(keys[0], bound_config)
                     for bound_config in bound_configs
             ]
 
-        if len(keys) != len(bound_configs):
+        elif len(keys) != len(bound_configs):
             err = ConfigError(
                     configs=[x.config for x in bound_configs],
                     keys=keys,
@@ -184,20 +176,26 @@ class param:
             ))
             return err
 
-        return [
-                model.BoundKey(bound_config, key, self._cast)
-                for bound_config, key in zip(bound_configs, keys)
-        ]
+        else:
+            getters = [
+                    ImplicitKey(key, bound_config)
+                    for key, bound_config in zip(keys, bound_configs)
+            ]
 
-class Key:
+        for getter in getters:
+            getter.bind(obj, self)
 
-    def __init__(self, config_cls, key=None, *, cast=None):
-        self.config_cls = config_cls
-        self.key = key
-        self.cast = cast
+        return getters
 
-    def __repr__(self):
-        return f'appcli.Key({self.config_cls.__name__}, {self.key!r}, cast={self.cast!r})'
+    def _get_default_key(self):
+        return self._name
+
+    def _get_default_cast(self):
+        return self._cast
+
+    def _get_known_getter_kwargs(self):
+        return {'cast'}
+
 
 def _merge_default_args(instance, factory):
     have_instance = instance is not UNSPECIFIED

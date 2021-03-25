@@ -24,7 +24,7 @@ class BoundConfig:
         self.is_loaded = False
 
     def __repr__(self):
-        return f'BoundConfig({self.config.__class__.__name__}, layers={self.layers!r}, is_loaded={self.is_loaded!r})'
+        return f'BoundConfig({self.config.__class__.__name__}, is_loaded={self.is_loaded!r})'
 
     def __iter__(self):
         yield from self.layers
@@ -34,22 +34,6 @@ class BoundConfig:
         for layer in self.layers:
             layer.config = self.config
         self.is_loaded = True
-
-class BoundKey:
-    
-    def __init__(self, bound_config, key, cast):
-        self.bound_config = bound_config
-        self.key = key
-
-        try:
-            iter(cast)
-        except TypeError:
-            self.casts = [cast]
-        else:
-            self.casts = cast
-
-    def __repr__(self):
-        return f'BoundKey({self.bound_config!r}, key={self.key!r}, casts={self.casts!r})'
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -124,40 +108,18 @@ def get_load_callbacks(obj):
 def get_param_states(obj):
     return get_meta(obj).param_states
 
-def iter_values(obj, bound_keys, default=UNSPECIFIED):
+def iter_values(obj, getters, default=UNSPECIFIED):
     # It's important that this function is a generator.  This allows the `pick` 
-    # argument to `param()` to pick a value without necessarily calculating 
-    # every possible value (which could be expensive).
+    # argument to `param()` to pick, for example, the first value without 
+    # having to calculate any subsequent values (which could be expensive).
 
-    locations = []
+    configs, locations = [], []
     have_value = False
 
-    for bound_key in bound_keys:
-        for layer in bound_key.bound_config:
-            locations.append((bound_key.key, layer.location))
-
-            try:
-                value = lookup(layer.values, bound_key.key)
-            except KeyError:
-                pass
-            else:
-                for cast in bound_key.casts:
-                    try:
-                        value = cast(value)
-                    except Exception as err1:
-                        err2 = ConfigError(
-                                value=value,
-                                function=cast,
-                                key=bound_key.key,
-                                location=locations[-1][1],
-                        )
-                        err2.brief = "can't cast {value!r} using {function!r}"
-                        err2.info += "read {key!r} from {location}"
-                        err2.blame += str(err1)
-                        raise err2 from err1
-
-                have_value = True
-                yield value
+    for getter in getters:
+        for value in getter.iter_values(configs, locations):
+            have_value = True
+            yield getter.cast_value(value)
 
     if default is not UNSPECIFIED:
         have_value = True
@@ -169,7 +131,7 @@ def iter_values(obj, bound_keys, default=UNSPECIFIED):
                 "can't find value for parameter",
                 obj=obj,
                 locations=locations,
-                bound_keys=bound_keys,
+                getters=getters,
         )
 
         if not configs:
@@ -180,19 +142,16 @@ def iter_values(obj, bound_keys, default=UNSPECIFIED):
         elif not locations:
             from more_itertools import unique_everseen
             err.blame += lambda e: '\n'.join((
-                "the following configs were found, but none yielded any layers:", *(
-                    repr(bc.config) for bc in unique_everseen(
-                        bk.bound_config for bk in e.bound_keys
-                    )
-                )
+                "found the following configs, but none yielded any layers:",
+                *map(repr, unique_everseen(configs)),
             ))
             err.hints += f"did you forget to call `appcli.load()`?"
 
         else:
             err.info += lambda e: '\n'.join((
-                    "the following locations were searched:", *(
-                        f'{loc}: {key}'
-                        for key, loc in e.locations
+                    "searched the following locations:", *(
+                        f'{": ".join(loc)}'
+                        for loc in e.locations
                     )
             ))
             err.hints += "did you mean to provide a default?"

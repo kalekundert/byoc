@@ -2,7 +2,7 @@
 
 from appcli import param, DefaultConfig
 
-def test_easy():
+def test_easy_1():
 
     class Foo:
         __config__ = [
@@ -13,7 +13,6 @@ def test_easy():
 
     f = Foo()
     assert f.a == 1
-
 
 def test_easy_2():
     class Foo:

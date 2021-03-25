@@ -2,6 +2,7 @@
 
 from .. import model
 from .param import param, UNSPECIFIED
+from ..getters import BaseKey
 from ..utils import noop
 from ..errors import ConfigError
 from more_itertools import partition, first
@@ -30,18 +31,11 @@ def pick_toggled(values):
     return toggle.value != value
 
 class toggle_param(param):
-    # This class is somewhat limited in that it doesn't provide a way to 
-    # specify toggle and non-toggle keys from the same config.  If this feature 
-    # is needed, use `param` with `Toggle` and `pick_toggled()`.  This class is 
-    # meant to be syntactic sugar, so I consider it acceptable that it doesn't 
-    # cover all use cases.  Plus, it's hard to think of an example where having 
-    # toggle and non-toggle keys in the same config would make sense.
 
     def __init__(
             self,
             *keys,
             cast=noop,
-            toggle=None,
             default=UNSPECIFIED,
             ignore=UNSPECIFIED,
             get=lambda obj, x: x,
@@ -56,14 +50,15 @@ class toggle_param(param):
             get=get,
             dynamic=dynamic,
         )
-        self._toggle = toggle
 
-    def _calc_bound_keys(self, obj):
-        bound_keys = super()._calc_bound_keys(obj)
+    def _calc_getters(self, obj):
+        getters = super()._calc_getters(obj)
 
-        for bound_key in bound_keys:
-            config = bound_key.bound_config.config
-            if any(isinstance(config, x) for x in self._toggle):
-                bound_key.casts = [*bound_key.casts, Toggle]
+        for getter in getters:
+            if getter.kwargs.get('toggle', False):
+                getter.cast_funcs.append(Toggle)
 
-        return bound_keys
+        return getters
+
+    def _get_known_getter_kwargs(self):
+        return super()._get_known_getter_kwargs() | {'toggle'}

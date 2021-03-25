@@ -3,6 +3,8 @@
 import appcli
 import pytest
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
+from more_itertools import only
+from unittest.mock import Mock
 
 class LayerWrapper:
 
@@ -19,48 +21,60 @@ class LayerWrapper:
                 self.layer.location == str(other.location),
         ))
 
-def eval_appcli(code, **locals):
-    globals = dict(appcli=appcli)
+def eval_appcli(code, globals=None, **kw_globals):
+    if globals is None:
+        globals = {}
+
+    globals['appcli'] = appcli
+    globals.update(kw_globals)
+
     try:
-        return eval(code, globals, locals)
+        return eval(code, globals)
     except Exception as err:
         raise Invalid(str(err)) from err
 
-def eval_layers(layers, **locals):
+def eval_layers(layers, globals=None, **kw_globals):
     schema = Schema({
         Coerce(int): Or(
-            [lambda x: eval_layer(x, **locals)],
+            [lambda x: eval_layer(x, globals, **kw_globals)],
             empty_list,
         ),
     })
     return schema(layers)
 
-def eval_layer(layer, **locals):
+def eval_layer(layer, globals=None, **kw_globals):
     schema = Schema(Or(str, {
         'values': eval,
         'location': str,
     }))
     layer = schema(layer)
-    layer = eval_appcli(layer, **locals) if isinstance(layer, str) else appcli.Layer(**layer)
+    layer = eval_appcli(layer, globals, **kw_globals) \
+            if isinstance(layer, str) else appcli.Layer(**layer)
     return LayerWrapper(layer)
 
-def exec_appcli(code, **locals):
-    globals = dict(appcli=appcli, **locals)
+def exec_appcli(code, globals=None, **kw_globals):
+    if globals is None:
+        globals = {}
+
+    globals['appcli'] = appcli
+    globals.update(kw_globals)
+
     try:
         exec(code, globals)
     except Exception as err:
         raise Invalid(str(err)) from err
+
     return globals
 
-def exec_obj(code, **locals):
-    locals = exec_appcli(code, **locals) 
+def exec_obj(code, globals=None, **kw_globals):
+    locals = exec_appcli(code, globals, **kw_globals) 
     try:
         return locals['obj']
     except KeyError:
         return locals['DummyObj']()
 
-def exec_config(code, **locals):
-    locals = exec_appcli(code, **locals) 
+def exec_config(code, globals=None, **kw_globals):
+    locals = exec_appcli(code, globals, **kw_globals)
     try:
         return locals['config']
     except KeyError:
@@ -72,6 +86,19 @@ def collect_layers(obj):
             i: bound_config.layers
             for i, bound_config in enumerate(bound_configs)
     }
+def find_param(obj, name=None):
+    class_attrs = obj.__class__.__dict__
+
+    if name:
+        return class_attrs[name]
+    else:
+        params = (
+                x for x in class_attrs.values()
+                if isinstance(x, appcli.param)
+        )
+        default = appcli.param()
+        default.__set_name__(obj.__class__, '')
+        return only(params, default)
 
 empty_list = And('', lambda x: [])
 empty_dict = And('', lambda x: {})
@@ -96,7 +123,7 @@ def error_or(**expected):
     schema[Optional('error', default='none')] = error
 
     schema.update({
-        Optional(k, default=None): Or(None, v)
+        Optional(k, default=Mock()): Or(Mock, v)
         for k, v in expected.items()
     })
     return schema
