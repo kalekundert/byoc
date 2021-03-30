@@ -32,15 +32,17 @@ class SelfConfig(Config):
 
     Example:
 
+    >>> from appcli import Key, SelfConfig, param
     >>> class MyApp:
-    ...     __config__ = [SelfConfig]
-    ...     
-    ...     x = appcli.param(
-    ...             Key(SelfConfig, lambda self: self._helper()),
-    ...     )
+    ...     __config__ = [SelfConfig()]
     ...     
     ...     def _helper(self):
     ...         return 42
+    ...
+    ...     x = param(
+    ...             Key(SelfConfig, _helper),
+    ...     )
+    ...     
     ...
     >>> app = MyApp()
     >>> app.x
