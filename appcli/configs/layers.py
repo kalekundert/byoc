@@ -16,10 +16,8 @@ class Layer:
         # - string
         # - callable that takes no arguments and returns a string.
         self.config = None
-        self._values = values
-        self._location = location
-        self._are_values_deferred = callable(values)
-        self._is_location_deferred = callable(location)
+        self.values = values
+        self.location = location
 
     def __repr__(self):
         return f'Layer(values={self._values!r}, location={self._location!r})'
@@ -31,6 +29,11 @@ class Layer:
             self._are_values_deferred = False
         return self._values
 
+    @values.setter
+    def values(self, values):
+        self._values = values
+        self._are_values_deferred = callable(values)
+
     @property
     def location(self):
         if self._is_location_deferred:
@@ -38,6 +41,10 @@ class Layer:
             self._is_location_deferred = False
         return self._location
 
+    @location.setter
+    def location(self, loc):
+        self._location = loc
+        self._is_location_deferred = callable(loc)
 
 def dict_like(*args):
 
