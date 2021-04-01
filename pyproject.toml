@@ -49,6 +49,9 @@ docs = [
 addopts = "--doctest-modules --doctest-glob='*.rst'"
 doctest_optionflags = 'NORMALIZE_WHITESPACE'
 
+[tool.pccc]
+types = ["chore", "docs", "feat", "fix", "refactor", "style", "test"]
+
 [tool.semantic_release]
 version_variable = 'appcli/__init__.py:__version__'
 build_command = 'python -m pip install flit && flit build'
