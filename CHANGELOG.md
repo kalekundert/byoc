@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.18.1 (2021-03-30)
+### Fix
+* Make layers mutable again ([`7b23c01`](https://github.com/kalekundert/appcli/commit/7b23c010b713182a258b8d98fc3475175ec19979))
+
+### Documentation
+* Fix doctest ([`6e0c25b`](https://github.com/kalekundert/appcli/commit/6e0c25b8d6f187325461c346f8194a74ed3c9698))
+
 ## v0.18.0 (2021-03-25)
 ### Feature
 * Use `Getter` classes to pick values ([`aa18b52`](https://github.com/kalekundert/appcli/commit/aa18b525339048603d0f7d75b93add1b020b1232))
