@@ -2,6 +2,68 @@
 AppCLI
 ******
 
+..
+  AppCLI is a Python library for making command-line applications.  More 
+  broadly, it's a framework for defining object properties that read their 
+  default values from arbitrary sources, e.g. the command-line, configuration 
+  files, environment variables, REST APIs, etc.
+
+  defining objects with properties that are initialized from blah blah blah
+  sources such as the command line, 
+
+  It works by (allowing|providing a framework for) objects to define parameters 
+  that are initialized|read from external sources, e.g. the command-line, 
+  configuration files, environment variables.  
+
+  It works by giving classes a simple way to define parameters that will be 
+  initialized from external sources, e.g. the command-line, configuration 
+  files, environment variables, etc.
+
+  It works by providing a simple way for classes to define parameters that will 
+  be initialized from external sources, e.g. the command-line, configuration 
+  files, environment variables, etc.
+
+
+  Library for making command-line applications in python.
+
+  More broadly, it's a framework for creating objects with parameters that can 
+  read default values from multiple sources, e.g. the command-line, config 
+  files, environmnt variables, etc.
+
+  for defining object parameters that can query multiple sources---e.g. the 
+  command-line, configuration files, environment variables, etc.---
+  default parameters of an object 
+  
+  Philosophy
+  - 
+
+
+  - Params from any source; 
+  - 
+
+  Benefits
+  - Params from any source
+  - objects usable from python
+
+  Example
+
+  - Can't have so many comments; makes it hard to grok.
+  - Just want to give a sense of what it looks like.
+  - Advanced users will want to see the syntax to get a sense of how it works.
+
+  - Features to include:
+    - cast?
+      - int/float: do some math thing?
+
+    - default?
+
+    - at least two configs
+      - docopt
+      - appcli?
+      - env var?
+    - 
+
+
 .. image:: https://img.shields.io/pypi/v/appcli.svg
    :target: https://pypi.python.org/pypi/appcli
 
@@ -17,9 +79,12 @@ AppCLI
 .. image:: https://img.shields.io/coveralls/kalekundert/appcli.svg
    :target: https://coveralls.io/github/kalekundert/appcli?branch=master
 
-Library for making command line apps.  It's philosophy is that (i) it should be 
-easy to incorporate options form the command line and config files, and (ii) 
-the object should remain usable as a normal object in python.  For example::
+AppCLI is a Library for making command line apps.  You can also think of it as 
+a library for initializing objects with values from disparate sources, e.g.  
+config files, environment variables, command-line options, etc.  It's 
+philosophy is that (i) it should be easy to incorporate options from the 
+command line and config files, and (ii) the object should remain usable as a 
+normal object in python.  For example::
 
     import appcli
     from appcli import DocoptConfig, AppDirsConfig, Key
@@ -112,3 +177,51 @@ Note that we could seamlessly use this object in another python script::
 
     app = MyApp('abc')
     app.main()
+
+For some examples of ``appcli`` being used in real scripts, check out the 
+`Stepwise — Molecular Biology`__ repository.  Almost every script in this 
+repository uses ``appcli``.  Below are some lists of particular scripts that 
+might be good examples:
+
+Simple scripts:
+
+- `aliquot.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/aliquot.py>`_
+- `anneal.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/anneal.py>`_
+- `kld.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/kld.py>`_
+
+Long but straight-forward scripts:
+
+- `pcr.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/pcr.py>`_
+- `spin_cleanup.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/spin_cleanup.py>`_
+- `gels/gel.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/gels/gel.py>`_
+- `gels/stain.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/gels/stain.py>`_
+
+Complex scripts:
+
+- `serial_dilution.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/serial_dilution.py>`_
+
+  This script features parameters that depend on other parameters.  
+  Specifically, the user must provide values for any three of ``volume``, 
+  ``conc_high``, ``conc_low``, and ``factor``.  Whichever one isn't specified 
+  is inferred from the ones that are.  This is implemented by making the 
+  ``appcli`` parameters (which in this case read only from the command-line and 
+  not from any config files) private, then adding public properties that are 
+  calculated from the private ones.
+
+- `digest.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/digest.py>`_
+
+  This script is actually pretty simple, but it makes used of 
+  ``__bareinit__()`` to download some data from the internet.  As alluded to 
+  above, ``__init__()`` is not called when ``App`` instances are initialized 
+  from the command-line, because ``__init__()`` might require arbitrary 
+  arguments and is therefore considered to be part of the python API.  Instead, 
+  ``App`` instances are initialized by calling ``__bareinit__()`` with no 
+  arguments.
+
+- `ivtt.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/ivtt.py>`_
+
+  This script defines a custom ``Config`` class to read from a sequence 
+  database. (This example might go out of date, though; I have plans to move 
+  that custom ``Config`` into a different package.)
+
+__ https://github.com/kalekundert/stepwise_mol_bio 
