@@ -84,7 +84,11 @@ a library for initializing objects with values from disparate sources, e.g.
 config files, environment variables, command-line options, etc.  It's 
 philosophy is that (i) it should be easy to incorporate options from the 
 command line and config files, and (ii) the object should remain usable as a 
-normal object in python.  For example::
+normal object in python.
+
+Usage
+=====
+The following snippets introduce the basic concepts behind ``appcli``::
 
     import appcli
     from appcli import DocoptConfig, AppDirsConfig, Key
@@ -178,10 +182,12 @@ Note that we could seamlessly use this object in another python script::
     app = MyApp('abc')
     app.main()
 
+Examples
+========
 For some examples of ``appcli`` being used in real scripts, check out the 
 `Stepwise — Molecular Biology`__ repository.  Almost every script in this 
-repository uses ``appcli``.  Below are some lists of particular scripts that 
-might be good examples:
+repository uses ``appcli``.  Below are some particular scripts that might be 
+useful:
 
 Simple scripts:
 
