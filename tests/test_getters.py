@@ -39,10 +39,10 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
         param.__set_name__(obj.__class__, '')
 
     appcli.init(obj)
-    getter.bind(obj, param)
+    bound_getter = getter.bind(obj, param)
 
     with error:
-        assert getter.cast_value(given) == expected
+        assert bound_getter.cast_value(given) == expected
 
 @parametrize_from_file(
         schema=Schema({
@@ -63,10 +63,10 @@ def test_getter_iter_values(getter, obj, param, expected):
     getter = eval_appcli(getter, globals)
 
     appcli.init(obj)
-    getter.bind(obj, param)
+    bound_getter = getter.bind(obj, param)
 
     configs, locations = [], []
-    values = getter.iter_values(configs, locations)
+    values = bound_getter.iter_values(configs, locations)
 
     assert list(values) == expected['values']
     assert configs == [get_configs(obj)[i] for i in expected['configs']]
@@ -90,5 +90,4 @@ def test_getter_kwargs_err(obj, param, getter, error):
 
     with error:
         getter.bind(obj, param)
-
 

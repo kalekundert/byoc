@@ -85,13 +85,14 @@ def test_iter_values(obj, param, getters, default, expected, error):
 
     appcli.init(obj)
 
-    for getter in getters:
-        getter.bind(obj, param)
-
+    bound_getters = [
+            x.bind(obj, param)
+            for x in getters
+    ]
     kwargs = {'default': eval(default)} if default else {}
 
     with error:
-        values = appcli.model.iter_values(obj, getters, **kwargs)
+        values = appcli.model.iter_values(obj, bound_getters, **kwargs)
         assert list(values) == expected
 
 

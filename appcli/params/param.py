@@ -108,12 +108,12 @@ class param:
 
         return self._get(obj, value)
 
-    def _load_getters(self, obj):
+    def _load_bound_getters(self, obj):
         state = self._load_state(obj)
         model_version = model.get_cache_version(obj)
         if state.cache_version != model_version:
-            state.getters = self._calc_getters(obj)
-        return state.getters
+            state.bound_getters = self._calc_bound_getters(obj)
+        return state.bound_getters
 
     def _load_default(self, obj):
         return self._load_state(obj).default_value
@@ -124,12 +124,12 @@ class param:
                 obj=obj,
                 param=self._name,
         ):
-            getters = self._load_getters(obj)
+            bound_getters = self._load_bound_getters(obj)
             default = self._load_default(obj)
-            values = model.iter_values(obj, getters, default)
+            values = model.iter_values(obj, bound_getters, default)
             return self._pick(values)
 
-    def _calc_getters(self, obj):
+    def _calc_bound_getters(self, obj):
         from appcli import Config
         from inspect import isclass
 
@@ -156,7 +156,7 @@ class param:
 
         elif len(keys) == 1:
             getters = [
-                    ImplicitKey(keys[0], bound_config)
+                    ImplicitKey(bound_config, keys[0])
                     for bound_config in bound_configs
             ]
 
@@ -178,14 +178,15 @@ class param:
 
         else:
             getters = [
-                    ImplicitKey(key, bound_config)
+                    ImplicitKey(bound_config, key)
                     for key, bound_config in zip(keys, bound_configs)
             ]
 
-        for getter in getters:
-            getter.bind(obj, self)
-
-        return getters
+        bound_getters = [
+                getter.bind(obj, self)
+                for getter in getters
+        ]
+        return bound_getters
 
     def _get_default_key(self):
         return self._name

@@ -19,7 +19,7 @@ test_toggle:
     expected: False
 
   -
-    id: 1-toggle-1-base-0-base-err
+    id: 1-toggle-0-base-err
     layers:
       -
         value: True
@@ -30,7 +30,7 @@ test_toggle:
       message: can't find base value to toggle
 
   -
-    id: 1-toggle-1-base-0-base-err
+    id: 1-toggle-0-base-err
     layers:
       -
         value: False

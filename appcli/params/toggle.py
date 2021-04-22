@@ -2,7 +2,6 @@
 
 from .. import model
 from .param import param, UNSPECIFIED
-from ..getters import BaseKey
 from ..utils import noop
 from ..errors import ConfigError
 from more_itertools import partition, first
@@ -51,14 +50,14 @@ class toggle_param(param):
             dynamic=dynamic,
         )
 
-    def _calc_getters(self, obj):
-        getters = super()._calc_getters(obj)
+    def _calc_bound_getters(self, obj):
+        bound_getters = super()._calc_bound_getters(obj)
 
-        for getter in getters:
-            if getter.kwargs.get('toggle', False):
-                getter.cast_funcs.append(Toggle)
+        for bg in bound_getters:
+            if bg.kwargs.get('toggle', False):
+                bg.cast_funcs.append(Toggle)
 
-        return getters
+        return bound_getters
 
     def _get_known_getter_kwargs(self):
         return super()._get_known_getter_kwargs() | {'toggle'}

@@ -132,12 +132,12 @@ test_getter_cast_value:
 
   -
     id: compose
-    getter: appcli.getters.Getter(cast=[int, lambda x: x+1])
+    getter: appcli.Key(appcli.Config, cast=[int, lambda x: x+1])
     given: '1'
     expected: 2
   -
     id: compose-err
-    getter: appcli.getters.Getter(cast=[int, lambda x: x])
+    getter: appcli.Key(appcli.Config, cast=[int, lambda x: x])
     given: 'a'
     error:
       type: appcli.ConfigError
@@ -146,7 +146,7 @@ test_getter_cast_value:
         - invalid literal for int\(\) with base 10: 'a'
   -
     id: compose-err
-    getter: appcli.getters.Getter(cast=[lambda x: x, int])
+    getter: appcli.Key(appcli.Config, cast=[lambda x: x, int])
     given: 'a'
     error:
       type: appcli.ConfigError
