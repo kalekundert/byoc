@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.18.2 (2021-04-22)
+### Fix
+* Don't share bound getters between instances ([`2d72a0e`](https://github.com/kalekundert/appcli/commit/2d72a0e6d8a2b198c8439b834ea4749ea517601b))
+
+### Documentation
+* Organize README into sections ([`d674072`](https://github.com/kalekundert/appcli/commit/d6740725450c541b8102f104ee849d6be1feffce))
+* Link to examples from stepwise_mol_bio ([`d45b44a`](https://github.com/kalekundert/appcli/commit/d45b44a8705036f5d2638d54c6d99afc9def2adf))
+
 ## v0.18.1 (2021-03-30)
 ### Fix
 * Make layers mutable again ([`7b23c01`](https://github.com/kalekundert/appcli/commit/7b23c010b713182a258b8d98fc3475175ec19979))
