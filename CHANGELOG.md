@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.19.0 (2021-04-26)
+### Feature
+* Try rtoml before falling back on toml ([`accf065`](https://github.com/kalekundert/appcli/commit/accf065efb60111e903e142fe645d3fdb1485cd7))
+
+### Fix
+* Add config_cls argument to app.load() ([`55ebe2a`](https://github.com/kalekundert/appcli/commit/55ebe2aeb3d8ed9b9db8a0868f2648d44ea54bae))
+
 ## v0.18.2 (2021-04-22)
 ### Fix
 * Don't share bound getters between instances ([`2d72a0e`](https://github.com/kalekundert/appcli/commit/2d72a0e6d8a2b198c8439b834ea4749ea517601b))
