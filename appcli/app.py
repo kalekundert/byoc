@@ -23,11 +23,11 @@ class AppMeta(type):
 
 class App(metaclass=AppMeta):
 
-    def load(self):
-        model.load(self)
+    def load(self, config_cls=None):
+        model.load(self, config_cls)
 
-    def reload(self):
-        model.reload(self)
+    def reload(self, config_cls=None):
+        model.reload(self, config_cls)
 
 
 
