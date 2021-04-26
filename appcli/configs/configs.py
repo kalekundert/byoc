@@ -225,14 +225,8 @@ class AppDirsConfig(Config):
         self.schema = schema
 
     def load(self, obj):
-        dirs = self.get_dirs(obj)
-        name, config_cls = self.get_name_and_config_cls()
-        paths = [
-                Path(dirs.user_config_dir) / name,
-                Path(dirs.site_config_dir) / name,
-        ]
-        for p in paths:
-            file_config = config_cls(p, schema=self.schema)
+        for path, config_cls in self.get_config_map(obj).items():
+            file_config = config_cls(path, schema=self.schema)
             yield from file_config.load(obj)
 
     def get_name_and_config_cls(self):
@@ -282,6 +276,17 @@ class AppDirsConfig(Config):
         from appdirs import AppDirs
         slug = self.slug or obj.__class__.__name__.lower()
         return AppDirs(slug, self.author, version=self.version)
+
+    def get_config_map(self, obj):
+        dirs = self.get_dirs(obj)
+        name, config_cls = self.get_name_and_config_cls()
+        return {
+                Path(dirs.user_config_dir) / name: config_cls,
+                Path(dirs.site_config_dir) / name: config_cls,
+        }
+
+    def get_config_paths(self, obj):
+        return self.get_config_map(obj).keys()
         
 
 class FileConfig(Config):
@@ -334,8 +339,14 @@ class TomlConfig(FileConfig):
     suffixes = '.toml',
 
     def _do_load(self, path):
-        import toml
-        return toml.load(path)
+        try:
+            # Prefer rtoml, since it's much less buggy.  It's also much harder 
+            # to install, though.
+            import rtoml
+            return rtoml.load(path)
+        except ModuleNotFoundError:
+            import toml
+            return toml.load(path)
 
 
 class NtConfig(FileConfig):
