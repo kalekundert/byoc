@@ -295,6 +295,22 @@ test_getter_iter_values:
       configs: [0]
       locations: [('a', 'x.y')]
   -
+    id: key-falsy
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self, obj):
+      >         yield appcli.Layer(values={None: 1}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig()]
+      >     x = appcli.param()
+    getter:
+      > appcli.Key(DummyConfig, None)
+    expected:
+      values: [1]
+      configs: [0]
+      locations: [('a', 'None')]
+  -
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):

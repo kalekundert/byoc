@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from . import model
+from .model import UNSPECIFIED
 from .utils import lookup
 from .errors import ConfigError
 from more_itertools import always_iterable
@@ -26,16 +27,16 @@ class Getter:
 
 class Key(Getter):
 
-    def __init__(self, config_cls, key=None, **kwargs):
+    def __init__(self, config_cls, key=UNSPECIFIED, **kwargs):
         super().__init__(**kwargs)
         self.config_cls = config_cls
         self.key = key
 
     def __reprargs__(self):
-        if self.key:
-            return [self.config_cls.__name__, repr(self.key)]
-        else:
+        if self.key is UNSPECIFIED:
             return [self.config_cls.__name__]
+        else:
+            return [self.config_cls.__name__, repr(self.key)]
 
     def bind(self, obj, param):
         bound_configs = [
@@ -178,11 +179,14 @@ class BoundKey(BoundGetter):
 
     def __init__(self, parent, obj, param, bound_configs):
         super().__init__(parent, obj, param)
-        self.key = parent.key or param._get_default_key()
+        self.key = parent.key
         self.bound_configs = bound_configs
 
+        if self.key is UNSPECIFIED:
+            self.key = param._get_default_key()
+
     def iter_values(self, configs, locations):
-        assert self.key is not None
+        assert self.key is not UNSPECIFIED
         assert self.bound_configs is not None
 
         for bound_config in self.bound_configs:

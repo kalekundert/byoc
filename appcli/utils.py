@@ -30,6 +30,11 @@ def lookup(x, key, sep='.'):
 
     subkeys = key.split(sep) if isinstance(key, str) else key
 
+    try:
+        iter(subkeys)
+    except TypeError:
+        subkeys = [subkeys]
+
     for subkey in subkeys:
         x = x[subkey]
 
