@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.19.1 (2021-05-19)
+### Fix
+* Allow falsy config keys ([`bd66fba`](https://github.com/kalekundert/appcli/commit/bd66fbada4e78386ced3b5cb42c37beeea3590fa))
+
 ## v0.19.0 (2021-04-26)
 ### Feature
 * Try rtoml before falling back on toml ([`accf065`](https://github.com/kalekundert/appcli/commit/accf065efb60111e903e142fe645d3fdb1485cd7))
