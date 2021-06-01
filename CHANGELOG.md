@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.19.2 (2021-06-01)
+### Fix
+* Use 'is' when comparing values to *ignore*. ([`41acd1d`](https://github.com/kalekundert/appcli/commit/41acd1dc78fe72b6f05d28af1be07d5ed8a27e5d))
+
 ## v0.19.1 (2021-05-19)
 ### Fix
 * Allow falsy config keys ([`bd66fba`](https://github.com/kalekundert/appcli/commit/bd66fbada4e78386ced3b5cb42c37beeea3590fa))
