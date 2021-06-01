@@ -90,7 +90,7 @@ class param:
 
         if state.setattr_value is not UNSPECIFIED and (
                 self._ignore is UNSPECIFIED or 
-                state.setattr_value != self._ignore
+                state.setattr_value is not self._ignore
         ):
             value = state.setattr_value
 

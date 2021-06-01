@@ -206,6 +206,48 @@ test_param:
       x: [1, 3]
 
   -
+    id: ignore
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(default=1, ignore=None)
+      >
+      > obj = DummyObj()
+      > obj.x = None
+    expected:
+      x: 1
+  -
+    id: ignore
+    obj:
+      > # Not directly testing 'ignore', just making sure that assignments to 
+      > # None work normally.
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(default=1)
+      >
+      > obj = DummyObj()
+      > obj.x = None
+    expected:
+      x: None
+  -
+    id: ignore
+    obj:
+      > class NotComparable:
+      >   def __eq__(self, other):
+      >     raise AssertionError
+      >
+      > nc = NotComparable()
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(default=1, ignore=nc)
+      >
+      > obj = DummyObj()
+      > obj.x = nc
+    expected:
+      x: 1
+
+  -
     id: cast
     obj:
       > class DummyConfig(appcli.Config):
