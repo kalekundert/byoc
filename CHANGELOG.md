@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.20.0 (2021-06-16)
+### Feature
+* Log the attribute lookup process ([`de22e5a`](https://github.com/kalekundert/appcli/commit/de22e5abc01cfa5bd55018e65eaefcc9536cf85a))
+
 ## v0.19.2 (2021-06-01)
 ### Fix
 * Use 'is' when comparing values to *ignore*. ([`41acd1d`](https://github.com/kalekundert/appcli/commit/41acd1dc78fe72b6f05d28af1be07d5ed8a27e5d))
