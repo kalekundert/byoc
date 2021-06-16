@@ -14,15 +14,15 @@ locations = [
 
 @pytest.mark.parametrize('values', values)
 @pytest.mark.parametrize('location', locations)
-def test_layer_init(values, location):
-    layer = appcli.Layer(values=values, location=location)
+def test_dict_layer_init(values, location):
+    layer = appcli.DictLayer(values=values, location=location)
     assert layer.values == {'x': 1}
     assert layer.location == 'a'
 
 @pytest.mark.parametrize('values', values)
 @pytest.mark.parametrize('location', locations)
-def test_layer_setters(values, location):
-    layer = appcli.Layer(values={}, location='')
+def test_dict_layer_setters(values, location):
+    layer = appcli.DictLayer(values={}, location='')
 
     layer.values = values
     layer.location = location
@@ -30,8 +30,8 @@ def test_layer_setters(values, location):
     assert layer.values == {'x': 1}
     assert layer.location == 'a'
 
-def test_layer_repr():
-    layer = appcli.Layer(values={'x': 1}, location='a')
-    assert repr(layer) == "Layer(values={'x': 1}, location='a')"
+def test_dict_layer_repr():
+    layer = appcli.DictLayer(values={'x': 1}, location='a')
+    assert repr(layer) == "DictLayer(values={'x': 1}, location='a')"
 
 

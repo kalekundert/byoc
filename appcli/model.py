@@ -29,11 +29,26 @@ class BoundConfig:
     def __iter__(self):
         yield from self.layers
 
+    def __bool__(self):
+        return bool(self.layers)
+
     def load(self, obj):
         self.layers = list(self.config.load(obj))
         for layer in self.layers:
             layer.config = self.config
         self.is_loaded = True
+
+class Log:
+    
+    def __init__(self):
+        self.err = ConfigError()
+
+    def info(self, message, **kwargs):
+        self.err.put_info(message, **kwargs)
+
+    def hint(self, message):
+        if message not in self.err.hints:
+            self.err.hints += message
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -108,55 +123,31 @@ def get_load_callbacks(obj):
 def get_param_states(obj):
     return get_meta(obj).param_states
 
-def iter_values(obj, getters, default=UNSPECIFIED):
+def iter_values(getters, default=UNSPECIFIED):
     # It's important that this function is a generator.  This allows the `pick` 
     # argument to `param()` to pick, for example, the first value without 
     # having to calculate any subsequent values (which could be expensive).
 
-    configs, locations = [], []
+    log = Log()
     have_value = False
 
+    if not getters:
+        log.info("nowhere to look for values")
+
     for getter in getters:
-        for value in getter.iter_values(configs, locations):
+        for value in getter.iter_values(log):
             have_value = True
             yield getter.cast_value(value)
 
     if default is not UNSPECIFIED:
         have_value = True
         yield default
+    else:
+        log.hint("did you mean to provide a default?")
 
     if not have_value:
-        configs = get_configs(obj)
-        err = ConfigError(
-                "can't find value for parameter",
-                obj=obj,
-                locations=locations,
-                getters=getters,
-        )
-
-        if not configs:
-            err.data.config_attr = CONFIG_ATTR
-            err.blame += "`{obj.__class__.__qualname__}.{config_attr}` is empty"
-            err.blame += "nowhere to look for values"
-
-        elif not locations:
-            from more_itertools import unique_everseen
-            err.blame += lambda e: '\n'.join((
-                "found the following configs, but none yielded any layers:",
-                *map(repr, unique_everseen(configs)),
-            ))
-            err.hints += f"did you forget to call `appcli.load()`?"
-
-        else:
-            err.info += lambda e: '\n'.join((
-                    "searched the following locations:", *(
-                        f'{": ".join(loc)}'
-                        for loc in e.locations
-                    )
-            ))
-            err.hints += "did you mean to provide a default?"
-
-        raise err
+        log.err.brief = "can't find value for parameter"
+        raise log.err
 
 
 def _load_configs(obj, predicate, force_callback=lambda p: False):

@@ -2,7 +2,6 @@
 
 from . import model
 from .model import UNSPECIFIED
-from .utils import lookup
 from .errors import ConfigError
 from more_itertools import always_iterable
 from inform import did_you_mean
@@ -157,7 +156,7 @@ class BoundGetter:
             ])
             raise err
 
-    def iter_values(self, locations):
+    def iter_values(self, log):
         raise NotImplementedError
 
     def cast_value(self, x):
@@ -185,40 +184,47 @@ class BoundKey(BoundGetter):
         if self.key is UNSPECIFIED:
             self.key = param._get_default_key()
 
-    def iter_values(self, configs, locations):
+    def iter_values(self, log):
         assert self.key is not UNSPECIFIED
         assert self.bound_configs is not None
 
+        if not self.bound_configs:
+            log.info("no configs of class {config_cls.__name__}", config_cls=self.parent.config_cls)
+
         for bound_config in self.bound_configs:
-            configs.append(bound_config.config)
+
+            if not bound_config.is_loaded:
+                log.info("skipped {config}: not loaded", config=bound_config.config)
+                log.hint("did you mean to call `appcli.load()`?")
+                continue
+
+            if not bound_config.layers:
+                log.info("skipped {config}: loaded, but no layers", config=bound_config.config)
+                continue
+
+            log.info("queried {config}:", config=bound_config.config)
 
             for layer in bound_config:
-                locations.append((layer.location, self.key))
+                yield from layer.iter_values(self.key, log)
 
-                try:
-                    value = lookup(layer.values, self.key)
-                except KeyError:
-                    continue
-
-                with ConfigError.add_info(
-                        "read {key!r} from {location}",
-                        key=self.key,
-                        location=layer.location,
-                ):
-                    yield value
 
 class BoundCallable(BoundGetter):
 
     def __init__(self, parent, obj, param, callable, args, kwargs, exc=()):
         super().__init__(parent, obj, param)
+        self.raw_callable = callable
         self.callable = partial(callable, *args, **kwargs)
         self.exceptions = exc
 
-    def iter_values(self, configs, locations):
+    def iter_values(self, log):
         try:
-            yield self.callable()
-        except self.exceptions:
+            value = self.callable()
+        except self.exceptions as err:
+            log.info("called {getter.raw_callable}:\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
             pass
+        else:
+            log.info("called {getter.raw_callable}:\nreturned: {value!r}", getter=self, value=value)
+            yield value
 
 
 class BoundValue(BoundGetter):
@@ -227,7 +233,8 @@ class BoundValue(BoundGetter):
         super().__init__(parent, obj, param)
         self.value = value
 
-    def iter_values(self, configs, locations):
+    def iter_values(self, log):
+        log.info("got hard-coded value: {getter.value}", getter=self)
         yield self.value
 
 

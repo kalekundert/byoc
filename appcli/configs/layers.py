@@ -2,8 +2,14 @@
 
 import functools
 from inspect import isclass
+from ..utils import lookup
 
 class Layer:
+
+    def iter_values(self, key, log):
+        raise NotImplementedError
+
+class DictLayer(Layer):
 
     def __init__(self, *, values, location):
         # Values:
@@ -15,12 +21,23 @@ class Layer:
         # Location:
         # - string
         # - callable that takes no arguments and returns a string.
-        self.config = None
         self.values = values
         self.location = location
 
     def __repr__(self):
-        return f'Layer(values={self._values!r}, location={self._location!r})'
+        return f'{self.__class__.__name__}(values={self._values!r}, location={self._location!r})'
+
+    def iter_values(self, key, log):
+        try:
+            value = lookup(self.values, key)
+        except KeyError:
+            log.info(
+                    lambda e: f"{e.layer.location}:\ndid not find {key!r} in {repr_dict_short(e.layer.values)}",
+                    layer=self, key=key,
+            )
+        else:
+            log.info("{layer.location}:\nfound {key!r}: {value!r}", layer=self, key=key, value=value)
+            yield value
 
     @property
     def values(self):
@@ -59,6 +76,9 @@ def dict_like(*args):
             self.f = f
             self.raises = raises
 
+        def __repr__(self):
+            return f"{self.__class__.__name__}({self.f!r})"
+
         def __getitem__(self, key):
             try:
                 return self.f(key)
@@ -75,3 +95,14 @@ def dict_like(*args):
 
     else:
         return dict_like(*args)
+
+def repr_dict_short(d):
+    import sys
+    from textwrap import shorten
+    from pprint import pformat
+
+    return shorten(
+            pformat(d, depth=1, compact=True, width=sys.maxsize),
+            width=70,
+            placeholder='…',
+    )

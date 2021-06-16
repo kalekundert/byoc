@@ -126,7 +126,7 @@ class param:
         ):
             bound_getters = self._load_bound_getters(obj)
             default = self._load_default(obj)
-            values = model.iter_values(obj, bound_getters, default)
+            values = model.iter_values(bound_getters, default)
             return self._pick(values)
 
     def _calc_bound_getters(self, obj):

@@ -15,7 +15,7 @@ test_default_composite_config:
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigZ(appcli.CompositeConfig):
       >     __config__ = [DummyConfigA()]
@@ -32,11 +32,11 @@ test_default_composite_config:
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 1}, location='a')
+      >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 2}, location='b')
+      >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyConfigZ(appcli.CompositeConfig):
       >     __config__ = [DummyConfigA(), DummyConfigB()]
@@ -56,8 +56,8 @@ test_default_composite_config:
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self, obj):
-      >         yield appcli.Layer(values={'x': 1}, location='a')
-      >         yield appcli.Layer(values={'x': 2}, location='a')
+      >         yield appcli.DictLayer(values={'x': 1}, location='a')
+      >         yield appcli.DictLayer(values={'x': 2}, location='a')
       >
       > class DummyConfigZ(appcli.CompositeConfig):
       >     __config__ = [DummyConfigA()]

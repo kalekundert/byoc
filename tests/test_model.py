@@ -92,7 +92,7 @@ def test_iter_values(obj, param, getters, default, expected, error):
     kwargs = {'default': eval(default)} if default else {}
 
     with error:
-        values = appcli.model.iter_values(obj, bound_getters, **kwargs)
+        values = appcli.model.iter_values(bound_getters, **kwargs)
         assert list(values) == expected
 
 

@@ -3,8 +3,10 @@
 import pytest, re
 import parametrize_from_file
 
-from appcli.model import get_configs
+from appcli.model import Log, get_configs
 from schema_helpers import *
+from re_assert import Matches
+from more_itertools import zip_equal
 
 @parametrize_from_file(
         schema=Schema({
@@ -51,8 +53,8 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             'getter': str,
             'expected': {
                 'values': eval,
-                'configs': eval,
-                Optional('locations'): eval,
+                'info': [str],
+                Optional('hints', default=[]): [str],
             },
         }),
 )
@@ -65,12 +67,16 @@ def test_getter_iter_values(getter, obj, param, expected):
     appcli.init(obj)
     bound_getter = getter.bind(obj, param)
 
-    configs, locations = [], []
-    values = bound_getter.iter_values(configs, locations)
+    log = Log()
+    values = bound_getter.iter_values(log)
 
     assert list(values) == expected['values']
-    assert configs == [get_configs(obj)[i] for i in expected['configs']]
-    assert [tuple(map(str, x)) for x in locations] == expected['locations']
+
+    for info, pattern in zip_equal(log.err.info_strs, expected['info']):
+        Matches(pattern).assert_matches(info)
+
+    for hint, pattern in zip_equal(log.err.hint_strs, expected['hints']):
+        Matches(pattern).assert_matches(hint)
 
 @parametrize_from_file(
         schema=Schema({

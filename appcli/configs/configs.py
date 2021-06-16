@@ -4,12 +4,15 @@ import sys, os, re, inspect
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
-from .layers import Layer, dict_like
+from .layers import DictLayer, dict_like
 from ..utils import lookup, first_specified
 from ..errors import ConfigError
 
 class Config:
     autoload = True
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}()"
 
     def load(self, obj):
         raise NotImplmentedError
@@ -50,7 +53,7 @@ class SelfConfig(Config):
     """
 
     def load(self, obj):
-        yield Layer(
+        yield DictLayer(
                 values=obj,
                 location=_guess_module_path(obj),
         )
@@ -73,7 +76,7 @@ class AttrConfig(Config):
             x = self.func(obj, x)
             return lookup(x, key)
 
-        yield Layer(
+        yield DictLayer(
                 values=getter,
                 location=_guess_module_path(obj),
         )
@@ -91,7 +94,7 @@ class CallbackConfig(Config):
         if callable(location):
             location = location(obj)
 
-        yield Layer(
+        yield DictLayer(
                 values=dict_like(*self.raises)(self.callback),
                 location=location
         )
@@ -105,7 +108,7 @@ class DefaultConfig(Config):
         self.location = f'{frame.filename}:{frame.lineno}'
 
     def load(self, obj):
-        yield Layer(
+        yield DictLayer(
                 values=self.dict,
                 location=self.location,
         )
@@ -114,7 +117,7 @@ class DefaultConfig(Config):
 class EnvironmentConfig(Config):
 
     def load(self, obj):
-        yield Layer(
+        yield DictLayer(
                 values=os.environ,
                 location="environment",
         )
@@ -132,7 +135,7 @@ class ArgparseConfig(Config):
         parser = self.get_parser(obj)
         args = parser.parse_args()
 
-        yield Layer(
+        yield DictLayer(
                 values=vars(args),
                 location='command line',
         )
@@ -183,7 +186,7 @@ class DocoptConfig(Config):
         not_specified = [None, False, []]
         args = {k: v for k, v in args.items() if v not in not_specified}
 
-        yield Layer(
+        yield DictLayer(
                 values=args,
                 location='command line',
         )
@@ -318,7 +321,7 @@ class FileConfig(Config):
         if callable(self.schema):
             data = self.schema(data)
 
-        yield Layer(
+        yield DictLayer(
                 values=data,
                 location=path,
         )

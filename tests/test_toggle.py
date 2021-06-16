@@ -21,7 +21,7 @@ def test_toggle(layers, expected, error):
     class BaseConfig(appcli.Config):
 
         def load(self, obj):
-            yield appcli.Layer(
+            yield appcli.DictLayer(
                     values={'flag': self.value},
                     location=self.location,
             )

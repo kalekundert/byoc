@@ -6,7 +6,7 @@ def test_app():
 
     class DummyConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={'x': 1}, location='a')
+            yield appcli.DictLayer(values={'x': 1}, location='a')
 
     class DummyObj(appcli.App):
         __config__ = [DummyConfig()]

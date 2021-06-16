@@ -49,7 +49,7 @@ def eval_layer(layer, globals=None, **kw_globals):
     }))
     layer = schema(layer)
     layer = eval_appcli(layer, globals, **kw_globals) \
-            if isinstance(layer, str) else appcli.Layer(**layer)
+            if isinstance(layer, str) else appcli.DictLayer(**layer)
     return LayerWrapper(layer)
 
 def exec_appcli(code, globals=None, **kw_globals):

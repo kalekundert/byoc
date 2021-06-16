@@ -30,7 +30,7 @@ def test_param_cache_reload(dynamic):
 
     class BackgroundConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={'x': -1}, location='bg')
+            yield appcli.DictLayer(values={'x': -1}, location='bg')
 
     class ForegroundConfig(appcli.Config):
 
@@ -40,7 +40,7 @@ def test_param_cache_reload(dynamic):
             # process (e.g. -1) is mistakenly saved as the cache value.
             obj.x
 
-            yield appcli.Layer(values=self.values, location='fg')
+            yield appcli.DictLayer(values=self.values, location='fg')
     
     fg = ForegroundConfig()
     fg.values = {'x': 1}
@@ -66,12 +66,12 @@ def test_param_cache_instance_values():
 
     class Background(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={'x': 1}, location='bg')
+            yield appcli.DictLayer(values={'x': 1}, location='bg')
     
     class Foreground(appcli.Config):
         autoload = False
         def load(self, obj):
-            yield appcli.Layer(values={'x': 2}, location='fg')
+            yield appcli.DictLayer(values={'x': 2}, location='fg')
     
     class DummyObj:
         __config__ = [Foreground(), Background()]
@@ -94,11 +94,11 @@ def test_param_cache_instance_key_map():
     
     class DummyConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={'x': 1}, location='a')
+            yield appcli.DictLayer(values={'x': 1}, location='a')
     
     class DecoyConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={'x': 2}, location='b')
+            yield appcli.DictLayer(values={'x': 2}, location='b')
     
     class ParentObj:
         x = appcli.param()
@@ -122,7 +122,7 @@ def test_param_cache_get():
     class DummyConfig(appcli.Config):
 
         def load(self, obj):
-            yield appcli.Layer(values=self.values, location='fg')
+            yield appcli.DictLayer(values=self.values, location='fg')
     
     config = DummyConfig()
     config.values = {'x': 1}

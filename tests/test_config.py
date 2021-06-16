@@ -163,7 +163,7 @@ def test_on_load(prepare, load, expected):
 
     class DummyConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={}, location=self.__class__.__name__)
+            yield appcli.DictLayer(values={}, location=self.__class__.__name__)
 
     class A(DummyConfig):
         pass
@@ -233,7 +233,7 @@ def test_on_load_inheritance():
 
     class DummyConfig(appcli.Config):
         def load(self, obj):
-            yield appcli.Layer(values={}, location='a')
+            yield appcli.DictLayer(values={}, location='a')
 
     class P:
         __config__ = [DummyConfig()]
