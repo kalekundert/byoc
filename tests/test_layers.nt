@@ -1,0 +1,28 @@
+test_dict_layer_iter_values:
+  -
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      > )
+    expected:
+      x: [1]
+      y: []
+  -
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         schema=lambda x: {k: v+1 for k,v in x.items()},
+      > )
+    expected:
+      x: [2]
+      y: []
+  -
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': {'y': {'z': 1}}},
+      >         root_key='x.y',
+      > )
+    expected:
+      x: []
+      y: []
+      z: [1]

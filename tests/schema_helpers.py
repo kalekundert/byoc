@@ -81,11 +81,12 @@ def exec_config(code, globals=None, **kw_globals):
         return locals['DummyConfig']()
 
 def collect_layers(obj):
-    bound_configs = appcli.model.get_bound_configs(obj)
+    wrapped_configs = appcli.model.get_wrapped_configs(obj)
     return {
-            i: bound_config.layers
-            for i, bound_config in enumerate(bound_configs)
+            i: wc.layers
+            for i, wc in enumerate(wrapped_configs)
     }
+
 def find_param(obj, name=None):
     class_attrs = obj.__class__.__dict__
 

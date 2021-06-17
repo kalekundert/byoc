@@ -20,7 +20,7 @@ def test_toggle(layers, expected, error):
 
     class BaseConfig(appcli.Config):
 
-        def load(self, obj):
+        def load(self):
             yield appcli.DictLayer(
                     values={'flag': self.value},
                     location=self.location,
@@ -36,7 +36,7 @@ def test_toggle(layers, expected, error):
             value = layer['value']
             location = str(i+1)
 
-        configs.append(DerivedConfig())
+        configs.append(DerivedConfig)
         keys.append(appcli.Key(DerivedConfig, toggle=layer['toggle']))
 
     class DummyObj:

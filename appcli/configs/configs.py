@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, re, inspect
+import sys, os, re, inspect, autoprop
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
@@ -11,171 +11,68 @@ from ..errors import ConfigError
 class Config:
     autoload = True
 
+    def __init__(self, obj):
+        self.obj = obj
+
     def __repr__(self):
         return f"{self.__class__.__name__}()"
 
-    def load(self, obj):
+    def load(self):
         raise NotImplmentedError
-
-
-class CompositeConfig(Config):
-
-    def load(self, obj):
-        from ..model import get_configs
-        for config in get_configs(self):
-            yield from config.load(obj)
-
-
-class SelfConfig(Config):
-    """
-    This config simply provides access to the object associated with the 
-    parameter in question.  By using callable keys, you can access any 
-    attribute on the object.  If the object also happens to implement 
-    `__getitem__()`, it will be used to lookup string keys.
-
-    Example:
-
-    >>> from appcli import Key, SelfConfig, param
-    >>> class MyApp:
-    ...     __config__ = [SelfConfig()]
-    ...     
-    ...     def _helper(self):
-    ...         return 42
-    ...
-    ...     x = param(
-    ...             Key(SelfConfig, _helper),
-    ...     )
-    ...     
-    ...
-    >>> app = MyApp()
-    >>> app.x
-    42
-    """
-
-    def load(self, obj):
-        yield DictLayer(
-                values=obj,
-                location=_guess_module_path(obj),
-        )
-
-
-class AttrConfig(Config):
-    """
-    Read parameters from another attribute of the object.
-    """
-
-    def __init__(self, attr, f=lambda obj, x: x):
-        self.attr = attr
-        self.func = f
-
-    def load(self, obj):
-
-        @dict_like(AttributeError)
-        def getter(key):
-            x = getattr(obj, self.attr)
-            x = self.func(obj, x)
-            return lookup(x, key)
-
-        yield DictLayer(
-                values=getter,
-                location=_guess_module_path(obj),
-        )
-
-
-class CallbackConfig(Config):
-
-    def __init__(self, callback, *raises, location=None):
-        self.callback = callback
-        self.raises = raises
-        self.location = location
-
-    def load(self, obj):
-        location = self.location or 'callback'
-        if callable(location):
-            location = location(obj)
-
-        yield DictLayer(
-                values=dict_like(*self.raises)(self.callback),
-                location=location
-        )
-
-
-class DefaultConfig(Config):
-
-    def __init__(self, **kwargs):
-        self.dict = kwargs
-        frame = inspect.stack()[1]
-        self.location = f'{frame.filename}:{frame.lineno}'
-
-    def load(self, obj):
-        yield DictLayer(
-                values=self.dict,
-                location=self.location,
-        )
-
 
 class EnvironmentConfig(Config):
 
-    def load(self, obj):
+    def load(self):
         yield DictLayer(
                 values=os.environ,
                 location="environment",
         )
 
 
+@autoprop
 class ArgparseConfig(Config):
     autoload = False
+    parser_getter = lambda obj: obj.get_argparse()
+    schema = None
 
-    def __init__(self, parser_getter=lambda self: self.get_argparse()):
-        self.parser_getter = parser_getter
-
-    def load(self, obj):
-        import docopt
-
-        parser = self.get_parser(obj)
-        args = parser.parse_args()
-
+    def load(self):
+        args = self.parser.parse_args()
         yield DictLayer(
                 values=vars(args),
+                schema=self.schema,
                 location='command line',
         )
 
-    def get_parser(self, obj):
+    def get_parser(self):
         # Might make sense to try caching the parser in the given object.
-        return self.parser_getter(obj)
+        return self.__class__.parser_getter(self.obj)
 
-    def get_usage(self, obj):
-        return self.get_parser(obj).format_help()
+    def get_usage(self):
+        return self.parser.format_help()
 
-    def get_brief(self, obj):
-        return self.get_parser(obj).description
+    def get_brief(self):
+        return self.parser.description
 
 
+@autoprop
 class DocoptConfig(Config):
     autoload = False
+    usage_getter = lambda obj: obj.__doc__
+    version_getter = lambda obj: getattr(obj, '__version__')
+    usage_io_getter = lambda obj: sys.stdout
+    include_help = True
+    include_version = None
+    options_first = False
+    schema = None
 
-    def __init__(self,
-            *,
-            usage_getter=lambda self: self.__doc__,
-            usage_io=sys.stdout,
-            help=True,
-            version=None,
-            options_first=False,
-        ):
-        self.usage_getter = usage_getter
-        self.usage_io = usage_io
-        self.help = help
-        self.version = version
-        self.options_first = options_first
-
-    def load(self, obj):
+    def load(self):
         import sys, docopt, contextlib
 
-        with contextlib.redirect_stdout(self.get_usage_io(obj)):
+        with contextlib.redirect_stdout(self.usage_io):
             args = docopt.docopt(
-                    self.get_usage(obj),
-                    help=self.help,
-                    version=self.get_version(obj),
+                    self.usage,
+                    help=self.include_help,
+                    version=self.version,
                     options_first=self.options_first,
             )
 
@@ -188,53 +85,58 @@ class DocoptConfig(Config):
 
         yield DictLayer(
                 values=args,
+                schema=self.schema,
                 location='command line',
         )
 
-    def get_usage(self, obj):
+    def get_usage(self):
         from mako.template import Template
-        usage = self.usage_getter(obj)
+
+        usage = self.__class__.usage_getter(self.obj)
         usage = dedent(usage)
-        usage = Template(usage, strict_undefined=True).render(app=obj)
+        usage = Template(usage, strict_undefined=True).render(app=self.obj)
+
+        # Trailing whitespace can cause unnecessary line wrapping.
         usage = re.sub(r' *$', '', usage, flags=re.MULTILINE)
+
         return usage
 
-    def get_usage_io(self, obj):
-        return getattr(obj, 'usage_io', self.usage_io)
+    def get_usage_io(self):
+        return self.__class__.usage_io_getter(self.obj)
 
-    def get_brief(self, obj):
+    def get_brief(self):
         import re
         sections = re.split(
                 '\n\n|usage:',
-                self.get_usage(obj),
+                self.usage,
                 flags=re.IGNORECASE,
         )
         return first(sections, '').replace('\n', ' ').strip()
 
-    def get_version(self, obj):
-        return getattr(obj, '__version__', self.version)
+    def get_version(self):
+        return self.include_version and self.__class__.version_getter(self.obj)
 
 
+@autoprop
 class AppDirsConfig(Config):
+    name = None
+    config_cls = None
+    slug = None
+    author = None
+    version = None
+    schema = None
+    root_key = None
+    stem = 'conf'
 
-    def __init__(self, name=None, format=None, slug=None, author=None, version=None, schema=None,
-            stem='conf'):
-        self.name = name
-        self.stem = stem
-        self.slug = slug
-        self.author = author
-        self.version = version
-        self.config_cls = format
-        self.schema = schema
-
-    def load(self, obj):
-        for path, config_cls in self.get_config_map(obj).items():
-            file_config = config_cls(path, schema=self.schema)
-            yield from file_config.load(obj)
+    def load(self):
+        for path, config_cls in self.config_map.items():
+            yield from config_cls.load_from_path(
+                    path=path, schema=self.schema, root_key=self.root_key,
+            )
 
     def get_name_and_config_cls(self):
         if not self.name and not self.config_cls:
-            raise ConfigError("must specify `AppDirsConfig.name` or `AppDirsConfig.format`")
+            raise ConfigError("must specify `AppDirsConfig.name` or `AppDirsConfig.config_cls`")
 
         if self.name and self.config_cls:
             err = ConfigError(
@@ -275,64 +177,62 @@ class AppDirsConfig(Config):
         if self.config_cls:
             return self.stem + self.config_cls.suffixes[0], self.config_cls
 
-    def get_dirs(self, obj):
+    def get_dirs(self):
         from appdirs import AppDirs
-        slug = self.slug or obj.__class__.__name__.lower()
+        slug = self.slug or self.obj.__class__.__name__.lower()
         return AppDirs(slug, self.author, version=self.version)
 
-    def get_config_map(self, obj):
-        dirs = self.get_dirs(obj)
-        name, config_cls = self.get_name_and_config_cls()
+    def get_config_map(self):
+        dirs = self.dirs
+        name, config_cls = self.name_and_config_cls
         return {
                 Path(dirs.user_config_dir) / name: config_cls,
                 Path(dirs.site_config_dir) / name: config_cls,
         }
 
-    def get_config_paths(self, obj):
-        return self.get_config_map(obj).keys()
+    def get_config_paths(self):
+        return self.config_map.keys()
         
 
+@autoprop
 class FileConfig(Config):
+    path_getter = lambda obj: obj.path
+    schema = None
+    root_key = None
 
-    def __init__(self, path, schema=None):
-        """
-        path: can be an path, or a callable that takes the object as it's only 
-        argument and returns a path.  The purpose of specifying a callable is 
-        usually to read the path from an attribute of the object, e.g. ``lambda 
-        self: self.path``
-        """
-        self._path = path
-        self.schema = schema
+    def get_path(self):
+        return Path(self.__class__.path_getter(self.obj))
 
-    def get_path(self, obj):
-        if callable(self._path):
-            return Path(self._path(obj))
-        else:
-            return Path(self._path)
+    def load(self):
+        yield from self.load_from_path(
+                path=self.path,
+                schema=self.schema,
+                root_key=self.root_key
+        )
 
-    def load(self, obj):
-        path = self.get_path(obj)
-
+    @classmethod
+    def load_from_path(cls, path, *, schema=None, root_key=None):
         try:
-            data = self._do_load(path)
+            data = cls._do_load(path)
         except FileNotFoundError:
             data = {}
-
-        if callable(self.schema):
-            data = self.schema(data)
 
         yield DictLayer(
                 values=data,
                 location=path,
+                schema=schema,
+                root_key=root_key,
         )
 
-    def _do_load(self, path):
+    @staticmethod
+    def _do_load(path):
         raise NotImplementedError
 
 class YamlConfig(FileConfig):
     suffixes = '.yml', '.yaml'
 
-    def _do_load(self, path):
+    @staticmethod
+    def _do_load(path):
         import yaml
         with open(path) as f:
             return yaml.safe_load(f)
@@ -341,27 +241,32 @@ class YamlConfig(FileConfig):
 class TomlConfig(FileConfig):
     suffixes = '.toml',
 
-    def _do_load(self, path):
+    @staticmethod
+    def _do_load(path):
         try:
             # Prefer rtoml, since it's much less buggy.  It's also much harder 
             # to install, though.
             import rtoml
             return rtoml.load(path)
         except ModuleNotFoundError:
-            import toml
-            return toml.load(path)
+            pass
+
+        try:
+            import tomli
+            return tomli.load(path)
+        except ModuleNotFoundError:
+            pass
+
+        import toml
+        return toml.load(path)
 
 
 class NtConfig(FileConfig):
     suffixes = '.nt',
 
-    def _do_load(self, path):
+    @staticmethod
+    def _do_load(path):
         import nestedtext as nt
         return nt.load(path)
 
 
-def _guess_module_path(x):
-    try:
-        return inspect.getmodule(x).__file__
-    except Exception:
-        return '???'

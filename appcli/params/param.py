@@ -137,7 +137,7 @@ class param:
                 Key(x) if isclass(x) and issubclass(x, Config) else x
                 for x in self._keys or [self._get_default_key()]
         ]
-        bound_configs = model.get_bound_configs(obj)
+        wrapped_configs = model.get_wrapped_configs(obj)
         are_getters = [isinstance(x, Getter) for x in keys]
 
         if all(are_getters):
@@ -156,13 +156,13 @@ class param:
 
         elif len(keys) == 1:
             getters = [
-                    ImplicitKey(bound_config, keys[0])
-                    for bound_config in bound_configs
+                    ImplicitKey(wrapped_config, keys[0])
+                    for wrapped_config in wrapped_configs
             ]
 
-        elif len(keys) != len(bound_configs):
+        elif len(keys) != len(wrapped_configs):
             err = ConfigError(
-                    configs=[x.config for x in bound_configs],
+                    configs=[x.config for x in wrapped_configs],
                     keys=keys,
             )
             err.brief = "number of keys must match the number of configs"
@@ -178,8 +178,8 @@ class param:
 
         else:
             getters = [
-                    ImplicitKey(bound_config, key)
-                    for key, bound_config in zip(keys, bound_configs)
+                    ImplicitKey(wrapped_config, key)
+                    for key, wrapped_config in zip(keys, wrapped_configs)
             ]
 
         bound_getters = [
@@ -196,7 +196,6 @@ class param:
 
     def _get_known_getter_kwargs(self):
         return {'cast'}
-
 
 def _merge_default_args(instance, factory):
     have_instance = instance is not UNSPECIFIED

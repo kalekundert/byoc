@@ -3,7 +3,7 @@
 import pytest, re
 import parametrize_from_file
 
-from appcli.model import Log, get_configs
+from appcli.model import Log
 from schema_helpers import *
 from re_assert import Matches
 from more_itertools import zip_equal

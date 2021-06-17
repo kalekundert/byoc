@@ -11,7 +11,7 @@ class Layer:
 
 class DictLayer(Layer):
 
-    def __init__(self, *, values, location):
+    def __init__(self, *, values, schema=lambda x: x, root_key=None, location=None):
         # Values:
         # - object that implements `__getitem__()` to either return value 
         #   associated with key, or raise KeyError.
@@ -22,21 +22,41 @@ class DictLayer(Layer):
         # - string
         # - callable that takes no arguments and returns a string.
         self.values = values
+        self.schema = schema
+        self.root_key = root_key
         self.location = location
 
     def __repr__(self):
         return f'{self.__class__.__name__}(values={self._values!r}, location={self._location!r})'
 
     def iter_values(self, key, log):
+        values = self.values
+
+        if self.schema:
+            values = self.schema(values)
+
+        if self.root_key:
+            try:
+                values = lookup(values, self.root_key)
+            except KeyError:
+                log.info(
+                        lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e.layer.values)}", e.layer.location),
+                        layer=self, key=self.root_key,
+                )
+                return
+
         try:
-            value = lookup(self.values, key)
+            value = lookup(values, key)
         except KeyError:
             log.info(
-                    lambda e: f"{e.layer.location}:\ndid not find {key!r} in {repr_dict_short(e.layer.values)}",
+                    lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e.layer.values)}", e.layer.location),
                     layer=self, key=key,
             )
         else:
-            log.info("{layer.location}:\nfound {key!r}: {value!r}", layer=self, key=key, value=value)
+            log.info(
+                    lambda e: format_loc(f"found {e.key!r}: {e.value!r}", e.layer.location),
+                    layer=self, key=key, value=value,
+            )
             yield value
 
     @property
@@ -95,6 +115,10 @@ def dict_like(*args):
 
     else:
         return dict_like(*args)
+
+def format_loc(message, loc):
+    prefix = f"{loc}:\n" if loc else ""
+    return prefix + message
 
 def repr_dict_short(d):
     import sys

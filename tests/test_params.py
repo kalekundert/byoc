@@ -29,24 +29,22 @@ def test_param_init_err():
 def test_param_cache_reload(dynamic):
 
     class BackgroundConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={'x': -1}, location='bg')
+        def load(self):
+            yield appcli.DictLayer(values={'x': -1})
 
     class ForegroundConfig(appcli.Config):
+        values = {'x': 1}
 
-        def load(self, obj):
+        def load(self):
             # Access the value of the parameter during the load function so 
             # that we can tell if an intermediate value from the loading 
             # process (e.g. -1) is mistakenly saved as the cache value.
-            obj.x
+            self.obj.x
 
-            yield appcli.DictLayer(values=self.values, location='fg')
+            yield appcli.DictLayer(values=self.values)
     
-    fg = ForegroundConfig()
-    fg.values = {'x': 1}
-
     class DummyObj:
-        __config__ = [fg, BackgroundConfig()]
+        __config__ = [ForegroundConfig, BackgroundConfig]
         x = appcli.param(dynamic=dynamic)
 
     
@@ -54,7 +52,7 @@ def test_param_cache_reload(dynamic):
     assert obj.x == 1
 
     # Before updating the cache:
-    fg.values['x'] = 2
+    ForegroundConfig.values['x'] = 2
     assert obj.x == (2 if dynamic else 1)
 
     # After updating the cache:
@@ -65,16 +63,16 @@ def test_param_cache_instance_values():
     # Test to make sure the independent instances have independent caches.
 
     class Background(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={'x': 1}, location='bg')
+        def load(self):
+            yield appcli.DictLayer(values={'x': 1})
     
     class Foreground(appcli.Config):
         autoload = False
-        def load(self, obj):
-            yield appcli.DictLayer(values={'x': 2}, location='fg')
+        def load(self):
+            yield appcli.DictLayer(values={'x': 2})
     
     class DummyObj:
-        __config__ = [Foreground(), Background()]
+        __config__ = [Foreground, Background]
         x = appcli.param()
 
     o1 = DummyObj()
@@ -93,21 +91,21 @@ def test_param_cache_instance_key_map():
     # instances of different classes.
     
     class DummyConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={'x': 1}, location='a')
+        def load(self):
+            yield appcli.DictLayer(values={'x': 1})
     
     class DecoyConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={'x': 2}, location='b')
+        def load(self):
+            yield appcli.DictLayer(values={'x': 2})
     
     class ParentObj:
         x = appcli.param()
     
     class DummyObj(ParentObj):
-        __config__ = [DummyConfig()]
+        __config__ = [DummyConfig]
     
     class DecoyObj(ParentObj):
-        __config__ = [DecoyConfig()]
+        __config__ = [DecoyConfig]
     
     decoy = DecoyObj()
     assert decoy.x == 2
@@ -121,14 +119,11 @@ def test_param_cache_get():
     
     class DummyConfig(appcli.Config):
 
-        def load(self, obj):
-            yield appcli.DictLayer(values=self.values, location='fg')
+        def load(self):
+            yield appcli.DictLayer(values={'x': 1})
     
-    config = DummyConfig()
-    config.values = {'x': 1}
-
     class DummyObj:
-        __config__ = [config]
+        __config__ = [DummyConfig]
 
         def __init__(self):
             self.y = 0
@@ -161,10 +156,10 @@ def test_param_set_non_comparable():
         x = appcli.param()
 
     obj = DummyObj()
-    obj.x = NonComparable()
+    obj.x = nc = NonComparable()
 
     # This attribute access should not attempt any comparisons.
-    obj.x
+    assert obj.x is nc
 
 
 def locals_or_ab(locals):

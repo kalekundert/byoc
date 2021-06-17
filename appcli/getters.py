@@ -38,24 +38,24 @@ class Key(Getter):
             return [self.config_cls.__name__, repr(self.key)]
 
     def bind(self, obj, param):
-        bound_configs = [
-                bc for bc in model.get_bound_configs(obj)
-                if isinstance(bc.config, self.config_cls)
+        wrapped_configs = [
+                wc for wc in model.get_wrapped_configs(obj)
+                if isinstance(wc.config, self.config_cls)
         ]
-        return BoundKey(self, obj, param, bound_configs)
+        return BoundKey(self, obj, param, wrapped_configs)
 
 class ImplicitKey(Getter):
 
-    def __init__(self, bound_config, key):
+    def __init__(self, wrapped_config, key):
         super().__init__()
         self.key = key
-        self.bound_config = bound_config
+        self.wrapped_config = wrapped_config
 
     def __reprargs__(self):
-        return [repr(self.key), repr(self.bound_config)]
+        return [repr(self.key), repr(self.wrapped_config)]
 
     def bind(self, obj, param):
-        return BoundKey(self, obj, param, [self.bound_config])
+        return BoundKey(self, obj, param, [self.wrapped_config])
 
 class Func(Getter):
 
@@ -123,7 +123,8 @@ class BoundGetter:
         # The following attributes are public and may be accessed or modified 
         # by `param` subclasses (e.g. `toggle_param`).  Be careful when making 
         # modifications, though, because any modifications will need to be 
-        # re-applied each time the cache expires.
+        # re-applied each time the cache expires (because the getters are 
+        # re-bound when this happens).
         self.kwargs = parent.kwargs
         self.cast_funcs = list(always_iterable(
             self.kwargs.get('cast', []) or param._get_default_cast()
@@ -176,35 +177,35 @@ class BoundGetter:
 
 class BoundKey(BoundGetter):
 
-    def __init__(self, parent, obj, param, bound_configs):
+    def __init__(self, parent, obj, param, wrapped_configs):
         super().__init__(parent, obj, param)
         self.key = parent.key
-        self.bound_configs = bound_configs
+        self.wrapped_configs = wrapped_configs
 
         if self.key is UNSPECIFIED:
             self.key = param._get_default_key()
 
     def iter_values(self, log):
         assert self.key is not UNSPECIFIED
-        assert self.bound_configs is not None
+        assert self.wrapped_configs is not None
 
-        if not self.bound_configs:
+        if not self.wrapped_configs:
             log.info("no configs of class {config_cls.__name__}", config_cls=self.parent.config_cls)
 
-        for bound_config in self.bound_configs:
+        for wrapped_config in self.wrapped_configs:
 
-            if not bound_config.is_loaded:
-                log.info("skipped {config}: not loaded", config=bound_config.config)
+            if not wrapped_config.is_loaded:
+                log.info("skipped {config}: not loaded", config=wrapped_config.config)
                 log.hint("did you mean to call `appcli.load()`?")
                 continue
 
-            if not bound_config.layers:
-                log.info("skipped {config}: loaded, but no layers", config=bound_config.config)
+            if not wrapped_config.layers:
+                log.info("skipped {config}: loaded, but no layers", config=wrapped_config.config)
                 continue
 
-            log.info("queried {config}:", config=bound_config.config)
+            log.info("queried {config}:", config=wrapped_config.config)
 
-            for layer in bound_config:
+            for layer in wrapped_config:
                 yield from layer.iter_values(self.key, log)
 
 

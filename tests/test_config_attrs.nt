@@ -1,0 +1,217 @@
+test_config_attr:
+  -
+    id: config_cls
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyConfigA(DummyConfig):
+      >     x = 1
+      >     y = 1
+      >     z = 1
+      >
+      > class DummyConfigB(DummyConfig):
+      >     x = 2
+      >     y = 2
+      >     z = 2
+      >
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+      >     x = appcli.config_attr()
+      >     y = appcli.config_attr(DummyConfigA)
+      >     z = appcli.config_attr(DummyConfigB)
+    expected:
+      x: 1
+      y: 1
+      z: 2
+  -
+    id: getter
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     x = 1
+      >     def load(self):
+      >         yield from []
+      >
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.config_attr()
+      >     y = appcli.config_attr(getter=lambda cfg: cfg.x)
+    expected:
+      x: 1
+      y: 1
+
+  -
+    id: iterate
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyConfigA(DummyConfig): x = 1
+      > class DummyConfigB(DummyConfig): x = 2
+      >
+      > class DummyObj:
+      >     __config__ = [
+      >             DummyConfigA,
+      >             DummyConfigB,
+      >     ]
+      >     x = appcli.config_attr()
+    expected:
+      x: 1
+  -
+    id: iterate
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyConfigX(DummyConfig): x = 1
+      > class DummyConfigY(DummyConfig): y = 2
+      >
+      > class DummyObj:
+      >     __config__ = [
+      >             DummyConfigX,
+      >             DummyConfigY,
+      >     ]
+      >     x = appcli.config_attr()
+      >     y = appcli.config_attr()
+    expected:
+      x: 1
+      y: 2
+
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     x = 1
+      >     def load(self):
+      >         yield from []
+      >
+      > class Parent:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.config_attr()
+      >
+      > class Child(Parent):
+      >     pass
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     x = 1
+      >     def load(self):
+      >         yield from []
+      >
+      > class Parent:
+      >     x = appcli.config_attr()
+      >
+      > class Child(Parent):
+      >     __config__ = [DummyConfig]
+      >
+      > obj = Child()
+    expected:
+      x: 1
+  -
+    id: inherit
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     x = 1
+      >     def load(self):
+      >         yield from []
+      >
+      > class Parent:
+      >     __config__ = [DummyConfig]
+      >
+      > class Child(Parent):
+      >     x = appcli.config_attr()
+      >
+      > obj = Child()
+    expected:
+      x: 1
+
+  -
+    id: decoy
+    obj:
+      > class DummyConfig(appcli.Config):
+      >
+      >     def load(self):
+      >         yield from []
+      >
+      >     @property
+      >     def y(self):
+      >         return self.obj.x + 1
+      >
+      > class Obj:
+      >     __config__ = [DummyConfig]
+      >     y = appcli.config_attr()
+      >
+      > obj = Obj()
+      > obj.x = 1
+      >
+      > decoy = Obj()
+      > decoy.x = 3
+    expected:
+      x: 1
+      y: 2
+
+test_config_attr_err:
+  -
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.config_attr()
+    attr: x
+    error:
+      type: AttributeError
+      message:
+        - can't find config attribute
+        - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
+        - skipped DummyConfig\(\): no attribute 'x'
+  -
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.config_attr(getter=lambda cfg: cfg.x)
+    attr: x
+    error:
+      type: AttributeError
+      message:
+        - can't find config attribute
+        - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
+        - skipped DummyConfig\(\): <function DummyObj.<lambda> at 0x[0-9a-f]*> raised AttributeError: 'DummyConfig' object has no attribute 'x'
+  -
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyConfigA(DummyConfig): pass
+      > class DummyConfigB(DummyConfig): pass
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA,DummyConfigB]
+      >     x = appcli.config_attr(DummyConfigB)
+    attr: x
+    error:
+      type: AttributeError
+      message:
+        - can't find config attribute
+        - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
+        - skipped DummyConfigA\(\): not derived from DummyConfigB
+        - skipped DummyConfigB\(\): no attribute 'x'
+
+

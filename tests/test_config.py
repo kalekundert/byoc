@@ -22,26 +22,6 @@ def tmp_chdir(tmp_path):
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'layers': eval_layers,
-        })
-)
-def test_default_composite_config(obj, layers):
-    appcli.init(obj)
-    assert collect_layers(obj) == layers
-
-@parametrize_from_file(
-        schema=Schema({
-            'obj': exec_obj,
-            'expected': {str: eval},
-        })
-)
-def test_self_attr_callback_config(obj, expected):
-    for attr, value in expected.items():
-        assert getattr(obj, attr) == value
-
-@parametrize_from_file(
-        schema=Schema({
-            'obj': exec_obj,
             'usage': str,
             'brief': str,
             'invocations': [{
@@ -84,9 +64,7 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 @mock.patch.dict(os.environ, {"x": "1"})
 def test_environment_config():
     class DummyObj:
-        __config__ = [
-                appcli.EnvironmentConfig(),
-        ]
+        __config__ = [appcli.EnvironmentConfig]
         x = appcli.param()
 
     obj = DummyObj()
@@ -129,18 +107,18 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     appcli.init(obj)
     assert collect_layers(obj) == layers
 
-@parametrize_from_file(
-        schema=Schema({
-            'config': eval_appcli,
-            **error_or(
-                name=str,
-                config_cls=eval_appcli,
-            ),
-        })
-)
-def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error):
-    with error:
-        assert config.get_name_and_config_cls() == (name, config_cls)
+#@parametrize_from_file(
+#        schema=Schema({
+#            'config': eval_appcli,
+#            **error_or(
+#                name=str,
+#                config_cls=eval_appcli,
+#            ),
+#        })
+#)
+#def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error):
+#    with error:
+#        assert config.get_name_and_config_cls() == (name, config_cls)
 
 @parametrize_from_file(
         schema=Schema({
@@ -162,8 +140,8 @@ def test_file_config(tmp_chdir, obj, files, layer):
 def test_on_load(prepare, load, expected):
 
     class DummyConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={}, location=self.__class__.__name__)
+        def load(self):
+            yield appcli.DictLayer(values={})
 
     class A(DummyConfig):
         pass
@@ -184,7 +162,7 @@ def test_on_load(prepare, load, expected):
         pass
 
     class DummyObj:
-        __config__ = [A1(), A2(), B1(), B2()]
+        __config__ = [A1, A2, B1, B2]
 
         def __init__(self):
             self.calls = set()
@@ -232,11 +210,11 @@ def test_on_load(prepare, load, expected):
 def test_on_load_inheritance():
 
     class DummyConfig(appcli.Config):
-        def load(self, obj):
-            yield appcli.DictLayer(values={}, location='a')
+        def load(self):
+            yield appcli.DictLayer(values={})
 
     class P:
-        __config__ = [DummyConfig()]
+        __config__ = [DummyConfig]
 
         def __init__(self):
             self.calls = set()

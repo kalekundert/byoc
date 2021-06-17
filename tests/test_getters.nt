@@ -245,11 +245,11 @@ test_getter_iter_values:
     id: key-implicit
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
     getter:
       > appcli.Key(DummyConfig)
@@ -264,11 +264,11 @@ test_getter_iter_values:
     id: key-explicit
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'y')
     expected:
@@ -282,11 +282,11 @@ test_getter_iter_values:
     id: key-callable
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > from operator import itemgetter
     # Avoid using `lambda` because it doesn't have a consistent string 
@@ -304,11 +304,11 @@ test_getter_iter_values:
     id: key-dotted
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': {'y': 1}}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'x.y')
     expected:
@@ -322,11 +322,11 @@ test_getter_iter_values:
     id: key-falsy
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={None: 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
     getter:
       > appcli.Key(DummyConfig, None)
@@ -341,18 +341,18 @@ test_getter_iter_values:
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyConfigC(appcli.Config):
       >     pass
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(DummyConfigC, 'x')
     expected:
@@ -363,15 +363,15 @@ test_getter_iter_values:
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(DummyConfigA, 'x')
     expected:
@@ -385,15 +385,15 @@ test_getter_iter_values:
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(DummyConfigB, 'x')
     expected:
@@ -407,15 +407,15 @@ test_getter_iter_values:
     id: key-multi-config
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(appcli.Config, 'x')
     expected:
@@ -433,12 +433,12 @@ test_getter_iter_values:
     id: key-multi-layer
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'x')
     expected:
@@ -455,14 +455,14 @@ test_getter_iter_values:
     id: key-deferred-layer-values
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(
       >                 values=lambda: obj.values,  # not yet defined
       >                 location='a',
       >         )
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > obj = DummyObj()
       > obj.values = {'x': 1}
@@ -479,14 +479,14 @@ test_getter_iter_values:
     id: key-deferred-layer-loc
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(
       >                 values={'x': 1},
       >                 location=lambda: obj.loc,  # not yet defined
       >         )
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > obj = DummyObj()
       > obj.loc = 'a'
@@ -504,11 +504,11 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(appcli.Config):
       >     autoload = False
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'x')
     expected:
@@ -522,11 +522,11 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(appcli.Config):
       >     autoload = False
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > obj = DummyObj()
       > appcli.load(obj)
@@ -543,11 +543,11 @@ test_getter_iter_values:
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'y')
     expected:
@@ -561,12 +561,12 @@ test_getter_iter_values:
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'y')
     expected:
@@ -583,12 +583,12 @@ test_getter_iter_values:
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >         yield appcli.DictLayer(values={'y': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
     getter:
       > appcli.Key(DummyConfig, 'y')
     expected:
@@ -605,15 +605,15 @@ test_getter_iter_values:
     id: key-missing
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(appcli.Config, 'y')
     expected:
@@ -633,15 +633,15 @@ test_getter_iter_values:
     id: key-missing
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
       > appcli.Key(appcli.Config, 'y')
     expected:

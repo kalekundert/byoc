@@ -3,13 +3,13 @@ test_param:
     id: keys
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1, 'y': 2, 'z': 3}, location='a')
       >
       > f = lambda d: (d['x'], d['y'])
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >     x1 = appcli.param('x')
       >     x2 = appcli.param(appcli.Key(DummyConfig, 'x'))
@@ -29,15 +29,15 @@ test_param:
     id: keys-order
     obj:
       > class DummyConfigA(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
       >     x = appcli.param()
       >     y = appcli.param()
       >
@@ -69,15 +69,15 @@ test_param:
       >     pass
       >
       > class DummyConfigA(appcli.Config, DummyMixin):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyConfigB(appcli.Config, DummyMixin):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfigA(), DummyConfigB()]
+      >     __config__ = [DummyConfigA, DummyConfigB]
       >     x = appcli.param()
       >
       >     x1 = appcli.param(
@@ -100,11 +100,11 @@ test_param:
     id: keys-multi
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(
       >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             appcli.Key(DummyConfig, 'y', cast=lambda x: x-1),
@@ -115,11 +115,11 @@ test_param:
     id: keys-multi
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(
       >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             appcli.Key(DummyConfig, 'y', cast=lambda y: y-1),
@@ -153,12 +153,12 @@ test_param:
     id: pick
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x1 = appcli.param('x')
       >     x2 = appcli.param('x', pick=list)
       >     x3 = appcli.param('x', pick=list, default=0)
@@ -179,11 +179,11 @@ test_param:
     id: default
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 0}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(default=1)
       >     y = appcli.param()
     expected:
@@ -251,11 +251,11 @@ test_param:
     id: cast
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(cast=lambda x: x+1)
     expected:
       x: 2
@@ -263,11 +263,11 @@ test_param:
     id: cast
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(
       >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             cast=lambda x: x-1,
@@ -278,11 +278,11 @@ test_param:
     id: cast
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(
       >             appcli.Key(DummyConfig, 'x'),
       >             cast=lambda x: x+1,
@@ -303,11 +303,11 @@ test_param:
     id: get
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1, 'y': 2}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(get=lambda self, x: x + self.y)
       >     y = appcli.param()
       >
@@ -318,11 +318,11 @@ test_param:
     id: get
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 2}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(get=lambda self, x: x + self.y, default=1)
       >     y = appcli.param()
       >
@@ -333,11 +333,11 @@ test_param:
     id: get
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'y': 2}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param(get=lambda self, x: x + self.y)
       >     y = appcli.param()
       >
@@ -349,11 +349,11 @@ test_param:
     id: get
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1, 'y': 2}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     y = appcli.param()
       >
       >     @appcli.param()
@@ -379,11 +379,11 @@ test_param:
     id: set
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >
       > obj = DummyObj()
@@ -394,11 +394,11 @@ test_param:
     id: set-del
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >
       > obj = DummyObj()
@@ -413,11 +413,11 @@ test_param:
       > # instances.
       >
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >
       > decoy = DummyObj()
@@ -462,11 +462,11 @@ test_param:
     id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >
       > class ChildObj(ParentObj):
@@ -479,14 +479,14 @@ test_param:
     id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class ParentObj:
       >     x = appcli.param()
       >
       > class ChildObj(ParentObj):
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > obj = ChildObj()
     expected:
@@ -495,11 +495,11 @@ test_param:
     id: inheritance
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >
       > class ChildObj(ParentObj):
       >     x = appcli.param()
@@ -513,15 +513,15 @@ test_param:
     obj:
       > class PendingConfig(appcli.Config):
       >     autoload = False
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class ActiveConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [PendingConfig(), ActiveConfig()]
+      >     __config__ = [PendingConfig, ActiveConfig]
       >     x = appcli.param()
     expected:
       x: 2
@@ -530,15 +530,15 @@ test_param:
     obj:
       > class PendingConfig(appcli.Config):
       >     autoload = False
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1}, location='a')
       >
       > class ActiveConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 2}, location='b')
       >
       > class DummyObj:
-      >     __config__ = [PendingConfig(), ActiveConfig()]
+      >     __config__ = [PendingConfig, ActiveConfig]
       >     x = appcli.param()
       >
       > obj = DummyObj()
@@ -550,11 +550,11 @@ test_param:
     id: inherited-param-key
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 1, 'y': 2}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param()
       >
       > class DummyObj(ParentObj):
@@ -565,11 +565,11 @@ test_param:
     id: inherited-param-cast
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 0, 'y': 1}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param('y')
       >
       > class DummyObj(ParentObj):
@@ -580,12 +580,12 @@ test_param:
     id: inherited-param-pick
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 0, 'y': 1}, location='a')
       >         yield appcli.DictLayer(values={'x': 0, 'y': 2}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param('y')
       >
       > class DummyObj(ParentObj):
@@ -596,11 +596,11 @@ test_param:
     id: inherited-param-default
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 0}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param('y', default=1)
       >
       > class DummyObj(ParentObj):
@@ -611,11 +611,11 @@ test_param:
     id: inherited-param-ignore
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 0, 'y': 1}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param('y')
       >
       > class DummyObj(ParentObj):
@@ -629,11 +629,11 @@ test_param:
     id: inherited-param-get
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': 0, 'y': 1}, location='a')
       >
       > class ParentObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.param('y')
       >
       > class DummyObj(ParentObj):
@@ -645,11 +645,11 @@ test_param:
     id: toggle-key
     obj:
       > class DummyConfig(appcli.Config):
-      >     def load(self, obj):
+      >     def load(self):
       >         yield appcli.DictLayer(values={'x': True}, location='a')
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig()]
+      >     __config__ = [DummyConfig]
       >     x = appcli.toggle_param(
       >             appcli.Key(DummyConfig, toggle=True),
       >             default=True,

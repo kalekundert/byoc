@@ -5,11 +5,11 @@ import appcli
 def test_app():
 
     class DummyConfig(appcli.Config):
-        def load(self, obj):
+        def load(self):
             yield appcli.DictLayer(values={'x': 1}, location='a')
 
     class DummyObj(appcli.App):
-        __config__ = [DummyConfig()]
+        __config__ = [DummyConfig]
         x = appcli.param()
 
         def __bareinit__(self):

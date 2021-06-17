@@ -11,12 +11,15 @@ UNSPECIFIED = object()
 class Meta:
 
     def __init__(self, obj):
-        self.bound_configs = [BoundConfig(x) for x in get_configs(obj)]
+        self.wrapped_configs = [
+                WrappedConfig(cls(obj))
+                for cls in get_config_classes(obj)
+        ]
         self.param_states = {}
         self.cache_version = 0
         self.load_callbacks = get_load_callbacks(obj).values()
 
-class BoundConfig:
+class WrappedConfig:
 
     def __init__(self, config):
         self.config = config
@@ -24,7 +27,7 @@ class BoundConfig:
         self.is_loaded = False
 
     def __repr__(self):
-        return f'BoundConfig({self.config.__class__.__name__}, is_loaded={self.is_loaded!r})'
+        return f'{self.__class__.__name__}({self.config!r}, is_loaded={self.is_loaded!r})'
 
     def __iter__(self):
         yield from self.layers
@@ -32,10 +35,8 @@ class BoundConfig:
     def __bool__(self):
         return bool(self.layers)
 
-    def load(self, obj):
-        self.layers = list(self.config.load(obj))
-        for layer in self.layers:
-            layer.config = self.config
+    def load(self):
+        self.layers = list(self.config.load())
         self.is_loaded = True
 
 class Log:
@@ -50,6 +51,10 @@ class Log:
         if message not in self.err.hints:
             self.err.hints += message
 
+    def make_error(self, brief):
+        self.err.brief = brief
+        return self.err
+
 def init(obj):
     if hasattr(obj, META_ATTR):
         return False
@@ -59,7 +64,6 @@ def init(obj):
     _load_configs(
             obj,
             predicate=lambda g: g.config.autoload,
-            force_callback=lambda p: p._load_default(obj) is not UNSPECIFIED,
     )
 
     return True
@@ -90,7 +94,7 @@ def reload(obj, config_cls=None):
 def get_meta(obj):
     return getattr(obj, META_ATTR)
 
-def get_configs(obj):
+def get_config_classes(obj):
     try:
         return getattr(obj, CONFIG_ATTR)
     except AttributeError:
@@ -102,8 +106,8 @@ def get_configs(obj):
         err.blame += "{obj!r} has no '{config_attr}' attribute"
         raise err
 
-def get_bound_configs(obj):
-    return get_meta(obj).bound_configs
+def get_wrapped_configs(obj):
+    return get_meta(obj).wrapped_configs
 
 def get_cache_version(obj):
     return get_meta(obj).cache_version
@@ -146,25 +150,24 @@ def iter_values(getters, default=UNSPECIFIED):
         log.hint("did you mean to provide a default?")
 
     if not have_value:
-        log.err.brief = "can't find value for parameter"
-        raise log.err
+        raise log.make_error("can't find value for parameter")
 
 
-def _load_configs(obj, predicate, force_callback=lambda p: False):
+def _load_configs(obj, predicate):
     meta = get_meta(obj)
-    meta.bound_configs, bound_configs = [], meta.bound_configs
+    meta.wrapped_configs, wrapped_configs = [], meta.wrapped_configs
     meta.cache_version += 1
     updated_configs = []
 
-    # Rebuild the `bound_configs` list from scratch and iterate through the 
+    # Rebuild the `wrapped_configs` list from scratch and iterate through the 
     # configs in reverse order so that each config, when being loaded, can make 
     # use of values loaded by previous configs but not upcoming ones.
-    for bound_config in reversed(bound_configs):
-        if predicate(bound_config):
-            bound_config.load(obj)
-            updated_configs.append(bound_config.config)
+    for wrapped_config in reversed(wrapped_configs):
+        if predicate(wrapped_config):
+            wrapped_config.load()
+            updated_configs.append(wrapped_config.config)
 
-        meta.bound_configs.insert(0, bound_config)
+        meta.wrapped_configs.insert(0, wrapped_config)
         meta.cache_version += 1
 
     for callback in meta.load_callbacks:
