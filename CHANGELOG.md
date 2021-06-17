@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.21.0 (2021-06-17)
+### Feature
+* Instantiate new configs for each object ([`a70b2d6`](https://github.com/kalekundert/appcli/commit/a70b2d6be577f47cab33e18e1693177365c678cc))
+
 ## v0.20.0 (2021-06-16)
 ### Feature
 * Log the attribute lookup process ([`de22e5a`](https://github.com/kalekundert/appcli/commit/de22e5abc01cfa5bd55018e65eaefcc9536cf85a))
