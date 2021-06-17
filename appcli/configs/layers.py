@@ -11,7 +11,7 @@ class Layer:
 
 class DictLayer(Layer):
 
-    def __init__(self, *, values, schema=lambda x: x, root_key=None, location=None):
+    def __init__(self, values, *, schema=lambda x: x, root_key=None, location=None):
         # Values:
         # - object that implements `__getitem__()` to either return value 
         #   associated with key, or raise KeyError.
