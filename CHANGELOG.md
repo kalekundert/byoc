@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.21.1 (2021-06-17)
+### Fix
+* Allow DictLayer 'values' argument to be positional ([`f0bea0e`](https://github.com/kalekundert/appcli/commit/f0bea0e8abca0f7dc6fd62fc984bacab7190696a))
+
 ## v0.21.0 (2021-06-17)
 ### Feature
 * Instantiate new configs for each object ([`a70b2d6`](https://github.com/kalekundert/appcli/commit/a70b2d6be577f47cab33e18e1693177365c678cc))
