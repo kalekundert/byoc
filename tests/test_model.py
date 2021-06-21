@@ -48,20 +48,20 @@ def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
 
     assert collect_layers(obj) == reload_layers
 
-def test_get_config_classes():
+def test_get_config_factories():
 
     sentinel = object()
     class Obj:
         __config__ = sentinel
 
     obj = Obj()
-    assert appcli.model.get_config_classes(obj) is sentinel
+    assert appcli.model.get_config_factories(obj) is sentinel
 
-def test_get_config_classes_err():
+def test_get_config_factories_err():
     obj = DummyObj()
 
     with pytest.raises(appcli.ScriptError) as err:
-        appcli.model.get_config_classes(obj)
+        appcli.model.get_config_factories(obj)
 
     assert err.match('object not configured for use with appcli')
     assert err.match(no_templates)

@@ -13,7 +13,7 @@ class Meta:
     def __init__(self, obj):
         self.wrapped_configs = [
                 WrappedConfig(cls(obj))
-                for cls in get_config_classes(obj)
+                for cls in get_config_factories(obj)
         ]
         self.param_states = {}
         self.cache_version = 0
@@ -94,7 +94,7 @@ def reload(obj, config_cls=None):
 def get_meta(obj):
     return getattr(obj, META_ATTR)
 
-def get_config_classes(obj):
+def get_config_factories(obj):
     try:
         return getattr(obj, CONFIG_ATTR)
     except AttributeError:

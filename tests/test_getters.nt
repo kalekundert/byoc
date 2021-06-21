@@ -405,6 +405,23 @@ test_getter_iter_values:
           > b:
           > found 'x': 2
   -
+    id: key-config-factory
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [lambda obj: DummyConfig(obj)]
+    getter:
+      > appcli.Key(DummyConfig, 'x')
+    expected:
+      values: [1]
+      info:
+        - queried DummyConfig\(\):
+        -
+          > found 'x': 1
+  -
     id: key-multi-config
     obj:
       > class DummyConfigA(appcli.Config):
