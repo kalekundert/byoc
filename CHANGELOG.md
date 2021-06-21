@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.22.0 (2021-06-21)
+### Feature
+* Allow instance-level Config callbacks ([`3f4eb8d`](https://github.com/kalekundert/appcli/commit/3f4eb8d3709df2415d5b82e252cbce33b1347b84))
+
+### Documentation
+* Reformat log message ([`4e7e173`](https://github.com/kalekundert/appcli/commit/4e7e1733269bfc16705cce2c90bf88053e142a55))
+
 ## v0.21.1 (2021-06-17)
 ### Fix
 * Allow DictLayer 'values' argument to be positional ([`f0bea0e`](https://github.com/kalekundert/appcli/commit/f0bea0e8abca0f7dc6fd62fc984bacab7190696a))
