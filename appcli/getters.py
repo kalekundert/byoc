@@ -221,10 +221,10 @@ class BoundCallable(BoundGetter):
         try:
             value = self.callable()
         except self.exceptions as err:
-            log.info("called {getter.raw_callable}:\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
+            log.info("called: {getter.raw_callable}\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
             pass
         else:
-            log.info("called {getter.raw_callable}:\nreturned: {value!r}", getter=self, value=value)
+            log.info("called: {getter.raw_callable}\nreturned: {value!r}", getter=self, value=value)
             yield value
 
 

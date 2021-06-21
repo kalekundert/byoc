@@ -170,7 +170,7 @@ test_getter_iter_values:
       values: [1]
       info:
         -
-          > called <function <lambda> at .*>:
+          > called: <function <lambda> at .*>
           > returned: 1
   -
     id: func-partial
@@ -179,7 +179,7 @@ test_getter_iter_values:
       values: [2]
       info:
         -
-          > called <function <lambda> at .*>:
+          > called: <function <lambda> at .*>
           > returned: 2
 
   -
@@ -194,7 +194,7 @@ test_getter_iter_values:
       values: [1]
       info:
         -
-          > called <function <lambda> at .*>:
+          > called: <function <lambda> at .*>
           > returned: 1
   -
     id: method
@@ -211,7 +211,7 @@ test_getter_iter_values:
       values: [2]
       info:
         -
-          > called <function DummyObj.helper at .*>:
+          > called: <function DummyObj.helper at .*>
           > returned: 2
   -
     id: method
@@ -225,7 +225,7 @@ test_getter_iter_values:
       values: [2]
       info:
         -
-          > called <function <lambda> at .*>:
+          > called: <function <lambda> at .*>
           > returned: 2
   -
     id: method-attribute-error
@@ -238,7 +238,7 @@ test_getter_iter_values:
       values: []
       info:
         -
-          > called <function <lambda> at .*>:
+          > called: <function <lambda> at .*>
           > raised AttributeError: 'DummyObj' object has no attribute 'x'
 
   -
@@ -299,7 +299,8 @@ test_getter_iter_values:
         - queried DummyConfig\(\):
         -
           > a:
-          > found operator.itemgetter\('y'\): 1
+          > called: operator.itemgetter\('y'\)
+          > returned: 1
   -
     id: key-dotted
     obj:

@@ -54,7 +54,11 @@ class DictLayer(Layer):
             )
         else:
             log.info(
-                    lambda e: format_loc(f"found {e.key!r}: {e.value!r}", e.layer.location),
+                    lambda e: format_loc(
+                        f"called: {e.key!r}\nreturned: {e.value!r}" if callable(e.key) else
+                        f"found {e.key!r}: {e.value!r}",
+                        e.layer.location,
+                    ),
                     layer=self, key=key, value=value,
             )
             yield value
