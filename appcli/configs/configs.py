@@ -45,7 +45,7 @@ class ArgparseConfig(Config):
 
     def get_parser(self):
         # Might make sense to try caching the parser in the given object.
-        return self.__class__.parser_getter(self.obj)
+        return unbind_method(self.parser_getter)(self.obj)
 
     def get_usage(self):
         return self.parser.format_help()
@@ -92,7 +92,7 @@ class DocoptConfig(Config):
     def get_usage(self):
         from mako.template import Template
 
-        usage = self.__class__.usage_getter(self.obj)
+        usage = unbind_method(self.usage_getter)(self.obj)
         usage = dedent(usage)
         usage = Template(usage, strict_undefined=True).render(app=self.obj)
 
@@ -102,7 +102,7 @@ class DocoptConfig(Config):
         return usage
 
     def get_usage_io(self):
-        return self.__class__.usage_io_getter(self.obj)
+        return unbind_method(self.usage_io_getter)(self.obj)
 
     def get_brief(self):
         import re
@@ -114,7 +114,8 @@ class DocoptConfig(Config):
         return first(sections, '').replace('\n', ' ').strip()
 
     def get_version(self):
-        return self.include_version and self.__class__.version_getter(self.obj)
+        return self.include_version and \
+                unbind_method(self.version_getter)(self.obj)
 
 
 @autoprop
@@ -201,7 +202,7 @@ class FileConfig(Config):
     root_key = None
 
     def get_path(self):
-        return Path(self.__class__.path_getter(self.obj))
+        return Path(unbind_method(self.path_getter)(self.obj))
 
     def load(self):
         yield from self.load_from_path(
@@ -269,4 +270,5 @@ class NtConfig(FileConfig):
         import nestedtext as nt
         return nt.load(path)
 
-
+def unbind_method(f):
+    return getattr(f, '__func__', f)
