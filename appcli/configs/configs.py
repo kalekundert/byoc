@@ -40,6 +40,14 @@ class ArgparseConfig(Config):
     parser_getter = lambda obj: obj.get_argparse()
     schema = None
 
+    def __init__(self, obj, **kwargs):
+        super().__init__(obj)
+
+        self.parser_getter = kwargs.get(
+                'parser_getter', unbind_method(self.parser_getter))
+        self.schema = kwargs.get(
+                'schema', self.schema)
+
     def load(self):
         args = self.parser.parse_args()
         yield DictLayer(
@@ -49,8 +57,8 @@ class ArgparseConfig(Config):
         )
 
     def get_parser(self):
-        # Might make sense to try caching the parser in the given object.
-        return unbind_method(self.parser_getter)(self.obj)
+        # Might make sense to cache the parser.
+        return self.parser_getter(self.obj)
 
     def get_usage(self):
         return self.parser.format_help()
@@ -69,6 +77,24 @@ class DocoptConfig(Config):
     include_version = None
     options_first = False
     schema = None
+
+    def __init__(self, obj, **kwargs):
+        super().__init__(obj)
+
+        self.usage_getter = kwargs.get(
+                'usage_getter', unbind_method(self.usage_getter))
+        self.version_getter = kwargs.get(
+                'version_getter', unbind_method(self.version_getter))
+        self.usage_io_getter = kwargs.get(
+                'usage_io_getter', unbind_method(self.usage_io_getter))
+        self.include_help = kwargs.get(
+                'include_help', self.include_help)
+        self.include_version = kwargs.get(
+                'include_version', self.include_version)
+        self.options_first = kwargs.get(
+                'options_first', self.options_first)
+        self.schema = kwargs.get(
+                'schema', unbind_method(self.schema))
 
     def load(self):
         import sys, docopt, contextlib
@@ -97,7 +123,7 @@ class DocoptConfig(Config):
     def get_usage(self):
         from mako.template import Template
 
-        usage = unbind_method(self.usage_getter)(self.obj)
+        usage = self.usage_getter(self.obj)
         usage = dedent(usage)
         usage = Template(usage, strict_undefined=True).render(app=self.obj)
 
@@ -107,7 +133,7 @@ class DocoptConfig(Config):
         return usage
 
     def get_usage_io(self):
-        return unbind_method(self.usage_io_getter)(self.obj)
+        return self.usage_io_getter(self.obj)
 
     def get_brief(self):
         import re
@@ -119,8 +145,7 @@ class DocoptConfig(Config):
         return first(sections, '').replace('\n', ' ').strip()
 
     def get_version(self):
-        return self.include_version and \
-                unbind_method(self.version_getter)(self.obj)
+        return self.include_version and self.version_getter(self.obj)
 
 
 @autoprop

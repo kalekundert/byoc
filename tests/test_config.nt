@@ -7,6 +7,9 @@ test_argparse_docopt_config:
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
       >
+      >     x = appcli.param()
+      >     y = appcli.param()
+      >
       >     def get_argparse(self):
       >         import argparse
       >         p = argparse.ArgumentParser(description="Do something")
@@ -31,15 +34,64 @@ test_argparse_docopt_config:
       -
         argv:
           > ./app x
-        layer:
-          values: {'x': 'x', 'y': False}
-          location: command line
+        expected:
+          x: 'x'
+          y: False
       -
         argv:
           > ./app x -y
-        layer:
-          values: {'x': 'x', 'y': True}
-          location: command line
+        expected:
+          x: 'x'
+          y: True
+  -
+    id: argparse-setup
+    obj:
+      > class DummyObj:
+      >     __config__ = [
+      >         appcli.ArgparseConfig.setup(
+      >             parser_getter=lambda obj: obj.get_my_argparse(),
+      >             schema=lambda d: {**d, 'x': 'x*'},
+      >         ),
+      >     ]
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
+      >
+      >     x = appcli.param()
+      >     y = appcli.param()
+      >
+      >     def get_my_argparse(self):
+      >         import argparse
+      >         p = argparse.ArgumentParser(description="Do something")
+      >         p.add_argument('x')
+      >         p.add_argument('-y', action='store_true')
+      >         return p
+    usage:
+      > usage: app [-h] [-y] x
+      >
+      > Do something
+      >
+      > positional arguments:
+      >   x
+      >
+      > optional arguments:
+      >   -h, --help  show this help message and exit
+      >   -y
+      >
+    brief:
+      > Do something
+    invocations:
+      -
+        argv:
+          > ./app x
+        expected:
+          x: 'x*'
+          y: False
+      -
+        argv:
+          > ./app x -y
+        expected:
+          x: 'x*'
+          y: True
   -
     id: docopt
     obj:
@@ -53,6 +105,10 @@ test_argparse_docopt_config:
       >     __config__ = [appcli.DocoptConfig]
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
+      >
+      >     x = appcli.param('<x>')
+      >     y = appcli.param('<y>', default=None)
+      >     z = appcli.param('-z', default=None)
     usage:
       > Do something.
       >
@@ -65,53 +121,121 @@ test_argparse_docopt_config:
       -
         argv:
           > ./app x
-        layer:
-          values: {'<x>': 'x'}
-          location: command line
+        expected:
+          x: 'x'
+          y: None
+          z: None
       -
         argv:
           > ./app x -z
-        layer:
-          values: {'<x>': 'x', '-z': True}
-          location: command line
+        expected:
+          x: 'x'
+          y: None
+          z: True
       -
         argv:
           > ./app x y -z
-        layer:
-          values: {'<x>': 'x', '<y>': ['y'], '-z': True}
-          location: command line
+        expected:
+          x: 'x'
+          y: ['y']
+          z: True
   -
-    id: docopt
+    id: docopt-setup
     obj:
-      > class DummyDocoptConfig(appcli.DocoptConfig):
-      >     usage_getter = lambda obj: obj.doc
-      >
       > class DummyObj:
       >     doc = """\
       > Usage:
-      >     app <x> [-y]
+      >     app <x> [<y>...] [-z]
       > """
-      >     __config__ = [DummyDocoptConfig]
+      >     __config__ = [
+      >         appcli.DocoptConfig.setup(
+      >             usage_getter=lambda obj: obj.doc,
+      >             options_first=True,
+      >             schema=lambda d: {**d, '<x>': d['<x>'] + '*'},
+      >         ),
+      >     ]
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
+      >     version = '1.0'
+      >
+      >     x = appcli.param('<x>')
+      >     y = appcli.param('<y>', default=None)
+      >     z = appcli.param('-z', default=None)
     usage:
       > Usage:
-      >     app <x> [-y]
+      >     app <x> [<y>...] [-z]
       >
     brief:
     invocations:
       -
         argv:
           > ./app x
-        layer:
-          values: {'<x>': 'x'}
-          location: command line
+        expected:
+          x: 'x*'
+          y: None
+          z: None
       -
         argv:
-          > ./app x -y
-        layer:
-          values: {'<x>': 'x', '-y': True}
-          location: command line
+          > ./app x -z
+        expected:
+          x: 'x*'
+          y: ['-z']
+          z: None
+      -
+        argv:
+          > ./app -z x
+        expected:
+          x: 'x*'
+          y: None
+          z: True
+  -
+    id: docopt-class-attrs
+    obj:
+      > class DummyDocoptConfig(appcli.DocoptConfig):
+      >     usage_getter = lambda obj: obj.doc
+      >     options_first = True
+      >     schema = lambda d: {**d, '<x>': d['<x>'] + '*'}
+      >
+      > class DummyObj:
+      >     doc = """\
+      > Usage:
+      >     app <x> [<y>...] [-z]
+      > """
+      >     __config__ = [DummyDocoptConfig]
+      >     usage = appcli.config_attr()
+      >     brief = appcli.config_attr()
+      >     version = '1.0'
+      >
+      >     x = appcli.param('<x>')
+      >     y = appcli.param('<y>', default=None)
+      >     z = appcli.param('-z', default=None)
+    usage:
+      > Usage:
+      >     app <x> [<y>...] [-z]
+      >
+    brief:
+    invocations:
+      -
+        argv:
+          > ./app x
+        expected:
+          x: 'x*'
+          y: None
+          z: None
+      -
+        argv:
+          > ./app x -z
+        expected:
+          x: 'x*'
+          y: ['-z']
+          z: None
+      -
+        argv:
+          > ./app -z x
+        expected:
+          x: 'x*'
+          y: None
+          z: True
   -
     id: docopt-mako
     obj:
@@ -127,6 +251,7 @@ test_argparse_docopt_config:
       >     usage = appcli.config_attr()
       >     brief = appcli.config_attr()
       >
+      >     x = appcli.param('<x>')
       >     y = appcli.param('-y', default='a')
     usage:
       > Usage:
@@ -140,15 +265,15 @@ test_argparse_docopt_config:
       -
         argv:
           > ./app x
-        layer:
-          values: {'<x>': 'x', '-y': 'A'}
-          location: command line
+        expected:
+          x: 'x'
+          y: 'A'
       -
         argv:
           > ./app x -y b
-        layer:
-          values: {'<x>': 'x', '-y': 'b'}
-          location: command line
+        expected:
+          x: 'x'
+          y: 'b'
 
 test_appdirs_config:
   -

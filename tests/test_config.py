@@ -26,7 +26,7 @@ def tmp_chdir(tmp_path):
             'brief': str,
             'invocations': [{
                 'argv': shlex.split,
-                'layer': eval_layer,
+                'expected': {str: eval},
             }],
         })
 )
@@ -38,7 +38,7 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 
         test_obj = copy(obj)
         test_argv = invocation['argv']
-        test_layer = invocation['layer']
+        test_expected = invocation['expected']
 
         # Clear `sys.argv` so that if the command-line is accessed prematurely, 
         # e.g. in `init()` rather than `load()`, an error is raised.  Note that 
@@ -59,7 +59,8 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
         monkeypatch.setattr(sys, 'argv', test_argv)
         appcli.load(test_obj)
 
-        assert collect_layers(test_obj) == {0: [test_layer]}
+        for attr, value in test_expected.items():
+            assert getattr(test_obj, attr) == value
 
 @mock.patch.dict(os.environ, {"x": "1"})
 def test_environment_config():
