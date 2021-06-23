@@ -21,6 +21,9 @@ class LayerWrapper:
                 self.layer.location == str(other.location),
         ))
 
+def DictLayerWrapper(*args, **kwargs):
+    return LayerWrapper(appcli.DictLayer(*args, **kwargs))
+
 def eval_appcli(code, globals=None, **kw_globals):
     if globals is None:
         globals = {}

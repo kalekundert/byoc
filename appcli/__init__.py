@@ -8,7 +8,10 @@ __version__ = '0.22.0'
 
 # Define the public API
 from .app import App, AppMeta
-from .model import init, load, reload
+from .model import (
+        init, load, reload, insert_config, insert_configs, append_config,
+        append_configs, prepend_config, prepend_configs, share_configs,
+)
 from .params.param import param
 from .params.toggle import toggle_param, pick_toggled, Toggle as toggle
 from .params.inherited import inherited_param

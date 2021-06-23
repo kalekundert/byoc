@@ -518,6 +518,194 @@ test_init_load_reload:
       2:
         - appcli.DictLayer(values={'x': '1'},   location='a')
 
+test_collect_layers:
+  -
+    id: append-config
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA]
+      >
+      > obj = DummyObj()
+      > appcli.append_config(obj, DummyConfigB)
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+  -
+    id: append-config-empty
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >
+      > obj = DummyObj()
+      > appcli.append_config(obj, DummyConfigA)
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+  -
+    id: append-configs
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyConfigC(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='c')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA]
+      >
+      > obj = DummyObj()
+      > appcli.append_configs(obj, [DummyConfigB, DummyConfigC])
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+      2:
+        - appcli.DictLayer({}, location='c')
+  -
+    id: append-configs-noop
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA]
+      >
+      > obj = DummyObj()
+      > appcli.append_configs(obj, [])
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+  -
+    id: prepend-config
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigB]
+      >
+      > obj = DummyObj()
+      > appcli.prepend_config(obj, DummyConfigA)
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+  -
+    id: prepend-configs
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyConfigC(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='c')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigC]
+      >
+      > obj = DummyObj()
+      > appcli.prepend_configs(obj, [DummyConfigA, DummyConfigB])
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+      2:
+        - appcli.DictLayer({}, location='c')
+  -
+    id: insert-config
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyConfigC(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='c')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigC]
+      >
+      > obj = DummyObj()
+      > appcli.insert_config(obj, 1, DummyConfigB)
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+      2:
+        - appcli.DictLayer({}, location='c')
+  -
+    id: insert-configs
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='a')
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='b')
+      >
+      > class DummyConfigC(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='c')
+      >
+      > class DummyConfigD(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer({}, location='d')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigD]
+      >
+      > obj = DummyObj()
+      > appcli.insert_configs(obj, 1, [DummyConfigB, DummyConfigC])
+    layers:
+      0:
+        - appcli.DictLayer({}, location='a')
+      1:
+        - appcli.DictLayer({}, location='b')
+      2:
+        - appcli.DictLayer({}, location='c')
+      3:
+        - appcli.DictLayer({}, location='d')
+
 test_iter_values:
   # `test_getters.py` thoroughly tests cases where there is only a single 
   # getter.  The tests here therefore focus on cases where there are multiple 

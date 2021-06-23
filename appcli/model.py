@@ -12,8 +12,8 @@ class Meta:
 
     def __init__(self, obj):
         self.wrapped_configs = [
-                WrappedConfig(cls(obj))
-                for cls in get_config_factories(obj)
+                WrappedConfig(cf(obj))
+                for cf in get_config_factories(obj)
         ]
         self.param_states = {}
         self.cache_version = 0
@@ -63,7 +63,7 @@ def init(obj):
 
     _load_configs(
             obj,
-            predicate=lambda g: g.config.autoload,
+            predicate=lambda wc: wc.config.autoload,
     )
 
     return True
@@ -73,9 +73,9 @@ def load(obj, config_cls=None):
 
     _load_configs(
             obj,
-            predicate=lambda g: (
-                not g.is_loaded and
-                _is_selected_by_cls(g.config, config_cls)
+            predicate=lambda wc: (
+                not wc.is_loaded and
+                _is_selected_by_cls(wc.config, config_cls)
             ),
     )
 
@@ -85,11 +85,57 @@ def reload(obj, config_cls=None):
 
     _load_configs(
             obj,
-            predicate=lambda g: (
-                g.is_loaded and 
-                _is_selected_by_cls(g.config, config_cls)
+            predicate=lambda wc: (
+                wc.is_loaded and 
+                _is_selected_by_cls(wc.config, config_cls)
             ),
     )
+
+def append_config(obj, config_factory):
+    append_configs(obj, [config_factory])
+
+def append_configs(obj, config_factories):
+    init(obj)
+    meta = get_meta(obj)
+    i = len(meta.wrapped_configs)
+    insert_configs(obj, i, config_factories)
+
+def prepend_config(obj, config_factory):
+    prepend_configs(obj, [config_factory])
+
+def prepend_configs(obj, config_factories):
+    insert_configs(obj, 0, config_factories)
+
+def insert_config(obj, i, config_factory):
+    insert_configs(obj, i, [config_factory])
+
+def insert_configs(obj, i, config_factories):
+    init(obj)
+
+    new_wrapped_configs = [
+            WrappedConfig(cf(obj))
+            for cf in config_factories
+    ]
+
+    meta = get_meta(obj)
+    meta.wrapped_configs = \
+            meta.wrapped_configs[:i] + \
+            new_wrapped_configs + \
+            meta.wrapped_configs[i:]
+
+    _load_configs(
+            obj,
+            predicate=lambda wc: wc in new_wrapped_configs
+    )
+
+def share_configs(donor, acceptor):
+    init(donor); init(acceptor)
+
+    donor_meta = get_meta(donor)
+    acceptor_meta = get_meta(acceptor)
+
+    acceptor_meta.wrapped_configs.extend(donor_meta.wrapped_configs)
+    acceptor_meta.cache_version += 1
 
 def get_meta(obj):
     return getattr(obj, META_ATTR)
