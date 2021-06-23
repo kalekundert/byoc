@@ -26,3 +26,15 @@ test_dict_layer_iter_values:
       x: []
       y: []
       z: [1]
+  -
+    layer:
+      # Schema applied after root key.
+      > appcli.DictLayer(
+      >         values={'x': {'y': 1}},
+      >         root_key='x',
+      >         schema=lambda d: {'y': d['y'] + 1}
+      >
+      > )
+    expected:
+      x: []
+      y: [2]

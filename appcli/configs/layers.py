@@ -32,9 +32,6 @@ class DictLayer(Layer):
     def iter_values(self, key, log):
         values = self.values
 
-        if self.schema:
-            values = self.schema(values)
-
         if self.root_key:
             try:
                 values = lookup(values, self.root_key)
@@ -44,6 +41,9 @@ class DictLayer(Layer):
                         layer=self, key=self.root_key,
                 )
                 return
+
+        if self.schema:
+            values = self.schema(values)
 
         try:
             value = lookup(values, key)
