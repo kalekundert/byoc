@@ -422,7 +422,7 @@ test_getter_iter_values:
         -
           > found 'x': 1
   -
-    id: key-config-with-options
+    id: key-config-setup
     obj:
       > class DummyConfig(appcli.Config):
       >
@@ -434,7 +434,7 @@ test_getter_iter_values:
       >         yield appcli.DictLayer(self.kwargs)
       >
       > class DummyObj:
-      >     __config__ = [DummyConfig.with_options(x=1)]
+      >     __config__ = [DummyConfig.setup(x=1)]
     getter:
       > appcli.Key(DummyConfig, 'x')
     expected:

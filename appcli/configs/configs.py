@@ -7,7 +7,6 @@ from ..utils import lookup, first_specified
 from ..errors import ConfigError
 from pathlib import Path
 from textwrap import dedent
-from functools import partial
 from more_itertools import one, first
 
 class Config:
@@ -20,8 +19,8 @@ class Config:
         return f"{self.__class__.__name__}()"
 
     @classmethod
-    def with_options(cls, **kwargs):
-        return partial(cls, **kwargs)
+    def setup(cls, *args, **kwargs):
+        return lambda obj: cls(obj, *args, **kwargs)
 
     def load(self):
         raise NotImplmentedError
