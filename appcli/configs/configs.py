@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import sys, os, re, inspect, autoprop
-from pathlib import Path
-from textwrap import dedent
-from more_itertools import one, first
+
 from .layers import DictLayer, dict_like
 from ..utils import lookup, first_specified
 from ..errors import ConfigError
+from pathlib import Path
+from textwrap import dedent
+from functools import partial
+from more_itertools import one, first
 
 class Config:
     autoload = True
@@ -16,6 +18,10 @@ class Config:
 
     def __repr__(self):
         return f"{self.__class__.__name__}()"
+
+    @classmethod
+    def with_options(cls, **kwargs):
+        return partial(cls, **kwargs)
 
     def load(self):
         raise NotImplmentedError

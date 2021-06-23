@@ -107,19 +107,6 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     appcli.init(obj)
     assert collect_layers(obj) == layers
 
-#@parametrize_from_file(
-#        schema=Schema({
-#            'config': eval_appcli,
-#            **error_or(
-#                name=str,
-#                config_cls=eval_appcli,
-#            ),
-#        })
-#)
-#def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error):
-#    with error:
-#        assert config.get_name_and_config_cls() == (name, config_cls)
-
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,

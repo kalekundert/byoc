@@ -422,6 +422,28 @@ test_getter_iter_values:
         -
           > found 'x': 1
   -
+    id: key-config-with-options
+    obj:
+      > class DummyConfig(appcli.Config):
+      >
+      >     def __init__(self, obj, **kwargs):
+      >         super().__init__(obj)
+      >         self.kwargs = kwargs
+      >
+      >     def load(self):
+      >         yield appcli.DictLayer(self.kwargs)
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig.with_options(x=1)]
+    getter:
+      > appcli.Key(DummyConfig, 'x')
+    expected:
+      values: [1]
+      info:
+        - queried DummyConfig\(\):
+        -
+          > found 'x': 1
+  -
     id: key-multi-config
     obj:
       > class DummyConfigA(appcli.Config):
