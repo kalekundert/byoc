@@ -250,6 +250,9 @@ class TomlConfig(FileConfig):
 
     @staticmethod
     def _do_load(path):
+        # rtoml requires this.
+        path = Path(path)
+
         try:
             # Prefer rtoml, since it's much less buggy.  It's also much harder 
             # to install, though.
