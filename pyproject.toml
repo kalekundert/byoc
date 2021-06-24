@@ -52,6 +52,7 @@ addopts = "--doctest-modules --doctest-glob='*.rst'"
 doctest_optionflags = 'NORMALIZE_WHITESPACE'
 
 [tool.pccc]
+header_length = 72
 types = ["chore", "docs", "feat", "fix", "refactor", "style", "test"]
 
 [tool.semantic_release]
