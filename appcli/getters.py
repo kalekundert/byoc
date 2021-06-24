@@ -59,9 +59,10 @@ class ImplicitKey(Getter):
 
 class Func(Getter):
 
-    def __init__(self, callable, **kwargs):
+    def __init__(self, callable, *, skip=(), **kwargs):
         super().__init__(**kwargs)
         self.callable = callable
+        self.skip = skip
         self.partial_args = ()
         self.partial_kwargs = {}
 
@@ -79,6 +80,7 @@ class Func(Getter):
                 self.callable,
                 self.partial_args,
                 self.partial_kwargs,
+                tuple(always_iterable(self.skip)),
         )
 
 class Method(Func):
@@ -91,13 +93,10 @@ class Method(Func):
         # getter, allowing the parameter to continue searching other getters 
         # for a value.
 
-        return BoundCallable(
-                self, obj, param,
-                self.callable,
-                (obj, *self.partial_args),
-                self.partial_kwargs,
-                AttributeError,
-        )
+        bc = super().bind(obj, param)
+        bc.partial_args = (obj, *bc.partial_args)
+        bc.exceptions = (AttributeError, *bc.exceptions)
+        return bc
 
 class Value(Getter):
 
@@ -213,18 +212,20 @@ class BoundCallable(BoundGetter):
 
     def __init__(self, parent, obj, param, callable, args, kwargs, exc=()):
         super().__init__(parent, obj, param)
-        self.raw_callable = callable
-        self.callable = partial(callable, *args, **kwargs)
+        self.callable = callable
+        self.partial_args = args
+        self.partial_kwargs = kwargs
         self.exceptions = exc
 
     def iter_values(self, log):
+        debug(self.exceptions)
         try:
-            value = self.callable()
+            value = self.callable(*self.partial_args, **self.partial_kwargs)
         except self.exceptions as err:
-            log.info("called: {getter.raw_callable}\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
+            log.info("called: {getter.callable}\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
             pass
         else:
-            log.info("called: {getter.raw_callable}\nreturned: {value!r}", getter=self, value=value)
+            log.info("called: {getter.callable}\nreturned: {value!r}", getter=self, value=value)
             yield value
 
 

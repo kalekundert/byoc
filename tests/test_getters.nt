@@ -181,6 +181,20 @@ test_getter_iter_values:
         -
           > called: <function <lambda> at .*>
           > returned: 2
+  -
+    id: func-err
+    getter: appcli.Func(lambda: 1/0)
+    error:
+      type: ZeroDivisionError
+  -
+    id: func-err-skip
+    getter: appcli.Func(lambda: 1/0, skip=ZeroDivisionError)
+    expected:
+      values: []
+      info:
+        -
+          > called: <function <lambda> at .*>
+          > raised ZeroDivisionError: division by zero
 
   -
     id: method
@@ -228,7 +242,29 @@ test_getter_iter_values:
           > called: <function <lambda> at .*>
           > returned: 2
   -
-    id: method-attribute-error
+    id: method-err
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >
+    getter: appcli.Method(lambda self: 1/0)
+    error:
+      type: ZeroDivisionError
+  -
+    id: method-err-skip
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >
+    getter: appcli.Method(lambda self: 1/0, skip=ZeroDivisionError)
+    expected:
+      values: []
+      info:
+        -
+          > called: <function <lambda> at .*>
+          > raised ZeroDivisionError: division by zero
+  -
+    id: method-err-attribute
     obj:
       > class DummyObj:
       >     __config__ = []

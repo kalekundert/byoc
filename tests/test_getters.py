@@ -51,14 +51,16 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
             'getter': str,
-            'expected': {
-                'values': eval,
-                'info': [str],
-                Optional('hints', default=[]): [str],
-            },
+            **error_or(**{
+                'expected': {
+                    'values': eval,
+                    'info': [str],
+                    Optional('hints', default=[]): [str],
+                },
+            }),
         }),
 )
-def test_getter_iter_values(getter, obj, param, expected):
+def test_getter_iter_values(getter, obj, param, expected, error):
     globals = {}
     obj = exec_obj(obj, globals)
     param = find_param(obj, param)
@@ -66,17 +68,18 @@ def test_getter_iter_values(getter, obj, param, expected):
 
     appcli.init(obj)
     bound_getter = getter.bind(obj, param)
-
     log = Log()
-    values = bound_getter.iter_values(log)
 
-    assert list(values) == expected['values']
+    with error:
+        values = bound_getter.iter_values(log)
 
-    for info, pattern in zip_equal(log.err.info_strs, expected['info']):
-        Matches(pattern).assert_matches(info)
+        assert list(values) == expected['values']
 
-    for hint, pattern in zip_equal(log.err.hint_strs, expected['hints']):
-        Matches(pattern).assert_matches(hint)
+        for info, pattern in zip_equal(log.err.info_strs, expected['info']):
+            Matches(pattern).assert_matches(info)
+
+        for hint, pattern in zip_equal(log.err.hint_strs, expected['hints']):
+            Matches(pattern).assert_matches(hint)
 
 @parametrize_from_file(
         schema=Schema({
