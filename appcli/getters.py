@@ -218,7 +218,6 @@ class BoundCallable(BoundGetter):
         self.exceptions = exc
 
     def iter_values(self, log):
-        debug(self.exceptions)
         try:
             value = self.callable(*self.partial_args, **self.partial_kwargs)
         except self.exceptions as err:

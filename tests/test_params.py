@@ -26,6 +26,32 @@ def test_param_init_err():
     assert err.match(r"default_factory: <class 'list'>")
 
 @pytest.mark.parametrize('dynamic', [True, False])
+def test_param_cache_exc(dynamic):
+    # Make sure exceptions are cached just like values are.
+
+    class DummyConfig(appcli.Config):
+        def load(self):
+            yield appcli.DictLayer(self.obj.values)
+
+    class DummyObj:
+        __config__ = [DummyConfig]
+        x = appcli.param(dynamic=dynamic)
+
+    obj = DummyObj()
+
+    # Before providing a value:
+    obj.values = {}
+    assert not hasattr(obj, 'x')
+
+    # After providing a value, before updating the cache:
+    obj.values['x'] = 1
+    assert (obj.x == 1) if dynamic else not hasattr(obj, 'x')
+
+    # After updating the cache:
+    appcli.reload(obj)
+    assert obj.x == 1
+
+@pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_reload(dynamic):
 
     class BackgroundConfig(appcli.Config):

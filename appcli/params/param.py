@@ -15,6 +15,7 @@ class param:
             self.getters = []
             self.setattr_value = UNSPECIFIED
             self.cache_value = UNSPECIFIED
+            self.cache_exception = UNSPECIFIED
             self.cache_version = -1
             self.default_value = default
 
@@ -101,8 +102,17 @@ class param:
                     self._dynamic
             )
             if is_cache_stale:
-                state.cache_value = self._calc_value(obj)
+                try:
+                    state.cache_value = self._calc_value(obj)
+                    state.cache_exception = UNSPECIFIED
+                except AttributeError as err:
+                    state.cache_value = UNSPECIFIED
+                    state.cache_exception = err
+
                 state.cache_version = model_version
+
+            if state.cache_exception is not UNSPECIFIED:
+                raise state.cache_exception
 
             value = state.cache_value
 
