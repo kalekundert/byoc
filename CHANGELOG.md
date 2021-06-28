@@ -2,6 +2,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.23.0 (2021-06-28)
+### Feature
+* Provide a default __bareinit__() implementation ([`ef0242a`](https://github.com/kalekundert/appcli/commit/ef0242a57f6cb2aaa802cff2d33de21e32dd6dd3))
+* Allow Func/Method getters to ignore exceptions ([`02391eb`](https://github.com/kalekundert/appcli/commit/02391ebcda04dbe6775a3f33a960370e1d96f0f4))
+* Add configs to existing objects ([`28563b8`](https://github.com/kalekundert/appcli/commit/28563b87d918f5665353e8b6eaf7370fcf74e7c0))
+* Support setup arguments for the CLI configs ([`2ce4420`](https://github.com/kalekundert/appcli/commit/2ce44205bf881d6c47e3550101538c7e4a51cd6c))
+* Rename `Config.with_options` to `Config.setup` ([`c7778b6`](https://github.com/kalekundert/appcli/commit/c7778b645ae39349ddb7f8606cecfbd1d04ad0d4))
+* Add a way to bind options to Config factories ([`03306de`](https://github.com/kalekundert/appcli/commit/03306de6088504da742f2a477a138a4ba1d98bd2))
+
+### Fix
+* Cache exceptions ([`f828ff8`](https://github.com/kalekundert/appcli/commit/f828ff86815010d016b8b2e75343cd91fc290582))
+* `rtoml.load()` requires path objects, not strings ([`a8ef104`](https://github.com/kalekundert/appcli/commit/a8ef1044407b093baf24ee596bbb2fdcc006aa8c))
+* Apply schema after root key ([`fe008dd`](https://github.com/kalekundert/appcli/commit/fe008dd46aad3fb33779b587e376209217748b6b))
+
 ## v0.22.0 (2021-06-21)
 ### Feature
 * Allow instance-level Config callbacks ([`3f4eb8d`](https://github.com/kalekundert/appcli/commit/3f4eb8d3709df2415d5b82e252cbce33b1347b84))
