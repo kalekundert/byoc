@@ -23,6 +23,9 @@ class AppMeta(type):
 
 class App(metaclass=AppMeta):
 
+    def __bareinit__(self):
+        pass
+
     def load(self, config_cls=None):
         model.load(self, config_cls)
 
