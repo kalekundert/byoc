@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.24.0 (2021-12-16)
+### Feature
+* Initialize file configs via setup() ([`5791e2f`](https://github.com/kalekundert/appcli/commit/5791e2f2f8a8e75f6810d2a6f9a57a7d6aaa894c))
+
+### Fix
+* Improve error message ([`77e1539`](https://github.com/kalekundert/appcli/commit/77e1539aecc2666a9563dedee5c68e7f0d52cecc))
+
 ## v0.23.0 (2021-06-28)
 ### Feature
 * Provide a default __bareinit__() implementation ([`ef0242a`](https://github.com/kalekundert/appcli/commit/ef0242a57f6cb2aaa802cff2d33de21e32dd6dd3))
