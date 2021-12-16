@@ -41,7 +41,7 @@ class config_attr:
                 except AttributeError as err2:
                     err.put_info(
                             "skipped {config}: {getter} raised {err.__class__.__name__}: {err}" if self.getter else
-                            "skipped {config}: no attribute {attr!r}",
+                            "skipped {config}: {err}",
                             config=config, err=err2,
                     )
                     continue

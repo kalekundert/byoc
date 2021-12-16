@@ -176,7 +176,7 @@ test_config_attr_err:
       message:
         - can't find config attribute
         - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
-        - skipped DummyConfig\(\): no attribute 'x'
+        - skipped DummyConfig\(\): 'DummyConfig' object has no attribute 'x'
   -
     obj:
       > class DummyConfig(appcli.Config):
@@ -212,6 +212,6 @@ test_config_attr_err:
         - can't find config attribute
         - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
         - skipped DummyConfigA\(\): not derived from DummyConfigB
-        - skipped DummyConfigB\(\): no attribute 'x'
+        - skipped DummyConfigB\(\): 'DummyConfigB' object has no attribute 'x'
 
 
