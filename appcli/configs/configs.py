@@ -284,25 +284,9 @@ class TomlConfig(FileConfig):
 
     @staticmethod
     def _do_load(path):
-        # rtoml requires this.
-        path = Path(path)
-
-        try:
-            # Prefer rtoml, since it's much less buggy.  It's also much harder 
-            # to install, though.
-            import rtoml
-            return rtoml.load(path)
-        except ModuleNotFoundError:
-            pass
-
-        try:
-            import tomli
-            return tomli.load(path)
-        except ModuleNotFoundError:
-            pass
-
-        import toml
-        return toml.load(path)
+        import tomli
+        with open(path, 'rb') as f:
+            return tomli.load(f)
 
 
 class NtConfig(FileConfig):

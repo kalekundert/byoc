@@ -18,7 +18,7 @@ requires = [
   'nestedtext',
   'pyyaml',
   'tidyexc',
-  'toml',
+  'tomli',
 ]
 classifiers = [
   'Programming Language :: Python :: 3',
