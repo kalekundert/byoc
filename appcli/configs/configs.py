@@ -231,14 +231,24 @@ class FileConfig(Config):
     schema = None
     root_key = None
 
+    def __init__(self, obj, path=None, *, path_getter=None, schema=None, root_key=None):
+        super().__init__(obj)
+        self._path = path
+        self._path_getter = path_getter or unbind_method(self.path_getter)
+        self.schema = schema or self.schema
+        self.root_key = root_key or self.root_key
+
     def get_path(self):
-        return Path(unbind_method(self.path_getter)(self.obj))
+        if self._path:
+            return Path(self._path)
+        else:
+            return Path(self._path_getter(self.obj))
 
     def load(self):
         yield from self.load_from_path(
                 path=self.path,
                 schema=self.schema,
-                root_key=self.root_key
+                root_key=self.root_key,
         )
 
     @classmethod

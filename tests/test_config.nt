@@ -424,32 +424,6 @@ test_file_config:
       values: {'x': 1}
       location: x.yml
   -
-    id: yaml-path-getter
-    obj:
-      > class DummyYamlConfig(appcli.YamlConfig):
-      >     path_getter = lambda obj: obj.p
-      >
-      > class DummyObj:
-      >     __config__ = [DummyYamlConfig]
-      >     p = 'x.yml'
-      >
-    files:
-      x.yml:
-        > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
-  -
-    id: yaml-file-not-found
-    obj:
-      > class DummyObj:
-      >     __config__ = [appcli.YamlConfig]
-      >     path = 'not-found.yml'
-    files:
-    layer:
-      values: {}
-      location: not-found.yml
-  -
     id: toml
     obj:
       > class DummyObj:
@@ -474,20 +448,115 @@ test_file_config:
       values: {'x': '1'}
       location: x.nt
   -
-    id: nt-schema
-    # The schema is now deferred until layer.iter_values() is called...
-    marks: skip
+    id: path-setup
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.NtConfig]
+      >     __config__ = [appcli.YamlConfig.setup('x.yml')]
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+  -
+    id: path-getter-cls
+    obj:
+      > class DummyYamlConfig(appcli.YamlConfig):
+      >     path_getter = lambda obj: obj.p
+      >
+      > class DummyObj:
+      >     __config__ = [DummyYamlConfig]
+      >     p = 'x.yml'
+      >
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+  -
+    id: path-getter-setup
+    obj:
+      > class DummyObj:
+      >     __config__ = [
+      >         appcli.YamlConfig.setup(path_getter=lambda x: x.p),
+      >     ]
+      >     p = 'x.yml'
+      >
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+  -
+    id: schema-cls
+    obj:
+      > class DummyYamlConfig(appcli.YamlConfig):
+      >     schema = ...
+      >
+      > class DummyObj:
+      >     __config__ = [DummyYamlConfig]
+      >     path = 'x.yml'
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+      schema: ...
+  -
+    id: schema-setup
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig.setup(schema=...)]
+      >     path = 'x.yml'
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+      schema: ...
+  -
+    id: root-key-cls
+    obj:
+      > class DummyYamlConfig(appcli.YamlConfig):
+      >     root_key = 'x'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyYamlConfig]
+      >     path = 'x.yml'
+    files:
+      x.yml:
+        > x: 1
+    layer:
+      values: {'x': 1}
+      location: x.yml
+      root_key: 'x'
+  -
+    id: root-key-setup
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig.setup(root_key='x')]
       >     path = 'x.nt'
-      >     schema = lambda x: {k: int(x[k]) + 1 for k in x}
     files:
       x.nt:
         > x: 1
     layer:
-      values: {'x': 2}
+      values: {'x': 1}
       location: x.nt
+      root_key: 'x'
+  -
+    id: not-found
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig]
+      >     path = 'not-found.yml'
+    files:
+    layer:
+      values: {}
+      location: not-found.yml
 
 test_on_load:
   -

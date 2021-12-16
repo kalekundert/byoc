@@ -15,11 +15,22 @@ class LayerWrapper:
         return f'LayerWrapper({self.layer!r})'
 
     def __eq__(self, other):
-        return all((
-                isinstance(other, appcli.Layer),
-                self.layer.values == other.values,
-                self.layer.location == str(other.location),
-        ))
+        if not isinstance(other, appcli.Layer):
+            return False
+
+        if self.layer.values != other.values:
+            return False
+
+        if self.layer.location != str(other.location):
+            return False
+
+        if hasattr(self.layer, 'root_key') and self.layer.root_key != other.root_key:
+            return False
+
+        if hasattr(self.layer, 'schema') and self.layer.schema != other.schema:
+            return False
+
+        return True
 
 def DictLayerWrapper(*args, **kwargs):
     return LayerWrapper(appcli.DictLayer(*args, **kwargs))
@@ -49,6 +60,8 @@ def eval_layer(layer, globals=None, **kw_globals):
     schema = Schema(Or(str, {
         'values': eval,
         'location': str,
+        Optional('root_key'): eval,
+        Optional('schema'): eval,
     }))
     layer = schema(layer)
     layer = eval_appcli(layer, globals, **kw_globals) \
