@@ -47,13 +47,17 @@ def eval_appcli(code, globals=None, **kw_globals):
     except Exception as err:
         raise Invalid(str(err)) from err
 
-def eval_layers(layers, globals=None, **kw_globals):
+def eval_obj_layers(layers, globals=None, **kw_globals):
     schema = Schema({
-        Coerce(int): Or(
+        Coerce(int): eval_config_layers,
+    })
+    return schema(layers)
+
+def eval_config_layers(layers, globals=None, **kw_globals):
+    schema = Schema(Or(
             [lambda x: eval_layer(x, globals, **kw_globals)],
             empty_list,
-        ),
-    })
+    ))
     return schema(layers)
 
 def eval_layer(layer, globals=None, **kw_globals):

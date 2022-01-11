@@ -21,10 +21,10 @@ class DummyConfig(appcli.Config):
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'init_layers': Or(eval_layers, empty_dict),
-            'load_layers': Or(eval_layers, empty_dict),
+            'init_layers': Or(eval_obj_layers, empty_dict),
+            'load_layers': Or(eval_obj_layers, empty_dict),
             Optional('reload_layers', default={}):
-                Or(eval_layers, empty_dict),
+                Or(eval_obj_layers, empty_dict),
         })
 )
 def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
@@ -51,7 +51,7 @@ def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
-            'layers': Or(eval_layers, empty_dict),
+            'layers': Or(eval_obj_layers, empty_dict),
         }),
 )
 def test_collect_layers(obj, layers):

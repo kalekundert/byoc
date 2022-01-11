@@ -78,7 +78,7 @@ def test_environment_config():
             'author': eval,
             'version': eval,
             'files': {str: str},
-            'layers': eval_layers,
+            'layers': eval_config_layers,
         })
 )
 def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, files, layers):
@@ -106,23 +106,23 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert obj.dirs.version == version
 
     appcli.init(obj)
-    assert collect_layers(obj) == layers
+    assert collect_layers(obj) == {0: layers}
 
 @parametrize_from_file(
         schema=Schema({
             'obj': exec_obj,
             'files': Or({str: str}, empty_dict),
-            'layer': eval_layer,
+            'layers': eval_config_layers,
         })
 )
-def test_file_config(tmp_chdir, obj, files, layer):
+def test_file_config(tmp_chdir, obj, files, layers):
     for name, content in files.items():
         path = tmp_chdir / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
 
     appcli.init(obj)
-    assert collect_layers(obj) == {0: [layer]}
+    assert collect_layers(obj) == {0: layers}
 
 @parametrize_from_file
 def test_on_load(prepare, load, expected):

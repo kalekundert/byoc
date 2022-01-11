@@ -8,6 +8,7 @@ from ..errors import ConfigError
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
+from collections.abc import Iterable
 
 class Config:
     autoload = True
@@ -238,18 +239,21 @@ class FileConfig(Config):
         self.schema = schema or self.schema
         self.root_key = root_key or self.root_key
 
-    def get_path(self):
-        if self._path:
-            return Path(self._path)
+    def get_paths(self):
+        p = self._path or self._path_getter(self.obj)
+
+        if isinstance(p, Iterable) and not isinstance(p, str):
+            return [Path(pi) for pi in p]
         else:
-            return Path(self._path_getter(self.obj))
+            return [Path(p)]
 
     def load(self):
-        yield from self.load_from_path(
-                path=self.path,
-                schema=self.schema,
-                root_key=self.root_key,
-        )
+        for path in self.paths:
+            yield from self.load_from_path(
+                    path=path,
+                    schema=self.schema,
+                    root_key=self.root_key,
+            )
 
     @classmethod
     def load_from_path(cls, path, *, schema=None, root_key=None):

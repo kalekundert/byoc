@@ -293,13 +293,12 @@ test_appdirs_config:
       site/conf.nt:
         > y: 2
     layers:
-      0:
-        -
-          values: {'x': '1'}
-          location: user/conf.nt
-        -
-          values: {'y': '2'}
-          location: site/conf.nt
+      -
+        values: {'x': '1'}
+        location: user/conf.nt
+      -
+        values: {'y': '2'}
+        location: site/conf.nt
   -
     obj:
       > class DummyAppDirsConfig(appcli.AppDirsConfig):
@@ -320,13 +319,12 @@ test_appdirs_config:
       site/conf.nt:
         > y: 2
     layers:
-      0:
-        -
-          values: {'x': '1'}
-          location: user/conf.nt
-        -
-          values: {'y': '2'}
-          location: site/conf.nt
+      -
+        values: {'x': '1'}
+        location: user/conf.nt
+      -
+        values: {'y': '2'}
+        location: site/conf.nt
 
 test_appdirs_config_get_name_and_config_cls:
   -
@@ -420,9 +418,10 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
   -
     id: toml
     obj:
@@ -432,9 +431,10 @@ test_file_config:
     files:
       x.toml:
         > x = 1
-    layer:
-      values: {'x': 1}
-      location: x.toml
+    layers:
+      -
+        values: {'x': 1}
+        location: x.toml
   -
     id: nt
     obj:
@@ -444,9 +444,10 @@ test_file_config:
     files:
       x.nt:
         > x: 1
-    layer:
-      values: {'x': '1'}
-      location: x.nt
+    layers:
+      -
+        values: {'x': '1'}
+        location: x.nt
   -
     id: path-setup
     obj:
@@ -455,9 +456,27 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+  -
+    id: paths-setup
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig.setup(['x.yml', 'y.yml'])]
+    files:
+      x.yml:
+        > x: 1
+      y.yml:
+        > y: 1
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+      -
+        values: {'y': 1}
+        location: y.yml
   -
     id: path-getter-cls
     obj:
@@ -471,9 +490,10 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
   -
     id: path-getter-setup
     obj:
@@ -486,9 +506,10 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
   -
     id: schema-cls
     obj:
@@ -501,10 +522,11 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
-      schema: ...
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+        schema: ...
   -
     id: schema-setup
     obj:
@@ -514,10 +536,11 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
-      schema: ...
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+        schema: ...
   -
     id: root-key-cls
     obj:
@@ -530,10 +553,11 @@ test_file_config:
     files:
       x.yml:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.yml
-      root_key: 'x'
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+        root_key: 'x'
   -
     id: root-key-setup
     obj:
@@ -543,10 +567,11 @@ test_file_config:
     files:
       x.nt:
         > x: 1
-    layer:
-      values: {'x': 1}
-      location: x.nt
-      root_key: 'x'
+    layers:
+      -
+        values: {'x': 1}
+        location: x.nt
+        root_key: 'x'
   -
     id: not-found
     obj:
@@ -554,9 +579,10 @@ test_file_config:
       >     __config__ = [appcli.YamlConfig]
       >     path = 'not-found.yml'
     files:
-    layer:
-      values: {}
-      location: not-found.yml
+    layers:
+      -
+        values: {}
+        location: not-found.yml
 
 test_on_load:
   -
