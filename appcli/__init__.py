@@ -4,7 +4,7 @@
 An object-oriented framework for command-line apps.
 """
 
-__version__ = '0.24.0'
+__version__ = '0.25.0'
 
 # Define the public API
 from .app import App, AppMeta

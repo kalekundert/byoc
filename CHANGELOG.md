@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.25.0 (2022-01-11)
+### Feature
+* Add a main function to app classes ([`f7e865a`](https://github.com/kalekundert/appcli/commit/f7e865a4f2c4da4647c533fdd2040ec4cdc31b8a))
+* Allow file configs to read multiple paths ([`eac2444`](https://github.com/kalekundert/appcli/commit/eac2444c576215c93408c1ddb1cd971522883307))
+
 ## v0.24.0 (2021-12-16)
 ### Feature
 * Initialize file configs via setup() ([`5791e2f`](https://github.com/kalekundert/appcli/commit/5791e2f2f8a8e75f6810d2a6f9a57a7d6aaa894c))
