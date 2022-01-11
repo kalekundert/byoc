@@ -26,11 +26,18 @@ class App(metaclass=AppMeta):
     def __bareinit__(self):
         pass
 
+    @classmethod
+    def entry_point(cls):
+        app = cls.from_params()
+        app.main()
+
+    def main(self):
+        raise NotImplementedError
+
     def load(self, config_cls=None):
         model.load(self, config_cls)
 
     def reload(self, config_cls=None):
         model.reload(self, config_cls)
-
 
 
