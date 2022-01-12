@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .utils import lookup, noop
-from .errors import ScriptError, ConfigError
+from .errors import ApiError
 
 CONFIG_ATTR = '__config__'
 META_ATTR = '__appcli__'
@@ -39,21 +39,6 @@ class WrappedConfig:
         self.layers = list(self.config.load())
         self.is_loaded = True
 
-class Log:
-    
-    def __init__(self):
-        self.err = ConfigError()
-
-    def info(self, message, **kwargs):
-        self.err.put_info(message, **kwargs)
-
-    def hint(self, message):
-        if message not in self.err.hints:
-            self.err.hints += message
-
-    def make_error(self, brief):
-        self.err.brief = brief
-        return self.err
 
 def init(obj):
     if hasattr(obj, META_ATTR):
@@ -144,7 +129,7 @@ def get_config_factories(obj):
     try:
         return getattr(obj, CONFIG_ATTR)
     except AttributeError:
-        err = ScriptError(
+        err = ApiError(
                 obj=obj,
                 config_attr=CONFIG_ATTR,
         )
@@ -172,31 +157,6 @@ def get_load_callbacks(obj):
 
 def get_param_states(obj):
     return get_meta(obj).param_states
-
-def iter_values(getters, default=UNSPECIFIED):
-    # It's important that this function is a generator.  This allows the `pick` 
-    # argument to `param()` to pick, for example, the first value without 
-    # having to calculate any subsequent values (which could be expensive).
-
-    log = Log()
-    have_value = False
-
-    if not getters:
-        log.info("nowhere to look for values")
-
-    for getter in getters:
-        for value in getter.iter_values(log):
-            have_value = True
-            yield getter.cast_value(value)
-
-    if default is not UNSPECIFIED:
-        have_value = True
-        yield default
-    else:
-        log.hint("did you mean to provide a default?")
-
-    if not have_value:
-        raise log.make_error("can't find value for parameter")
 
 
 def _load_configs(obj, predicate):

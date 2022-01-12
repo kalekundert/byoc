@@ -4,7 +4,7 @@ import sys, os, re, inspect, autoprop
 
 from .layers import DictLayer, dict_like
 from ..utils import lookup, first_specified
-from ..errors import ConfigError
+from ..errors import ApiError
 from pathlib import Path
 from textwrap import dedent
 from more_itertools import one, first
@@ -168,10 +168,10 @@ class AppDirsConfig(Config):
 
     def get_name_and_config_cls(self):
         if not self.name and not self.config_cls:
-            raise ConfigError("must specify `AppDirsConfig.name` or `AppDirsConfig.config_cls`")
+            raise ApiError("must specify `AppDirsConfig.name` or `AppDirsConfig.config_cls`")
 
         if self.name and self.config_cls:
-            err = ConfigError(
+            err = ApiError(
                     name=self.name,
                     format=self.config_cls,
             )
@@ -193,15 +193,15 @@ class AppDirsConfig(Config):
                         for x in e.configs
                     )
             ])
-            with ConfigError.add_info(
+            with ApiError.add_info(
                     found_these,
                     name=self.name,
                     configs=FileConfig.__subclasses__(),
             ):
                 config = one(
                         configs,
-                        ConfigError("can't find FileConfig subclass to load '{name}'"),
-                        ConfigError("found multiple FileConfig subclass to load '{name}'"),
+                        ApiError("can't find FileConfig subclass to load '{name}'"),
+                        ApiError("found multiple FileConfig subclass to load '{name}'"),
                 )
 
             return self.name, config

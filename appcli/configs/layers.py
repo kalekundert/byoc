@@ -27,7 +27,14 @@ class DictLayer(Layer):
         self.location = location
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(values={self._values!r}, location={self._location!r})'
+        attrs = {
+                'schema': self.schema,
+                'root_key': self.root_key,
+                'location': self.location,
+        }
+        attr_strs = [f'{k}={v!r}' for k, v in attrs.items() if v]
+        attrs_str = ', '.join([repr(self.values), *attr_strs])
+        return f'{self.__class__.__name__}({attrs_str})'
 
     def iter_values(self, key, log):
         values = self.values

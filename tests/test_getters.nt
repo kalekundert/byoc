@@ -39,9 +39,8 @@ test_getter_cast_value:
     param: appcli.param(cast=int)
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
 
   -
@@ -61,9 +60,8 @@ test_getter_cast_value:
     param: appcli.param(cast=int)
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
 
   -
@@ -83,9 +81,8 @@ test_getter_cast_value:
     param: appcli.param(cast=int)
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
 
   -
@@ -107,7 +104,7 @@ test_getter_cast_value:
   -
     id: key
     getter: appcli.Key(appcli.Config, cast=int)
-    param: appcli.param(cast=str)
+    param: appcli.param(cast=lambda x: x+1)
     given: '1'
     expected: 1
   -
@@ -115,9 +112,8 @@ test_getter_cast_value:
     getter: appcli.Key(appcli.Config, cast=int)
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
   -
     id: key-err
@@ -125,9 +121,8 @@ test_getter_cast_value:
     param: appcli.param(cast=int)
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
 
   -
@@ -140,18 +135,16 @@ test_getter_cast_value:
     getter: appcli.Key(appcli.Config, cast=[int, lambda x: x])
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
   -
     id: compose-err
     getter: appcli.Key(appcli.Config, cast=[lambda x: x, int])
     given: 'a'
     error:
-      type: appcli.ConfigError
+      type: ValueError
       message:
-        - can't cast 'a' using <class 'int'>
         - invalid literal for int\(\) with base 10: 'a'
 
 test_getter_iter_values:
@@ -264,10 +257,11 @@ test_getter_iter_values:
           > called: <function <lambda> at .*>
           > raised ZeroDivisionError: division by zero
   -
-    id: method-err-attribute
+    id: method-err-skip-no-value
     obj:
       > class DummyObj:
       >     __config__ = []
+      >     x = appcli.param()
       >
     getter: appcli.Method(lambda self: self.x)
     expected:
@@ -275,8 +269,10 @@ test_getter_iter_values:
       info:
         -
           > called: <function <lambda> at .*>
-          > raised AttributeError: 'DummyObj' object has no attribute 'x'
-
+          > raised NoValueFound: can't find value for parameter
+          > . getting 'x' parameter for <DummyObj object at .*>
+          > . nowhere to look for values
+          > . did you mean to provide a default\?
   -
     id: key-implicit
     obj:
@@ -581,7 +577,7 @@ test_getter_iter_values:
       > class DummyConfig(appcli.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='a')
+      >         yield appcli.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -591,7 +587,6 @@ test_getter_iter_values:
       values: []
       info:
         - skipped DummyConfig\(\): not loaded
-      hints:
         - did you mean to call `appcli.load\(\)`?
   -
     id: key-autoload
@@ -739,7 +734,7 @@ test_getter_kwargs_err:
     id: kwargs-err
     getter: appcli.Value(1, toggle=True)
     error:
-      type: appcli.ConfigError
+      type: appcli.ApiError
       message:
         - unexpected keyword argument
         - param\(\) allows the following kwargs:
@@ -750,7 +745,7 @@ test_getter_kwargs_err:
     id: kwargs-err
     getter: appcli.Value(1, cats=int, toggle=True)
     error:
-      type: appcli.ConfigError
+      type: appcli.ApiError
       message:
         - unexpected keyword argument
         - param\(\) allows the following kwargs:
@@ -767,7 +762,7 @@ test_getter_kwargs_err:
 
     getter: appcli.Value(1, cats=int, toggle=True)
     error:
-      type: appcli.ConfigError
+      type: appcli.ApiError
       message:
         - unexpected keyword argument
         - param\(\) allows the following kwargs:

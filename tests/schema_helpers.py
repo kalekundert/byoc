@@ -15,13 +15,16 @@ class LayerWrapper:
         return f'LayerWrapper({self.layer!r})'
 
     def __eq__(self, other):
+        def str_or_none(x):
+            return str(x) if x is not None else x
+
         if not isinstance(other, appcli.Layer):
             return False
 
         if self.layer.values != other.values:
             return False
 
-        if self.layer.location != str(other.location):
+        if self.layer.location != str_or_none(other.location):
             return False
 
         if hasattr(self.layer, 'root_key') and self.layer.root_key != other.root_key:
@@ -148,10 +151,6 @@ def error_or(**expected):
         for k, v in expected.items()
     })
     return schema
-
-# Something to think about: I'd like to put a version of this function in the 
-# `parametrize_from_file` package.  I need a general way to specify the local 
-# variables, though.
 
 def error(x):
     if x == 'none':

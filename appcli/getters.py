@@ -2,7 +2,7 @@
 
 from . import model
 from .model import UNSPECIFIED
-from .errors import ConfigError
+from .errors import ApiError, NoValueFound
 from more_itertools import always_iterable
 from inform import did_you_mean
 from functools import partial
@@ -87,15 +87,15 @@ class Method(Func):
 
     def bind(self, obj, param):
         # Methods used with this getter this will typically attempt to 
-        # calculate a value based on other parameters.  An AttributeError will 
-        # be raised if any of those parameters is missing a value.  The most 
-        # sensible thing to do when this happens is to silently skip this 
-        # getter, allowing the parameter to continue searching other getters 
-        # for a value.
+        # calculate a value based on other parameters.  In most cases, a 
+        # NoValueFound exception will be raised if any of those parameters is 
+        # missing a value.  The most sensible thing to do when this happens is 
+        # to silently skip this getter, allowing the parameter to continue 
+        # searching other getters for a value.
 
         bc = super().bind(obj, param)
         bc.partial_args = (obj, *bc.partial_args)
-        bc.exceptions = (AttributeError, *bc.exceptions)
+        bc.exceptions = bc.exceptions or (NoValueFound,)
         return bc
 
 class Value(Getter):
@@ -137,7 +137,7 @@ class BoundGetter:
         unknown_kwargs = given_kwargs - known_kwargs
 
         if unknown_kwargs:
-            err = ConfigError(
+            err = ApiError(
                     getter=self.parent,
                     obj=self.obj,
                     param=self.param,
@@ -161,17 +161,7 @@ class BoundGetter:
 
     def cast_value(self, x):
         for f in self.cast_funcs:
-            try:
-                x = f(x)
-            except Exception as err1:
-                err2 = ConfigError(
-                        value=x,
-                        function=f,
-                )
-                err2.brief = "can't cast {value!r} using {function!r}"
-                err2.blame += str(err1)
-                raise err2 from err1
-
+            x = f(x)
         return x
 
 class BoundKey(BoundGetter):
@@ -235,7 +225,7 @@ class BoundValue(BoundGetter):
         self.value = value
 
     def iter_values(self, log):
-        log.info("got hard-coded value: {getter.value}", getter=self)
+        log.info("got hard-coded value: {getter.value!r}", getter=self)
         yield self.value
 
 

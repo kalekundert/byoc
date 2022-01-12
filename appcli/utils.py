@@ -15,7 +15,7 @@ def first_specified(*values, **kwargs):
     try:
         return kwargs['default']
     except KeyError:
-        err = ScriptError(
+        err = ApiError(
                 values=values,
                 sentinel=unspecified,
         )

@@ -3,7 +3,7 @@
 from .. import model
 from .param import param, UNSPECIFIED
 from ..utils import noop
-from ..errors import ConfigError
+from ..errors import NoValueFound
 from more_itertools import partition, first
 
 class Toggle:
@@ -12,7 +12,7 @@ class Toggle:
         self.value = value
 
 def pick_toggled(values):
-    values, toggles = partition(
+    bases, toggles = partition(
             lambda x: isinstance(x, Toggle),
             values,
     )
@@ -20,14 +20,11 @@ def pick_toggled(values):
     toggle = first(toggles, Toggle(False))
 
     try:
-        value = first(values)
+        base = first(bases)
     except ValueError:
-        err = ConfigError()
-        err.brief = "can't find base value to toggle"
-        err.hints += "did you mean to specify a default?"
-        raise err
+        raise NoValueFound("can't find base value to toggle", values.log)
 
-    return toggle.value != value
+    return toggle.value != base
 
 class toggle_param(param):
 

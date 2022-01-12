@@ -3,9 +3,9 @@
 from .. import model
 from ..model import UNSPECIFIED
 from ..getters import Getter, Key, ImplicitKey
+from ..pickers import ValuesIter, first
 from ..utils import noop
-from ..errors import AppcliError, ConfigError, ScriptError
-from more_itertools import first
+from ..errors import ApiError, NoValueFound, Log
 
 class param:
 
@@ -105,7 +105,19 @@ class param:
                 try:
                     state.cache_value = self._calc_value(obj)
                     state.cache_exception = UNSPECIFIED
-                except AttributeError as err:
+
+                # Cache the exception indicating that this parameter is 
+                # missing, since that is likely to be raised several times (and 
+                # unlikely to terminate the program).
+                #
+                # Note that other exceptions will not update the cache, and 
+                # therefore may need to be calculated on each access.  I could 
+                # avoid this by catching all exceptions in this block, but that 
+                # would make stack traces more confusing.  I think the approach 
+                # of catching only `NoValueFound` strikes a good balance, but 
+                # I'm open to revisiting this later.
+
+                except NoValueFound as err:
                     state.cache_value = UNSPECIFIED
                     state.cache_exception = err
 
@@ -129,15 +141,13 @@ class param:
         return self._load_state(obj).default_value
 
     def _calc_value(self, obj):
-        with AppcliError.add_info(
-                "getting '{param}' parameter for {obj!r}",
-                obj=obj,
-                param=self._name,
-        ):
-            bound_getters = self._load_bound_getters(obj)
-            default = self._load_default(obj)
-            values = model.iter_values(bound_getters, default)
-            return self._pick(values)
+        log = Log()
+        log.info("getting {param!r} parameter for {obj!r}", obj=obj, param=self._name)
+
+        bound_getters = self._load_bound_getters(obj)
+        default = self._load_default(obj)
+        values = ValuesIter(bound_getters, default, log)
+        return self._pick(values)
 
     def _calc_bound_getters(self, obj):
         from appcli import Config
@@ -154,7 +164,7 @@ class param:
             getters = keys
 
         elif any(are_getters):
-            err = ConfigError(
+            err = ApiError(
                     keys=keys,
             )
             err.brief = "can't mix string keys with Key/Method/Func/Value objects"
@@ -171,7 +181,7 @@ class param:
             ]
 
         elif len(keys) != len(wrapped_configs):
-            err = ConfigError(
+            err = ApiError(
                     configs=[x.config for x in wrapped_configs],
                     keys=keys,
             )
@@ -212,7 +222,7 @@ def _merge_default_args(instance, factory):
     have_factory = factory is not UNSPECIFIED
 
     if have_instance and have_factory:
-        err = ScriptError(
+        err = ApiError(
                 instance=instance,
                 factory=factory,
         )

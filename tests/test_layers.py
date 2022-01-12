@@ -15,7 +15,7 @@ locations = [
 
 def test_dict_layer_repr():
     layer = appcli.DictLayer(values={'x': 1}, location='a')
-    assert repr(layer) == "DictLayer(values={'x': 1}, location='a')"
+    assert repr(layer) == "DictLayer({'x': 1}, location='a')"
 
 @pytest.mark.parametrize('values', values)
 @pytest.mark.parametrize('location', locations)

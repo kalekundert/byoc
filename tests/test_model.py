@@ -143,39 +143,9 @@ def test_get_config_factories():
 def test_get_config_factories_err():
     obj = DummyObj()
 
-    with pytest.raises(appcli.ScriptError) as err:
+    with pytest.raises(appcli.ApiError) as err:
         appcli.model.get_config_factories(obj)
 
     assert err.match('object not configured for use with appcli')
     assert err.match(no_templates)
-
-@parametrize_from_file(
-        schema=Schema({
-            Optional('obj', default='class DummyObj: __config__ = []'): str,
-            Optional('param', default=''): str,
-            'getters': Or([str], empty_list),
-            Optional('default', default=''): str,
-            **error_or(**{
-                'expected': Or([eval], empty_list),
-            }),
-        })
-)
-def test_iter_values(obj, param, getters, default, expected, error):
-    globals = {}
-    obj = exec_obj(obj, globals)
-    param = find_param(obj, param)
-    getters = [eval_appcli(x, globals) for x in getters]
-
-    appcli.init(obj)
-
-    bound_getters = [
-            x.bind(obj, param)
-            for x in getters
-    ]
-    kwargs = {'default': eval(default)} if default else {}
-
-    with error:
-        values = appcli.model.iter_values(bound_getters, **kwargs)
-        assert list(values) == expected
-
 

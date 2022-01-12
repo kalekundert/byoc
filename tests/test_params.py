@@ -8,17 +8,18 @@ from schema_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
+            'obj': str,
             'expected': {str: eval},
         })
 )
 def test_param(obj, expected):
+    obj = exec_obj(obj)
+
     for attr, value in expected.items():
-        print(attr, value)
         assert getattr(obj, attr) == value
 
 def test_param_init_err():
-    with pytest.raises(appcli.ScriptError) as err:
+    with pytest.raises(appcli.ApiError) as err:
         appcli.param(default=1, default_factory=list)
 
     assert err.match(r"can't specify 'default' and 'default_factory'")

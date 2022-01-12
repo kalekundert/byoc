@@ -1,5 +1,4 @@
 test_toggle:
-
   -
     id: 0-toggle-1-base
     layers:
@@ -8,7 +7,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 0-toggle-1-base
     layers:
@@ -17,7 +15,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 1-toggle-0-base-err
     layers:
@@ -26,9 +23,8 @@ test_toggle:
         toggle: True
 
     error:
-      type: appcli.ConfigError
+      type: appcli.NoValueFound
       message: can't find base value to toggle
-
   -
     id: 1-toggle-0-base-err
     layers:
@@ -37,9 +33,8 @@ test_toggle:
         toggle: True
 
     error:
-      type: appcli.ConfigError
+      type: appcli.NoValueFound
       message: can't find base value to toggle
-
   -
     id: 1-toggle-1-base
     layers:
@@ -51,7 +46,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 1-toggle-1-base
     layers:
@@ -63,7 +57,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -75,7 +68,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 1-toggle-1-base
     layers:
@@ -87,7 +79,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -99,7 +90,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 1-toggle-1-base
     layers:
@@ -111,7 +101,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -123,7 +112,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -135,7 +123,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 1-toggle-1-base
     layers:
@@ -147,7 +134,6 @@ test_toggle:
         toggle: True
 
     expected: False
-
   -
     id: 1-toggle-1-base
     layers:
@@ -159,7 +145,6 @@ test_toggle:
         toggle: True
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -171,7 +156,6 @@ test_toggle:
         toggle: True
 
     expected: True
-
   -
     id: 1-toggle-1-base
     layers:
@@ -183,7 +167,6 @@ test_toggle:
         toggle: True
 
     expected: False
-
   -
     id: 2-toggle-2-base
     layers:
@@ -201,7 +184,6 @@ test_toggle:
         toggle: False
 
     expected: False
-
   -
     id: 2-toggle-2-base
     layers:
@@ -219,7 +201,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 2-toggle-2-base
     layers:
@@ -237,7 +218,6 @@ test_toggle:
         toggle: False
 
     expected: True
-
   -
     id: 2-toggle-2-base
     layers:

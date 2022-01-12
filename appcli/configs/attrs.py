@@ -2,7 +2,7 @@
 
 from .. import model
 from ..model import _is_selected_by_cls
-from ..errors import AppcliError, ConfigError
+from ..errors import NoValueFound, Log
 from operator import attrgetter
 
 class config_attr:
@@ -20,31 +20,22 @@ class config_attr:
         configs = [x.config for x in model.get_wrapped_configs(obj)]
         getter = self.getter or attrgetter(self.name)
 
-        with AppcliError.add_info(
-                "getting '{attr}' config_attr for {obj!r}",
-                obj=obj,
-                attr=self.name,
-        ):
-            err = ConfigError(
-                    configs=configs,
-                    config_cls=self.config_cls,
-                    getter=getter,
-            )
+        log = Log()
+        log.info("getting '{attr}' config_attr for {obj!r}", obj=obj, attr=self.name)
 
-            for config in configs:
-                if not _is_selected_by_cls(config, self.config_cls):
-                    err.put_info("skipped {config}: not derived from {config_cls.__name__}", config=config)
-                    continue
+        for config in configs:
+            if not _is_selected_by_cls(config, self.config_cls):
+                log.info("skipped {config}: not derived from {config_cls.__name__}", config=config, config_cls=self.config_cls)
+                continue
 
-                try:
-                    return getter(config)
-                except AttributeError as err2:
-                    err.put_info(
-                            "skipped {config}: {getter} raised {err.__class__.__name__}: {err}" if self.getter else
-                            "skipped {config}: {err}",
-                            config=config, err=err2,
-                    )
-                    continue
+            try:
+                return getter(config)
+            except AttributeError as err:
+                log.info(
+                        "skipped {config}: {getter} raised {err.__class__.__name__}: {err}"
+                            if self.getter else "skipped {config}: {err}",
+                        config=config, getter=getter, err=err,
+                )
+                continue
 
-            err.brief = "can't find config attribute"
-            raise err
+        raise NoValueFound("can't find config attribute", log)

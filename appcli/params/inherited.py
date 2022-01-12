@@ -16,7 +16,7 @@ class inherited_param:
             except KeyError:
                 pass
         else:
-            err = ScriptError(
+            err = ApiError(
                     cls=cls,
                     name=name,
             )

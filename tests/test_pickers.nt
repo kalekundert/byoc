@@ -1,0 +1,319 @@
+test_values_iter:
+  # `test_getters.py` thoroughly tests cases where there is only a single 
+  # getter.  The tests here therefore focus on cases where there are multiple 
+  # getters.
+
+  -
+    id: layers-1x
+    getters:
+      - appcli.Value(1)
+    expected:
+      - 1
+    log:
+      - got hard-coded value: 1
+  -
+    id: layers-2x
+    getters:
+      - appcli.Value(1)
+      - appcli.Value(2)
+    expected:
+      - 1
+      - 2
+    log:
+      - got hard-coded value: 1
+      - got hard-coded value: 2
+  -
+    id: layers-repeat
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x')
+      - appcli.Key(DummyConfig, 'x')
+    expected:
+      - 1
+      - 1
+    log:
+      - queried DummyConfig():
+      - found 'x': 1
+      - queried DummyConfig():
+      - found 'x': 1
+  -
+    id: layers-repeat
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x')
+      - appcli.Key(DummyConfig, 'x')
+    expected:
+      - 1
+      - 2
+      - 1
+      - 2
+    log:
+      - queried DummyConfig():
+      - found 'x': 1
+      - found 'x': 2
+      - queried DummyConfig():
+      - found 'x': 1
+      - found 'x': 2
+  -
+    id: layers-order
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+    getters:
+      - appcli.Key(DummyConfigA, 'x')
+      - appcli.Key(DummyConfigB, 'x')
+    expected:
+      - 1
+      - 2
+    log:
+      - queried DummyConfigA():
+      - found 'x': 1
+      - queried DummyConfigB():
+      - found 'x': 2
+  -
+    id: layers-order
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+    getters:
+      - appcli.Key(DummyConfigB, 'x')
+      - appcli.Key(DummyConfigA, 'x')
+    expected:
+      - 2
+      - 1
+    log:
+      - queried DummyConfigB():
+      - found 'x': 2
+      - queried DummyConfigA():
+      - found 'x': 1
+  -
+    id: layers-missing
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+    getters:
+      - appcli.Key(DummyConfigA, 'x')
+      - appcli.Key(DummyConfigB, 'y')
+    expected:
+      - 1
+    log:
+      - queried DummyConfigA():
+      - found 'x': 1
+      - queried DummyConfigB():
+      - did not find 'y' in {'x': 2}
+  -
+    id: layers-missing
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+    getters:
+      - appcli.Key(DummyConfigA, 'y')
+      - appcli.Key(DummyConfigB, 'x')
+    expected:
+      - 2
+    log:
+      - queried DummyConfigA():
+      - did not find 'y' in {'x': 1}
+      - queried DummyConfigB():
+      - found 'x': 2
+  -
+    id: layers-err
+    getters:
+    expected:
+    log:
+      - nowhere to look for values
+      - did you mean to provide a default?
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     autoload = False
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x')
+    expected:
+    log:
+      - skipped DummyConfig(): not loaded
+      - did you mean to call `appcli.load()`?
+      - did you mean to provide a default?
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield from []
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x')
+    expected:
+    log:
+      - skipped DummyConfig(): loaded, but no layers
+      - did you mean to provide a default?
+  -
+    id: layers-err
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'y')
+    expected:
+    log:
+      - queried DummyConfig():
+      - did not find 'y' in {'x': 1}
+      - did you mean to provide a default?
+  -
+    id: cast
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x', cast=lambda x: x + 1)
+    expected:
+      - 2
+      - 3
+    log:
+      - queried DummyConfig():
+      - found 'x': 1
+      - found 'x': 2
+  -
+    id: cast
+    obj:
+      > class DummyConfigA(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyConfigB(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfigA, DummyConfigB]
+    getters:
+      - appcli.Key(DummyConfigA, 'x', cast=lambda x: x + 1)
+      - appcli.Key(DummyConfigB, 'x', cast=lambda x: x + 2)
+    expected:
+      - 2
+      - 3
+    log:
+      - queried DummyConfigA():
+      - found 'x': 1
+      - queried DummyConfigB():
+      - found 'x': 1
+  -
+    id: default
+    getters:
+    default: 0
+    expected:
+      - 0
+    log:
+      - nowhere to look for values
+      - got default value: 0
+  -
+    id: default
+    getters:
+      - appcli.Value(1)
+    default: 0
+    expected:
+      - 1
+      - 0
+    log:
+      - got hard-coded value: 1
+      - got default value: 0
+  -
+    id: default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'x')
+    default: 0
+    expected:
+      - 1
+      - 0
+    log:
+      - queried DummyConfig():
+      - found 'x': 1
+      - got default value: 0
+  -
+    id: default
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         yield appcli.DictLayer(values={'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getters:
+      - appcli.Key(DummyConfig, 'y')
+    default: 0
+    expected:
+      - 0
+    log:
+      - queried DummyConfig():
+      - did not find 'y' in {'x': 1}
+      - got default value: 0
+

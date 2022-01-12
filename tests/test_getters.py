@@ -3,7 +3,7 @@
 import pytest, re
 import parametrize_from_file
 
-from appcli.model import Log
+from appcli.errors import Log
 from schema_helpers import *
 from re_assert import Matches
 from more_itertools import zip_equal
@@ -75,11 +75,8 @@ def test_getter_iter_values(getter, obj, param, expected, error):
 
         assert list(values) == expected['values']
 
-        for info, pattern in zip_equal(log.err.info_strs, expected['info']):
+        for info, pattern in zip_equal(log._err.info_strs, expected['info']):
             Matches(pattern).assert_matches(info)
-
-        for hint, pattern in zip_equal(log.err.hint_strs, expected['hints']):
-            Matches(pattern).assert_matches(hint)
 
 @parametrize_from_file(
         schema=Schema({

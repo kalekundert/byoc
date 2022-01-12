@@ -23,7 +23,7 @@ def test_first_specified(args, kwargs, expected):
         })
 )
 def test_first_specified_err(args, kwargs):
-    with pytest.raises(appcli.ScriptError) as err:
+    with pytest.raises(appcli.ApiError) as err:
         appcli.utils.first_specified(*args, **kwargs)
 
     assert err.match(no_templates)
