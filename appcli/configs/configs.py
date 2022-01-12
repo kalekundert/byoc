@@ -3,7 +3,7 @@
 import sys, os, re, inspect, autoprop
 
 from .layers import DictLayer, dict_like
-from ..utils import lookup, first_specified
+from ..utils import first_specified
 from ..errors import ApiError
 from pathlib import Path
 from textwrap import dedent

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from .utils import lookup, noop
 from .errors import ApiError
 
 CONFIG_ATTR = '__config__'
@@ -38,7 +37,6 @@ class WrappedConfig:
     def load(self):
         self.layers = list(self.config.load())
         self.is_loaded = True
-
 
 def init(obj):
     if hasattr(obj, META_ATTR):

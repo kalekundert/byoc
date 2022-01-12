@@ -64,9 +64,9 @@ test_lookup:
     key: 'a'
     expected: 1
   -
-    x: {'a': {'b': 1}}
-    key: 'a.b'
-    expected: 1
+    x: {'a': 1}
+    key: []
+    expected: {'a': 1}
   -
     x: {'a': 1}
     key: 'a',

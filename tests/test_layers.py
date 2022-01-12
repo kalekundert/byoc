@@ -2,6 +2,8 @@
 
 import pytest, appcli
 import parametrize_from_file
+
+from appcli.errors import Log
 from param_helpers import *
 
 values = [
@@ -37,11 +39,15 @@ def test_dict_layer_setters(values, location):
 
 @parametrize_from_file(
         schema=Schema({
-            'layer': with_appcli.eval,
-            'expected': {str: with_appcli.eval},
+            'layer': with_appcli.eval(defer=True),
+            'key': with_py.eval,
+            'expected': [with_py.eval],
+            'log': [str],
         }),
 )
-def test_dict_layer_iter_values(layer, expected):
-    for key in expected:
-        assert list(layer.iter_values(key, Mock())) == expected[key]
+def test_dict_layer_iter_values(layer, key, expected, log):
+    layer = layer()
+    actual_log = Log()
+    assert list(layer.iter_values(key, actual_log)) == expected
+    assert actual_log._err.info_strs == log
 

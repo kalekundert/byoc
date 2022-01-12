@@ -44,8 +44,8 @@ class DictLayer(Layer):
                 values = lookup(values, self.root_key)
             except KeyError:
                 log.info(
-                        lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e.layer.values)}", e.layer.location),
-                        layer=self, key=self.root_key,
+                        lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
+                        layer=self, values=values, key=self.root_key,
                 )
                 return
 
@@ -56,8 +56,8 @@ class DictLayer(Layer):
             value = lookup(values, key)
         except KeyError:
             log.info(
-                    lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e.layer.values)}", e.layer.location),
-                    layer=self, key=key,
+                    lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
+                    layer=self, values=values, key=key,
             )
         else:
             log.info(

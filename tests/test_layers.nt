@@ -1,40 +1,204 @@
 test_dict_layer_iter_values:
   -
+    id: key-found
     layer:
       > appcli.DictLayer(
       >         values={'x': 1},
       > )
+    key: 'x'
     expected:
-      x: [1]
-      y: []
+      - 1
+    log:
+      - found 'x': 1
   -
+    id: key-not-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      > )
+    key: 'y'
+    expected:
+      []
+    log:
+      - did not find 'y' in {'x': 1}
+  -
+    id: key-callable
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      > )
+    key: itemgetter('x')
+    expected:
+      - 1
+    log:
+      -
+        > called: operator.itemgetter('x')
+        > returned: 1
+  -
+    id: values-deferred
+    layer:
+      > appcli.DictLayer(
+      >         values=lambda: {'x': 1},
+      > )
+    key: 'x'
+    expected:
+      - 1
+    log:
+      - found 'x': 1
+  -
+    id: schema-found
     layer:
       > appcli.DictLayer(
       >         values={'x': 1},
       >         schema=lambda x: {k: v+1 for k,v in x.items()},
       > )
+    key: 'x'
     expected:
-      x: [2]
-      y: []
+      - 2
+    log:
+      - found 'x': 2
   -
+    id: schema-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         schema=lambda x: {k: v+1 for k,v in x.items()},
+      > )
+    key: 'y'
+    expected:
+      []
+    log:
+      - did not find 'y' in {'x': 2}
+  -
+    id: root-x
     layer:
       > appcli.DictLayer(
       >         values={'x': {'y': {'z': 1}}},
-      >         root_key='x.y',
+      >         root_key=('x', 'y'),
       > )
+    key: 'x'
     expected:
-      x: []
-      y: []
-      z: [1]
+      []
+    log:
+      - did not find 'x' in {'z': 1}
   -
+    id: root-y
     layer:
-      # Schema applied after root key.
+      > appcli.DictLayer(
+      >         values={'x': {'y': {'z': 1}}},
+      >         root_key=('x', 'y'),
+      > )
+    key: 'y'
+    expected:
+      []
+    log:
+      - did not find 'y' in {'z': 1}
+  -
+    id: root-z
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': {'y': {'z': 1}}},
+      >         root_key=('x', 'y'),
+      > )
+    key: 'z'
+    expected:
+      - 1
+    log:
+      - found 'z': 1
+  -
+    id: root-not-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         root_key='y',
+      > )
+    key: 'x'
+    expected:
+      []
+    log:
+      - did not find 'y' in {'x': 1}
+  -
+    id: schema-after-root-x
+    layer:
       > appcli.DictLayer(
       >         values={'x': {'y': 1}},
       >         root_key='x',
       >         schema=lambda d: {'y': d['y'] + 1}
       >
       > )
+    key: 'x'
     expected:
-      x: []
-      y: [2]
+      []
+    log:
+      - did not find 'x' in {'y': 2}
+  -
+    id: schema-after-root-y
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': {'y': 1}},
+      >         root_key='x',
+      >         schema=lambda d: {'y': d['y'] + 1}
+      >
+      > )
+    key: 'y'
+    expected:
+      - 2
+    log:
+      - found 'y': 2
+  -
+    id: location-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         location='loc',
+      > )
+    key: 'x'
+    expected:
+      - 1
+    log:
+      -
+        > loc:
+        > found 'x': 1
+  -
+    id: location-not-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         location='loc',
+      > )
+    key: 'y'
+    expected:
+      []
+    log:
+      -
+        > loc:
+        > did not find 'y' in {'x': 1}
+  -
+    id: location-root-not-found
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         root_key='y',
+      >         location='loc',
+      > )
+    key: 'x'
+    expected:
+      []
+    log:
+      -
+        > loc:
+        > did not find 'y' in {'x': 1}
+  -
+    id: location-deferred
+    layer:
+      > appcli.DictLayer(
+      >         values={'x': 1},
+      >         location=lambda: 'loc',
+      > )
+    key: 'x'
+    expected:
+      - 1
+    log:
+      -
+        > loc:
+        > found 'x': 1
