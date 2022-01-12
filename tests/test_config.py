@@ -6,7 +6,7 @@ import parametrize_from_file
 import sys, os, shlex
 
 from unittest import mock
-from schema_helpers import *
+from param_helpers import *
 
 @pytest.fixture
 def tmp_chdir(tmp_path):
@@ -21,12 +21,12 @@ def tmp_chdir(tmp_path):
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
+            'obj': with_appcli.exec(get=get_obj),
             'usage': str,
             'brief': str,
             'invocations': [{
                 'argv': shlex.split,
-                'expected': {str: eval},
+                'expected': {str: with_py.eval},
             }],
         })
 )
@@ -73,10 +73,10 @@ def test_environment_config():
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'slug': eval,
-            'author': eval,
-            'version': eval,
+            'obj': with_appcli.exec(get=get_obj),
+            'slug': with_py.eval,
+            'author': with_py.eval,
+            'version': with_py.eval,
             'files': {str: str},
             'layers': eval_config_layers,
         })
@@ -110,8 +110,8 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'files': Or({str: str}, empty_dict),
+            'obj': with_appcli.exec(get=get_obj),
+            'files': empty_ok({str: str}),
             'layers': eval_config_layers,
         })
 )
@@ -189,10 +189,12 @@ def test_on_load(prepare, load, expected):
 
     obj = DummyObj()
 
-    exec_appcli(prepare, **locals())
+    with_locals = Namespace(with_appcli, locals())
+    with_locals.exec(prepare)
+
     obj.calls = set()
 
-    exec_appcli(load, **locals())
+    with_locals.exec(load)
     assert obj.calls == set(expected or [])
 
 def test_on_load_inheritance():
@@ -249,12 +251,12 @@ def test_on_load_inheritance():
 
 @parametrize_from_file(
         schema=Schema({
-            'f': lambda x: exec_appcli(x)['f'],
-            Optional('raises', default=[]): [eval],
-            **error_or(
-                x=eval,
-                expected=eval,
-            ),
+            'f': with_appcli.exec(get='f'),
+            Optional('raises', default=[]): [with_py.eval],
+            **with_py.error_or({
+                'x': with_py.eval,
+                'expected': with_py.eval,
+            }),
         })
 )
 @pytest.mark.parametrize(

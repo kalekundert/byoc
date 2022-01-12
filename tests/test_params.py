@@ -4,17 +4,16 @@ import appcli
 import pytest
 import parametrize_from_file
 from voluptuous import Schema, Optional, Or
-from schema_helpers import *
+from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': str,
-            'expected': {str: eval},
+            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'expected': {str: with_py.eval},
         })
 )
 def test_param(obj, expected):
-    obj = exec_obj(obj)
-
+    obj = obj()
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 

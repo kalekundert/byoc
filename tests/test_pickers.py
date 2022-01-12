@@ -5,28 +5,27 @@ import parametrize_from_file
 
 from appcli.model import UNSPECIFIED
 from appcli.errors import Log
-from schema_helpers import *
+from param_helpers import *
 
 class DummyObj:
     pass
-
 
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
-            'getters': Or([str], empty_list),
+            'getters': empty_ok([str]),
             Optional('default', default=''): str,
-            'expected': Or([eval], empty_list),
-            'log': Or([str], empty_list),
+            'expected': empty_ok([with_py.eval]),
+            'log': empty_ok([str]),
         })
 )
 def test_values_iter(obj, param, getters, default, expected, log):
-    globals = {}
-    obj = exec_obj(obj, globals)
+    with_obj = with_appcli.exec(obj)
+    obj = get_obj(with_obj)
     param = find_param(obj, param)
-    getters = [eval_appcli(x, globals) for x in getters]
-    default = eval(default) if default else UNSPECIFIED
+    getters = [with_obj.eval(x) for x in getters]
+    default = with_py.eval(default) if default else UNSPECIFIED
 
     appcli.init(obj)
 

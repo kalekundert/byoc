@@ -4,13 +4,13 @@ import pytest, re
 import parametrize_from_file
 
 from appcli.errors import Log
-from schema_helpers import *
 from re_assert import Matches
 from more_itertools import zip_equal
+from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'getter': eval_appcli,
+            'getter': with_appcli.eval,
             'expected': str,
         }),
 )
@@ -24,17 +24,17 @@ def test_getter_repr(getter, expected):
             Optional('obj', default='class DummyObj:\n __config__ = []'): str,
             Optional('param', default='appcli.param()'): str,
             'getter': str,
-            'given': eval,
-            **error_or(**{
-                'expected': eval,
+            'given': with_py.eval,
+            **with_appcli.error_or({
+                'expected': with_py.eval,
             }),
         }),
 )
 def test_getter_cast_value(obj, param, getter, given, expected, error):
-    globals = {}
-    obj = exec_obj(obj, globals)
-    param = eval_appcli(param, globals)
-    getter = eval_appcli(getter, globals)
+    with_obj = with_appcli.exec(obj)
+    obj = get_obj(with_obj)
+    param = with_obj.eval(param)
+    getter = with_obj.eval(getter)
 
     # Pretend to initialize the descriptor.
     if not hasattr(param, '_name'):
@@ -51,20 +51,19 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
             'getter': str,
-            **error_or(**{
+            **with_appcli.error_or({
                 'expected': {
-                    'values': eval,
-                    'info': [str],
-                    Optional('hints', default=[]): [str],
+                    'values': with_py.eval,
+                    'log': [str],
                 },
             }),
         }),
 )
 def test_getter_iter_values(getter, obj, param, expected, error):
-    globals = {}
-    obj = exec_obj(obj, globals)
+    with_obj = with_appcli.exec(obj)
+    obj = get_obj(with_obj)
     param = find_param(obj, param)
-    getter = eval_appcli(getter, globals)
+    getter = with_obj.eval(getter)
 
     appcli.init(obj)
     bound_getter = getter.bind(obj, param)
@@ -75,22 +74,22 @@ def test_getter_iter_values(getter, obj, param, expected, error):
 
         assert list(values) == expected['values']
 
-        for info, pattern in zip_equal(log._err.info_strs, expected['info']):
-            Matches(pattern).assert_matches(info)
+        for log_str, pattern in zip_equal(log._err.info_strs, expected['log']):
+            Matches(pattern).assert_matches(log_str)
 
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
             'getter': str,
-            'error': error,
+            'error': with_appcli.error,
         }),
 )
 def test_getter_kwargs_err(obj, param, getter, error):
-    globals = {}
-    obj = exec_obj(obj, globals)
+    with_obj = with_appcli.exec(obj)
+    obj = get_obj(with_obj)
     param = find_param(obj, param)
-    getter = eval_appcli(getter, globals)
+    getter = with_obj.eval(getter)
 
     appcli.init(obj)
 

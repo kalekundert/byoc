@@ -4,13 +4,13 @@ import appcli
 import pytest
 import parametrize_from_file
 from voluptuous import Schema, Optional
-from schema_helpers import *
+from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'args': eval,
-            Optional('kwargs', default=dict): {str: eval},
-            'expected': eval,
+            'args': with_py.eval,
+            Optional('kwargs', default=dict): {str: with_py.eval},
+            'expected': with_py.eval,
         })
 )
 def test_first_specified(args, kwargs, expected):
@@ -18,8 +18,8 @@ def test_first_specified(args, kwargs, expected):
 
 @parametrize_from_file(
         schema=Schema({
-            'args': eval,
-            Optional('kwargs', default=dict): {str: eval},
+            'args': with_py.eval,
+            Optional('kwargs', default=dict): {str: with_py.eval},
         })
 )
 def test_first_specified_err(args, kwargs):
@@ -30,9 +30,9 @@ def test_first_specified_err(args, kwargs):
 
 @parametrize_from_file(
         schema=Schema({
-            'x': eval,
-            'key': eval,
-            'expected': eval,
+            'x': with_py.eval,
+            'key': with_py.eval,
+            'expected': with_py.eval,
         })
 )
 def test_lookup(x, key, expected):

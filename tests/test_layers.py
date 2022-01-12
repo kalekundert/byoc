@@ -2,7 +2,7 @@
 
 import pytest, appcli
 import parametrize_from_file
-from schema_helpers import *
+from param_helpers import *
 
 values = [
         {'x': 1},
@@ -37,8 +37,8 @@ def test_dict_layer_setters(values, location):
 
 @parametrize_from_file(
         schema=Schema({
-            'layer': eval_appcli,
-            'expected': {str: eval_appcli},
+            'layer': with_appcli.eval,
+            'expected': {str: with_appcli.eval},
         }),
 )
 def test_dict_layer_iter_values(layer, expected):

@@ -173,7 +173,7 @@ test_config_attr_err:
     attr: x
     error:
       type: AttributeError
-      message:
+      pattern:
         - can't find config attribute
         - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
         - skipped DummyConfig\(\): 'DummyConfig' object has no attribute 'x'
@@ -189,7 +189,7 @@ test_config_attr_err:
     attr: x
     error:
       type: AttributeError
-      message:
+      pattern:
         - can't find config attribute
         - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
         - skipped DummyConfig\(\): <function DummyObj.<lambda> at 0x[0-9a-f]*> raised AttributeError: 'DummyConfig' object has no attribute 'x'
@@ -208,7 +208,7 @@ test_config_attr_err:
     attr: x
     error:
       type: AttributeError
-      message:
+      pattern:
         - can't find config attribute
         - getting 'x' config_attr for <DummyObj object at 0x[0-9a-f]*>
         - skipped DummyConfigA\(\): not derived from DummyConfigB

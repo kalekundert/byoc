@@ -3,17 +3,17 @@
 import appcli
 import parametrize_from_file
 from voluptuous import Schema
-from schema_helpers import *
+from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
             'layers': [{
-                'value': eval,
-                'toggle': eval,
+                'value': with_py.eval,
+                'toggle': with_py.eval,
             }],
-            **error_or(
-                expected=eval,
-            )
+            **with_appcli.error_or({
+                'expected': with_py.eval,
+            })
         }),
 )
 def test_toggle(layers, expected, error):

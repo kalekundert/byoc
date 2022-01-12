@@ -2,25 +2,27 @@
 
 import parametrize_from_file
 from voluptuous import Schema
-from schema_helpers import *
+from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'expected': {str: eval},
+            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'expected': {str: with_py.eval},
         })
 )
 def test_config_attr(obj, expected):
+    obj = obj()
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
+            'obj': with_appcli.exec(get=get_obj, defer=True),
             'attr': str,
-            'error': error,
+            'error': with_appcli.error,
         })
 )
 def test_config_attr_err(obj, attr, error):
+    obj = obj()
     with error:
         getattr(obj, attr)

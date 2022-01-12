@@ -4,8 +4,8 @@ import pytest
 import parametrize_from_file
 import appcli
 from voluptuous import Schema, Or, Optional, Coerce
-from schema_helpers import *
 from more_itertools import zip_equal
+from param_helpers import *
 
 class DummyObj:
     pass
@@ -20,11 +20,10 @@ class DummyConfig(appcli.Config):
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'init_layers': Or(eval_obj_layers, empty_dict),
-            'load_layers': Or(eval_obj_layers, empty_dict),
-            Optional('reload_layers', default={}):
-                Or(eval_obj_layers, empty_dict),
+            'obj': with_appcli.exec(get=get_obj),
+            'init_layers': eval_obj_layers,
+            'load_layers': eval_obj_layers,
+            Optional('reload_layers', default={}): eval_obj_layers,
         })
 )
 def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
@@ -50,8 +49,8 @@ def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': exec_obj,
-            'layers': Or(eval_obj_layers, empty_dict),
+            'obj': with_appcli.exec(get=get_obj),
+            'layers': eval_obj_layers,
         }),
 )
 def test_collect_layers(obj, layers):
