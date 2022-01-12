@@ -289,7 +289,7 @@ test_param:
       >             cast=lambda x: x*3,
       >     )
     expected:
-      x: 2
+      x: 6
   -
     id: cast
     obj:

@@ -3,7 +3,7 @@
 from . import model
 from .model import UNSPECIFIED
 from .errors import ApiError, NoValueFound
-from more_itertools import always_iterable
+from more_itertools import value_chain, always_iterable
 from inform import did_you_mean
 from functools import partial
 
@@ -125,8 +125,9 @@ class BoundGetter:
         # re-applied each time the cache expires (because the getters are 
         # re-bound when this happens).
         self.kwargs = parent.kwargs
-        self.cast_funcs = list(always_iterable(
-            self.kwargs.get('cast', []) or param._get_default_cast()
+        self.cast_funcs = list(value_chain(
+            self.kwargs.get('cast', []),
+            param._get_default_cast()
         ))
 
         self._check_kwargs()

@@ -106,7 +106,7 @@ test_getter_cast_value:
     getter: appcli.Key(appcli.Config, cast=int)
     param: appcli.param(cast=lambda x: x+1)
     given: '1'
-    expected: 1
+    expected: 2
   -
     id: key-err
     getter: appcli.Key(appcli.Config, cast=int)
