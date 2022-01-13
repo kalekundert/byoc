@@ -135,7 +135,6 @@ test_param:
       >
       >     x = appcli.param(
       >         appcli.Method(lambda self: self.y),
-      >         dynamic=True,
       >     )
       >
       > obj = DummyObj()
@@ -473,6 +472,146 @@ test_param:
       > obj.x = [1]
     expected:
       x: [1]
+
+  -
+    id: dynamic-key
+    obj:
+      > d = {'x': 1}
+      >
+      > class DummyConfig(appcli.Config):
+      >     dynamic = False
+      >     def load(self):
+      >         yield appcli.DictLayer(values=d)
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 1
+  -
+    id: dynamic-key
+    obj:
+      > d = {'x': 1}
+      >
+      > class DummyConfig(appcli.Config):
+      >     dynamic = True
+      >     def load(self):
+      >         yield appcli.DictLayer(values=d)
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 2
+  -
+    id: dynamic-key
+    obj:
+      > d = {'x': 1}
+      >
+      > class DummyConfig(appcli.Config):
+      >     dynamic = False
+      >     def load(self):
+      >         yield appcli.DictLayer(values=d)
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.param(dynamic=True)
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 2
+  -
+    id: dynamic-method
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = 1
+      >     y = appcli.param(Method(lambda self: self.x))
+      >
+      > obj = DummyObj()
+      > obj.y
+      >
+      > DummyObj.x = 2
+    expected:
+      y: 2
+  -
+    id: dynamic-method
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = 1
+      >     y = appcli.param(Method(lambda self: self.x, dynamic=False))
+      >
+      > obj = DummyObj()
+      > obj.y
+      >
+      > obj.x = 2
+    expected:
+      y: 1
+  -
+    id: dynamic-func
+    obj:
+      > d = {'x': 1}
+      > def f():
+      >     return d['x']
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(Func(f))
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 1
+  -
+    id: dynamic-func
+    obj:
+      > d = {'x': 1}
+      > def f():
+      >     return d['x']
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(Func(f, dynamic=True))
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 2
+  -
+    id: dynamic-func
+    obj:
+      > d = {'x': 1}
+      > def f():
+      >     return d['x']
+      >
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(Func(f), dynamic=True)
+      >
+      > obj = DummyObj()
+      > obj.x
+      >
+      > d['x'] = 2
+    expected:
+      x: 2
 
   -
     id: inheritance

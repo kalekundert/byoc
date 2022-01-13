@@ -12,9 +12,18 @@ from collections.abc import Iterable
 
 class Config:
     autoload = True
+    dynamic = False
 
-    def __init__(self, obj):
+    def __init__(self, obj, **kwargs):
         self.obj = obj
+        self.dynamic = kwargs.pop('dynamic', self.dynamic)
+
+        if kwargs:
+            raise ApiError(
+                    lambda e: f'{e.config.__class__.__name__}() received unexpected keyword argument(s): {", ".join(map(repr, e.kwargs))}',
+                    config=self,
+                    kwargs=kwargs,
+            )
 
     def __repr__(self):
         return f"{self.__class__.__name__}()"
@@ -42,12 +51,12 @@ class ArgparseConfig(Config):
     schema = None
 
     def __init__(self, obj, **kwargs):
-        super().__init__(obj)
-
-        self.parser_getter = kwargs.get(
+        self.parser_getter = kwargs.pop(
                 'parser_getter', unbind_method(self.parser_getter))
-        self.schema = kwargs.get(
+        self.schema = kwargs.pop(
                 'schema', self.schema)
+
+        super().__init__(obj, **kwargs)
 
     def load(self):
         args = self.parser.parse_args()
@@ -80,22 +89,22 @@ class DocoptConfig(Config):
     schema = None
 
     def __init__(self, obj, **kwargs):
-        super().__init__(obj)
-
-        self.usage_getter = kwargs.get(
+        self.usage_getter = kwargs.pop(
                 'usage_getter', unbind_method(self.usage_getter))
-        self.version_getter = kwargs.get(
+        self.version_getter = kwargs.pop(
                 'version_getter', unbind_method(self.version_getter))
-        self.usage_io_getter = kwargs.get(
+        self.usage_io_getter = kwargs.pop(
                 'usage_io_getter', unbind_method(self.usage_io_getter))
-        self.include_help = kwargs.get(
+        self.include_help = kwargs.pop(
                 'include_help', self.include_help)
-        self.include_version = kwargs.get(
+        self.include_version = kwargs.pop(
                 'include_version', self.include_version)
-        self.options_first = kwargs.get(
+        self.options_first = kwargs.pop(
                 'options_first', self.options_first)
-        self.schema = kwargs.get(
+        self.schema = kwargs.pop(
                 'schema', unbind_method(self.schema))
+
+        super().__init__(obj, **kwargs)
 
     def load(self):
         import sys, docopt, contextlib
@@ -232,8 +241,8 @@ class FileConfig(Config):
     schema = None
     root_key = None
 
-    def __init__(self, obj, path=None, *, path_getter=None, schema=None, root_key=None):
-        super().__init__(obj)
+    def __init__(self, obj, path=None, *, path_getter=None, schema=None, root_key=None, **kwargs):
+        super().__init__(obj, **kwargs)
         self._path = path
         self._path_getter = path_getter or unbind_method(self.path_getter)
         self.schema = schema or self.schema

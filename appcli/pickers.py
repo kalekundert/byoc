@@ -13,6 +13,9 @@ class ValuesIter:
         self.getters = getters
         self.default = default
         self.log = log
+
+        # Output attributes:
+        self.dynamic = False
         self.meta = UnknownMeta()  # meant to be set by picker.
 
     def __iter__(self):
@@ -21,13 +24,15 @@ class ValuesIter:
     @property
     def with_meta(self):
         have_value = False
+        self.dynamic = False
 
         if not self.getters:
             self.log.info("nowhere to look for values")
 
         for getter in self.getters:
-            for value, meta in getter.iter_values(self.log):
+            for value, meta, dynamic in getter.iter_values(self.log):
                 have_value = True
+                self.dynamic = self.dynamic or dynamic
                 yield getter.cast_value(value), meta
 
         if self.default is not UNSPECIFIED:

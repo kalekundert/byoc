@@ -20,6 +20,7 @@ class param:
             self.cache_exception = UNSPECIFIED
             self.cache_version = -1
             self.default_value = default
+            self.dynamic = False
 
     def __init__(
             self,
@@ -101,12 +102,15 @@ class param:
             model_version = model.get_cache_version(obj)
             is_cache_stale = (
                     state.cache_version != model_version or
+                    state.dynamic or
                     self._dynamic
             )
             if is_cache_stale:
                 try:
-                    state.cache_value, state.cache_meta = self._calc_value(obj)
+                    state.cache_value, values_iter = self._calc_value(obj)
                     state.cache_exception = UNSPECIFIED
+                    state.cache_meta = values_iter.meta
+                    state.dynamic = values_iter.dynamic
 
                 # Cache the exception indicating that this parameter is 
                 # missing, since that is likely to be raised several times (and 
@@ -121,8 +125,8 @@ class param:
 
                 except NoValueFound as err:
                     state.cache_value = UNSPECIFIED
-                    state.cache_meta = ExceptionMeta(err)
                     state.cache_exception = err
+                    state.cache_meta = ExceptionMeta(err)
 
                 state.cache_version = model_version
 
@@ -150,7 +154,7 @@ class param:
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)
         values = ValuesIter(bound_getters, default, log)
-        return self._pick(values), values.meta
+        return self._pick(values), values
 
     def _calc_bound_getters(self, obj):
         from appcli import Config

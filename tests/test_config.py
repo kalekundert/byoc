@@ -19,6 +19,19 @@ def tmp_chdir(tmp_path):
         os.chdir(cwd)
 
 
+def test_config_init():
+    class DummyConfig(appcli.Config):
+        pass
+
+    class DummyObj:
+        pass
+
+    expected = r"DummyConfig\(\) received unexpected keyword argument\(s\): 'a'"
+    obj = DummyObj()
+
+    with pytest.raises(appcli.ApiError, match=expected):
+        DummyConfig(obj, a=1)
+
 @parametrize_from_file(
         schema=Schema({
             'obj': with_appcli.exec(get=get_obj),

@@ -58,10 +58,11 @@ class ImplicitKey(Getter):
 
 class Func(Getter):
 
-    def __init__(self, callable, *, skip=(), **kwargs):
+    def __init__(self, callable, *, skip=(), dynamic=False, **kwargs):
         super().__init__(**kwargs)
         self.callable = callable
         self.skip = skip
+        self.dynamic = dynamic
         self.partial_args = ()
         self.partial_kwargs = {}
 
@@ -79,10 +80,14 @@ class Func(Getter):
                 self.callable,
                 self.partial_args,
                 self.partial_kwargs,
+                self.dynamic,
                 tuple(always_iterable(self.skip)),
         )
 
 class Method(Func):
+
+    def __init__(self, *args, dynamic=True, **kwargs):
+        super().__init__(*args, dynamic=dynamic, **kwargs)
 
     def bind(self, obj, param):
         # Methods used with this getter this will typically attempt to 
@@ -196,16 +201,21 @@ class BoundKey(BoundGetter):
 
             for layer in wrapped_config:
                 for value in layer.iter_values(self.key, log):
-                    yield value, LayerMeta(self.parent, layer)
+                    yield (
+                            value,
+                            LayerMeta(self.parent, layer),
+                            wrapped_config.config.dynamic,
+                    )
 
 
 class BoundCallable(BoundGetter):
 
-    def __init__(self, parent, obj, param, callable, args, kwargs, exc=()):
+    def __init__(self, parent, obj, param, callable, args, kwargs, dynamic, exc=()):
         super().__init__(parent, obj, param)
         self.callable = callable
         self.partial_args = args
         self.partial_kwargs = kwargs
+        self.dynamic = dynamic
         self.exceptions = exc
 
     def iter_values(self, log):
@@ -216,7 +226,7 @@ class BoundCallable(BoundGetter):
             pass
         else:
             log.info("called: {getter.callable}\nreturned: {value!r}", getter=self, value=value)
-            yield value, GetterMeta(self.parent)
+            yield value, GetterMeta(self.parent), self.dynamic
 
 
 class BoundValue(BoundGetter):
@@ -227,6 +237,6 @@ class BoundValue(BoundGetter):
 
     def iter_values(self, log):
         log.info("got hard-coded value: {getter.value!r}", getter=self)
-        yield self.value, GetterMeta(self.parent)
+        yield self.value, GetterMeta(self.parent), False
 
 
