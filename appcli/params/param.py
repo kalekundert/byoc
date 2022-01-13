@@ -4,23 +4,26 @@ from .. import model
 from ..model import UNSPECIFIED
 from ..getters import Getter, Key, ImplicitKey
 from ..pickers import ValuesIter, first
-from ..meta import NeverAccessedMeta, ExceptionMeta
+from ..meta import NeverAccessedMeta, ExceptionMeta, SetAttrMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
+from math import inf
 
 class param:
 
     class _State:
 
         def __init__(self, default):
-            self.getters = []
-            self.setattr_value = UNSPECIFIED
-            self.cache_value = UNSPECIFIED
-            self.cache_meta = NeverAccessedMeta()
-            self.cache_exception = UNSPECIFIED
-            self.cache_version = -1
-            self.default_value = default
+            self.bound_getters = []
+            self.default = default
+            self.reset()
+
+        def reset(self):
+            self.value = UNSPECIFIED
+            self.exception = UNSPECIFIED
+            self.meta = NeverAccessedMeta()
             self.dynamic = False
+            self.cache_version = -1
 
     def __init__(
             self,
@@ -48,14 +51,22 @@ class param:
         return self._load_value(obj)
 
     def __set__(self, obj, value):
+        if value is self._ignore:
+            return
+
         state = self._load_state(obj)
-        state.setattr_value = value
+        state.value = value
+        state.exception = UNSPECIFIED
+        state.meta = SetAttrMeta()
+        state.dynamic = False
+        state.cache_version = inf
 
     def __delete__(self, obj):
         state = self._load_state(obj)
-        state.setattr_value = UNSPECIFIED
+        state.reset()
 
     def __call__(self, get):
+        # Allow the descriptor to be used as a decorator.
         self._get = get
         return self
 
@@ -92,60 +103,51 @@ class param:
     def _load_value(self, obj):
         state = self._load_state(obj)
 
-        if state.setattr_value is not UNSPECIFIED and (
-                self._ignore is UNSPECIFIED or 
-                state.setattr_value is not self._ignore
-        ):
-            value = state.setattr_value
+        model_version = model.get_cache_version(obj)
+        is_cache_stale = (
+                state.cache_version < model_version or
+                state.dynamic or
+                self._dynamic
+        )
+        if is_cache_stale:
+            try:
+                state.value, values_iter = self._calc_value(obj)
+                state.exception = UNSPECIFIED
+                state.meta = values_iter.meta
+                state.dynamic = values_iter.dynamic
 
-        else:
-            model_version = model.get_cache_version(obj)
-            is_cache_stale = (
-                    state.cache_version != model_version or
-                    state.dynamic or
-                    self._dynamic
-            )
-            if is_cache_stale:
-                try:
-                    state.cache_value, values_iter = self._calc_value(obj)
-                    state.cache_exception = UNSPECIFIED
-                    state.cache_meta = values_iter.meta
-                    state.dynamic = values_iter.dynamic
+            # Cache the exception indicating that this parameter is 
+            # missing, since that is likely to be raised several times (and 
+            # unlikely to terminate the program).
+            #
+            # Note that other exceptions will not update the cache, and 
+            # therefore may need to be calculated on each access.  I could 
+            # avoid this by catching all exceptions in this block, but that 
+            # would make stack traces more confusing.  I think the approach 
+            # of catching only `NoValueFound` strikes a good balance, but 
+            # I'm open to revisiting this later.
 
-                # Cache the exception indicating that this parameter is 
-                # missing, since that is likely to be raised several times (and 
-                # unlikely to terminate the program).
-                #
-                # Note that other exceptions will not update the cache, and 
-                # therefore may need to be calculated on each access.  I could 
-                # avoid this by catching all exceptions in this block, but that 
-                # would make stack traces more confusing.  I think the approach 
-                # of catching only `NoValueFound` strikes a good balance, but 
-                # I'm open to revisiting this later.
+            except NoValueFound as err:
+                state.value = UNSPECIFIED
+                state.exception = err
+                state.meta = ExceptionMeta(err)
 
-                except NoValueFound as err:
-                    state.cache_value = UNSPECIFIED
-                    state.cache_exception = err
-                    state.cache_meta = ExceptionMeta(err)
+            state.cache_version = model_version
 
-                state.cache_version = model_version
+        if state.exception is not UNSPECIFIED:
+            raise state.exception
 
-            if state.cache_exception is not UNSPECIFIED:
-                raise state.cache_exception
-
-            value = state.cache_value
-
-        return self._get(obj, value)
+        return self._get(obj, state.value)
 
     def _load_bound_getters(self, obj):
         state = self._load_state(obj)
         model_version = model.get_cache_version(obj)
-        if state.cache_version != model_version:
+        if state.cache_version < model_version:
             state.bound_getters = self._calc_bound_getters(obj)
         return state.bound_getters
 
     def _load_default(self, obj):
-        return self._load_state(obj).default_value
+        return self._load_state(obj).default
 
     def _calc_value(self, obj):
         log = Log()

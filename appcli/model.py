@@ -157,7 +157,7 @@ def get_param_states(obj):
     return get_state(obj).param_states
 
 def get_meta(obj, param):
-    from .meta import NeverAccessedMeta, SetAttrMeta
+    from .meta import NeverAccessedMeta
 
     try:
         states = get_param_states(obj)
@@ -169,13 +169,7 @@ def get_meta(obj, param):
     except KeyError:
         return NeverAccessedMeta()
 
-    # This is a temporary hack.  I want to get rid of the distinction between 
-    # `setattr_value` and `cache_value` in `param`, and when I do that the 
-    # param will be able to manage this itself.
-    if state.setattr_value is not UNSPECIFIED:
-        return SetAttrMeta()
-
-    return state.cache_meta
+    return state.meta
 
 
 def _load_configs(obj, predicate):
