@@ -153,6 +153,11 @@ test_getter_iter_values:
     getter: appcli.Value(1)
     expected:
       values: [1]
+      meta:
+        -
+          type: GetterMeta
+          getter: Value
+          getter.value: 1
       log:
         - got hard-coded value: 1
 
@@ -161,6 +166,10 @@ test_getter_iter_values:
     getter: appcli.Func(lambda: 1)
     expected:
       values: [1]
+      meta:
+        -
+          type: GetterMeta
+          getter: Func
       log:
         -
           > called: <function <lambda> at .*>
@@ -170,6 +179,10 @@ test_getter_iter_values:
     getter: appcli.Func(lambda x: x + 1).partial(1)
     expected:
       values: [2]
+      meta:
+        -
+          type: GetterMeta
+          getter: Func
       log:
         -
           > called: <function <lambda> at .*>
@@ -184,6 +197,7 @@ test_getter_iter_values:
     getter: appcli.Func(lambda: 1/0, skip=ZeroDivisionError)
     expected:
       values: []
+      meta:
       log:
         -
           > called: <function <lambda> at .*>
@@ -199,6 +213,10 @@ test_getter_iter_values:
     getter: appcli.Method(lambda self: self.x)
     expected:
       values: [1]
+      meta:
+        -
+          type: GetterMeta
+          getter: Method
       log:
         -
           > called: <function <lambda> at .*>
@@ -216,6 +234,10 @@ test_getter_iter_values:
     getter: appcli.Method(DummyObj.helper)
     expected:
       values: [2]
+      meta:
+        -
+          type: GetterMeta
+          getter: Method
       log:
         -
           > called: <function DummyObj.helper at .*>
@@ -230,6 +252,10 @@ test_getter_iter_values:
     getter: appcli.Method(lambda self, y: self.x + y).partial(1)
     expected:
       values: [2]
+      meta:
+        -
+          type: GetterMeta
+          getter: Method
       log:
         -
           > called: <function <lambda> at .*>
@@ -252,6 +278,7 @@ test_getter_iter_values:
     getter: appcli.Method(lambda self: 1/0, skip=ZeroDivisionError)
     expected:
       values: []
+      meta:
       log:
         -
           > called: <function <lambda> at .*>
@@ -266,6 +293,7 @@ test_getter_iter_values:
     getter: appcli.Method(lambda self: self.x)
     expected:
       values: []
+      meta:
       log:
         -
           > called: <function <lambda> at .*>
@@ -273,12 +301,13 @@ test_getter_iter_values:
           > . getting 'x' parameter for <DummyObj object at .*>
           > . nowhere to look for values
           > . did you mean to provide a default\?
+
   -
     id: key-implicit
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -287,15 +316,22 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig)
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
-        - found 'x': 1
+        -
+          > /path/to/file:
+          > found 'x': 1
   -
     id: key-explicit
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 1})
+      >         yield appcli.DictLayer(values={'y': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -303,15 +339,22 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'y')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'y': 1}
       log:
         - queried DummyConfig\(\):
-        - found 'y': 1
+        -
+          > /path/to/file:
+          > found 'y': 1
   -
     id: key-callable
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 1})
+      >         yield appcli.DictLayer(values={'y': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -323,9 +366,15 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, itemgetter('y'))
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'y': 1}
       log:
         - queried DummyConfig\(\):
         -
+          > /path/to/file:
           > called: operator.itemgetter\('y'\)
           > returned: 1
   -
@@ -333,7 +382,10 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': {'y': 1}})
+      >         yield appcli.DictLayer(
+      >                 values={'x': {'y': 1}},
+      >                 location='/path/to/file',
+      >         )
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -341,15 +393,25 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, ('x', 'y'))
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': {'y': 1}}
       log:
         - queried DummyConfig\(\):
-        - found \('x', 'y'\): 1
+        -
+          > /path/to/file:
+          > found \('x', 'y'\): 1
   -
     id: key-falsy
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={None: 1})
+      >         yield appcli.DictLayer(
+      >                 values={None: 1},
+      >                 location='/path/to/file',
+      >         )
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -358,19 +420,32 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, None)
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {None: 1}
       log:
         - queried DummyConfig\(\):
-        - found None: 1
+        -
+          > /path/to/file:
+          > found None: 1
   -
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 1},
+      >                 location='/path/to/a',
+      >         )
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 2},
+      >                 location='/path/to/b',
+      >         )
       >
       > class DummyConfigC(appcli.Config):
       >     pass
@@ -381,6 +456,7 @@ test_getter_iter_values:
       > appcli.Key(DummyConfigC, 'x')
     expected:
       values: []
+      meta:
       log:
         - no configs of class DummyConfigC
   -
@@ -388,11 +464,20 @@ test_getter_iter_values:
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 1},
+      >                 location='/path/to/a',
+      >         )
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 2},
+      >                 location='/path/to/b',
+      >         )
+      >
+      > class DummyConfigC(appcli.Config):
+      >     pass
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
@@ -400,19 +485,35 @@ test_getter_iter_values:
       > appcli.Key(DummyConfigA, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/a
+          layer.values: {'x': 1}
       log:
         - queried DummyConfigA\(\):
-        - found 'x': 1
+        -
+          > /path/to/a:
+          > found 'x': 1
   -
     id: key-config-cls
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 1},
+      >                 location='/path/to/a',
+      >         )
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 2},
+      >                 location='/path/to/b',
+      >         )
+      >
+      > class DummyConfigC(appcli.Config):
+      >     pass
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
@@ -420,15 +521,22 @@ test_getter_iter_values:
       > appcli.Key(DummyConfigB, 'x')
     expected:
       values: [2]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/b
+          layer.values: {'x': 2}
       log:
         - queried DummyConfigB\(\):
-        - found 'x': 2
+        -
+          > /path/to/b:
+          > found 'x': 2
   -
     id: key-config-factory
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [lambda obj: DummyConfig(obj)]
@@ -436,9 +544,15 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
         -
+          > /path/to/file:
           > found 'x': 1
   -
     id: key-config-setup
@@ -458,20 +572,29 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
-        -
-          > found 'x': 1
+        - found 'x': 1
   -
     id: key-multi-config
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 1},
+      >                 location='/path/to/a',
+      >         )
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 2},
+      >                 location='/path/to/b',
+      >         )
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
@@ -479,18 +602,37 @@ test_getter_iter_values:
       > appcli.Key(appcli.Config, 'x')
     expected:
       values: [1, 2]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/a
+          layer.values: {'x': 1}
+        -
+          type: LayerMeta
+          location: /path/to/b
+          layer.values: {'x': 2}
       log:
         - queried DummyConfigA\(\):
-        - found 'x': 1
+        -
+          > /path/to/a:
+          > found 'x': 1
         - queried DummyConfigB\(\):
-        - found 'x': 2
+        -
+          > /path/to/b:
+          > found 'x': 2
   -
     id: key-multi-layer
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(
+      >                 values={'x': 1},
+      >                 location='/path/to/a',
+      >         )
+      >         yield appcli.DictLayer(
+      >                 values={'x': 2},
+      >                 location='/path/to/b',
+      >         )
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -498,10 +640,23 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1, 2]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/a
+          layer.values: {'x': 1}
+        -
+          type: LayerMeta
+          location: /path/to/b
+          layer.values: {'x': 2}
       log:
         - queried DummyConfig\(\):
-        - found 'x': 1
-        - found 'x': 2
+        -
+          > /path/to/a:
+          > found 'x': 1
+        -
+          > /path/to/b:
+          > found 'x': 2
   -
     id: key-deferred-layer-values
     obj:
@@ -520,6 +675,10 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
         - found 'x': 1
@@ -537,15 +696,20 @@ test_getter_iter_values:
       >     __config__ = [DummyConfig]
       >
       > obj = DummyObj()
-      > obj.loc = 'loc'
+      > obj.loc = '/path/to/file'
     getter:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
         -
-          > loc:
+          > /path/to/file:
           > found 'x': 1
   -
     id: key-autoload
@@ -553,7 +717,7 @@ test_getter_iter_values:
       > class DummyConfig(appcli.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -561,6 +725,7 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: []
+      meta:
       log:
         - skipped DummyConfig\(\): not loaded
         - did you mean to call `appcli.load\(\)`?
@@ -570,7 +735,7 @@ test_getter_iter_values:
       > class DummyConfig(appcli.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -581,15 +746,22 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'x')
     expected:
       values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': 1}
       log:
         - queried DummyConfig\(\):
-        - found 'x': 1
+        -
+          > /path/to/file:
+          > found 'x': 1
   -
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -597,16 +769,19 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'y')
     expected:
       values: []
+      meta:
       log:
         - queried DummyConfig\(\):
-        - did not find 'y' in {'x': 1}
+        -
+          > /path/to/file:
+          > did not find 'y' in {'x': 1}
   -
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield appcli.DictLayer(values={'x': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -614,17 +789,22 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'y')
     expected:
       values: []
+      meta:
       log:
         - queried DummyConfig\(\):
-        - did not find 'y' in {'x': 1}
-        - did not find 'y' in {'x': 2}
+        -
+          > /path/to/a:
+          > did not find 'y' in {'x': 1}
+        -
+          > /path/to/b:
+          > did not find 'y' in {'x': 2}
   -
     id: key-missing
     obj:
       > class DummyConfig(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
-      >         yield appcli.DictLayer(values={'y': 2})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield appcli.DictLayer(values={'y': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -632,20 +812,29 @@ test_getter_iter_values:
       > appcli.Key(DummyConfig, 'y')
     expected:
       values: [2]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/b
+          layer.values: {'y': 2}
       log:
         - queried DummyConfig\(\):
-        - did not find 'y' in {'x': 1}
-        - found 'y': 2
+        -
+          > /path/to/a:
+          > did not find 'y' in {'x': 1}
+        -
+          > /path/to/b:
+          > found 'y': 2
   -
     id: key-missing
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield appcli.DictLayer(values={'x': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
@@ -653,21 +842,26 @@ test_getter_iter_values:
       > appcli.Key(appcli.Config, 'y')
     expected:
       values: []
+      meta:
       log:
         - queried DummyConfigA\(\):
-        - did not find 'y' in {'x': 1}
+        -
+          > /path/to/a:
+          > did not find 'y' in {'x': 1}
         - queried DummyConfigB\(\):
-        - did not find 'y' in {'x': 2}
+        -
+          > /path/to/b:
+          > did not find 'y' in {'x': 2}
   -
     id: key-missing
     obj:
       > class DummyConfigA(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
       >
       > class DummyConfigB(appcli.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 2})
+      >         yield appcli.DictLayer(values={'y': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
@@ -675,11 +869,20 @@ test_getter_iter_values:
       > appcli.Key(appcli.Config, 'y')
     expected:
       values: [2]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/b
+          layer.values: {'y': 2}
       log:
         - queried DummyConfigA\(\):
-        - did not find 'y' in {'x': 1}
+        -
+          > /path/to/a:
+          > did not find 'y' in {'x': 1}
         - queried DummyConfigB\(\):
-        - found 'y': 2
+        -
+          > /path/to/b:
+          > found 'y': 2
 
 test_getter_kwargs_err:
   -

@@ -148,3 +148,14 @@ def test_get_config_factories_err():
     assert err.match('object not configured for use with appcli')
     assert err.match(no_templates)
 
+@parametrize_from_file(
+        schema=Schema({
+            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'param': str,
+            'expected': eval_meta,
+        }),
+)
+def test_get_meta(obj, param, expected):
+    obj = obj()
+    meta = appcli.get_meta(obj, param)
+    assert meta == expected

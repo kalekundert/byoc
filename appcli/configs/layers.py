@@ -11,7 +11,7 @@ class Layer:
 
 class DictLayer(Layer):
 
-    def __init__(self, values, *, schema=None, root_key=None, location=None):
+    def __init__(self, values, *, schema=None, root_key=None, location=None, linenos=None):
         # Values:
         # - object that implements `__getitem__()` to either return value 
         #   associated with key, or raise KeyError.
@@ -22,6 +22,7 @@ class DictLayer(Layer):
         # - string
         # - callable that takes no arguments and returns a string.
         self.values = values
+        self.linenos = linenos or {}
         self.schema = schema
         self.root_key = root_key
         self.location = location

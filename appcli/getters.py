@@ -2,10 +2,9 @@
 
 from . import model
 from .model import UNSPECIFIED
+from .meta import GetterMeta, LayerMeta
 from .errors import ApiError, NoValueFound
 from more_itertools import value_chain, always_iterable
-from inform import did_you_mean
-from functools import partial
 
 class Getter:
 
@@ -196,7 +195,8 @@ class BoundKey(BoundGetter):
             log.info("queried {config}:", config=wrapped_config.config)
 
             for layer in wrapped_config:
-                yield from layer.iter_values(self.key, log)
+                for value in layer.iter_values(self.key, log):
+                    yield value, LayerMeta(self.parent, layer)
 
 
 class BoundCallable(BoundGetter):
@@ -216,7 +216,7 @@ class BoundCallable(BoundGetter):
             pass
         else:
             log.info("called: {getter.callable}\nreturned: {value!r}", getter=self, value=value)
-            yield value
+            yield value, GetterMeta(self.parent)
 
 
 class BoundValue(BoundGetter):
@@ -227,11 +227,6 @@ class BoundValue(BoundGetter):
 
     def iter_values(self, log):
         log.info("got hard-coded value: {getter.value!r}", getter=self)
-        yield self.value
-
-
-
-
-
+        yield self.value, GetterMeta(self.parent)
 
 

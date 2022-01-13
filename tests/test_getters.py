@@ -5,7 +5,7 @@ import parametrize_from_file
 
 from appcli.errors import Log
 from re_assert import Matches
-from more_itertools import zip_equal
+from more_itertools import zip_equal, unzip
 from param_helpers import *
 
 @parametrize_from_file(
@@ -54,6 +54,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             **with_appcli.error_or({
                 'expected': {
                     'values': with_py.eval,
+                    'meta': empty_ok([eval_meta]),
                     'log': [str],
                 },
             }),
@@ -70,9 +71,16 @@ def test_getter_iter_values(getter, obj, param, expected, error):
     log = Log()
 
     with error:
-        values = bound_getter.iter_values(log)
+        iter = bound_getter.iter_values(log)
 
+        # Can simplify this after more_itertools#591 is resolved.
+        try:
+            values, metas = unzip(iter)
+        except ValueError:
+            values, metas = [], []
+        
         assert list(values) == expected['values']
+        assert list(metas) == expected['meta']
 
         for log_str, pattern in zip_equal(log._err.info_strs, expected['log']):
             Matches(pattern).assert_matches(log_str)

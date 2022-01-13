@@ -258,16 +258,21 @@ class FileConfig(Config):
     @classmethod
     def load_from_path(cls, path, *, schema=None, root_key=None):
         try:
-            data = cls._do_load(path)
+            data, linenos = cls._do_load_with_linenos(path)
         except FileNotFoundError:
-            data = {}
+            data, linenos = {}, {}
 
         yield DictLayer(
                 values=data,
+                linenos=linenos,
                 location=path,
                 schema=schema,
                 root_key=root_key,
         )
+
+    @classmethod
+    def _do_load_with_linenos(cls, path):
+        return cls._do_load(path), {}
 
     @staticmethod
     def _do_load(path):
@@ -297,9 +302,10 @@ class NtConfig(FileConfig):
     suffixes = '.nt',
 
     @staticmethod
-    def _do_load(path):
+    def _do_load_with_linenos(path):
         import nestedtext as nt
-        return nt.load(path)
+        keymap = {}
+        return nt.load(path, keymap=keymap), keymap
 
 def unbind_method(f):
     return getattr(f, '__func__', f)

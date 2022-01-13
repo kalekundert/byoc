@@ -106,7 +106,7 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert obj.dirs.version == version
 
     appcli.init(obj)
-    assert collect_layers(obj) == {0: layers}
+    assert collect_layers(obj)[0] == layers
 
 @parametrize_from_file(
         schema=Schema({
@@ -122,7 +122,7 @@ def test_file_config(tmp_chdir, obj, files, layers):
         path.write_text(content)
 
     appcli.init(obj)
-    assert collect_layers(obj) == {0: layers}
+    assert collect_layers(obj)[0] == layers
 
 @parametrize_from_file
 def test_on_load(prepare, load, expected):

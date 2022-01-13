@@ -279,7 +279,7 @@ test_appdirs_config:
   -
     obj:
       > class DummyAppDirsConfig(appcli.AppDirsConfig):
-      >   name = 'conf.nt'
+      >   name = 'conf.yml'
       >
       > class DummyObj:
       >     __config__ = [DummyAppDirsConfig]
@@ -288,21 +288,21 @@ test_appdirs_config:
     author: None
     version: None
     files:
-      user/conf.nt:
+      user/conf.yml:
         > x: 1
-      site/conf.nt:
+      site/conf.yml:
         > y: 2
     layers:
       -
-        values: {'x': '1'}
-        location: user/conf.nt
+        values: {'x': 1}
+        location: user/conf.yml
       -
-        values: {'y': '2'}
-        location: site/conf.nt
+        values: {'y': 2}
+        location: site/conf.yml
   -
     obj:
       > class DummyAppDirsConfig(appcli.AppDirsConfig):
-      >   name = 'conf.nt'
+      >   name = 'conf.yml'
       >   slug = 'slug'
       >   author = 'author'
       >   version = 'version'
@@ -314,17 +314,17 @@ test_appdirs_config:
     author: 'author'
     version: 'version'
     files:
-      user/conf.nt:
+      user/conf.yml:
         > x: 1
-      site/conf.nt:
+      site/conf.yml:
         > y: 2
     layers:
       -
-        values: {'x': '1'}
-        location: user/conf.nt
+        values: {'x': 1}
+        location: user/conf.yml
       -
-        values: {'y': '2'}
-        location: site/conf.nt
+        values: {'y': 2}
+        location: site/conf.yml
 
 test_appdirs_config_get_name_and_config_cls:
   -
@@ -448,6 +448,7 @@ test_file_config:
       -
         values: {'x': '1'}
         location: x.nt
+        linenos: {('x',): 0}
   -
     id: path-setup
     obj:

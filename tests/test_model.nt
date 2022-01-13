@@ -1,4 +1,3 @@
-
 test_init_load_reload:
   -
     id: 0-configs
@@ -704,4 +703,62 @@ test_collect_layers:
         - appcli.DictLayer({}, location='c')
       3:
         - appcli.DictLayer({}, location='d')
+
+test_get_meta:
+  -
+    id: no-cache
+    obj:
+      > class DummyObj:
+      >     pass
+    param: x
+    expected: NeverAccessedMeta
+  -
+    id: never-accessed
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(appcli.Value(1))
+    param: x
+    expected: NeverAccessedMeta
+  -
+    id: cache-meta
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(appcli.Value(1))
+      >
+      > obj = DummyObj()
+      > obj.x
+    param: x
+    expected: GetterMeta
+  -
+    id: setattr
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = appcli.param(appcli.Value(1))
+      >
+      > obj = DummyObj()
+      > obj.x = 2
+    param: x
+    expected: SetAttrMeta
+  -
+    id: exception
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer(values={}, location='/path/to/file')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      >
+      > try:
+      >     obj.x
+      > except NoValueFound:
+      >     pass
+    param: x
+    expected: ExceptionMeta
 

@@ -1,0 +1,27 @@
+test_meta_attr:
+  -
+    id: base
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer(values={'x': 1}, location='/path/to/file')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     meta = appcli.meta_attr()
+      >     x = appcli.param()
+      >
+      > obj = DummyObj()
+      > obj.x
+    expected:
+      x:
+        type: LayerMeta
+        location: /path/to/file
+  -
+    id: never-accessed
+    obj:
+      > class DummyObj:
+      >     meta = appcli.meta_attr()
+      >     x = appcli.param()
+    expected:
+      x: NeverAccessedMeta

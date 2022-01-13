@@ -8,7 +8,7 @@ from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
 
 with_py = Namespace('from operator import itemgetter')
-with_appcli = Namespace(appcli)
+with_appcli = Namespace(appcli, 'from appcli import *')
 
 class LayerWrapper:
 
@@ -23,19 +23,32 @@ class LayerWrapper:
             return str(x) if x is not None else x
 
         if not isinstance(other, appcli.Layer):
+            print('wrong layer type')
             return False
 
         if self.layer.values != other.values:
+            print('wrong layer values')
             return False
 
-        if self.layer.location != str_or_none(other.location):
+        if str_or_none(self.layer.location) != str_or_none(other.location):
+            print('wrong layer location')
             return False
 
-        if hasattr(self.layer, 'root_key') and self.layer.root_key != other.root_key:
-            return False
+        if hasattr(other, 'root_key'):
+            if self.layer.root_key != other.root_key:
+                print('wrong layer root key')
+                return False
 
-        if hasattr(self.layer, 'schema') and self.layer.schema != other.schema:
-            return False
+        if hasattr(other, 'schema'):
+            if self.layer.schema != other.schema:
+                print('wrong layer schema')
+                return False
+
+        if hasattr(other, 'linenos'):
+            other_linenos = {k: v.line.lineno for k, v in other.linenos.items()}
+            if self.layer.linenos != other_linenos:
+                print('wrong layer linenos')
+                return False
 
         return True
 
@@ -43,6 +56,67 @@ class DictLayerWrapper(LayerWrapper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(appcli.DictLayer(*args, **kwargs))
+
+class MetaWrapper:
+
+    def __init__(self, type, location=None, **kwargs):
+        self.type = type
+        self.location = location
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        kwargs = {
+                'location': self.location,
+                **self.kwargs,
+        }
+        if not self.location:
+            del kwargs['location']
+
+        type_str = self.type.__name__
+        kwargs_strs = [
+                f'{k}={v!r}'
+                for k, v in kwargs.items()
+        ]
+
+        return f'{self.__class__.__name__}({", ".join([type_str, *kwargs_strs])})'
+
+    def __eq__(self, other):
+        if not isinstance(other, self.type):
+            print('wrong meta type')
+            return False
+
+        if self.location != other.location:
+            print('wrong meta location')
+            return False
+
+        try:
+            getter_cls = self.kwargs['getter']
+        except KeyError:
+            pass
+        else:
+            if not isinstance(other.getter, getter_cls):
+                print('wrong meta getter')
+                return False
+
+        try:
+            value = self.kwargs['getter.value']
+        except KeyError:
+            pass
+        else:
+            if other.getter.value != value:
+                print('wrong meta getter value')
+                return False
+
+        try:
+            values = self.kwargs['layer.values']
+        except KeyError:
+            pass
+        else:
+            if other.layer.values != values:
+                print('wrong meta layer values')
+                return False
+
+        return True
 
 def eval_obj_layers(layers):
     schema = Schema(empty_ok({
@@ -56,15 +130,37 @@ def eval_config_layers(layers):
 
 def eval_layer(layer):
     schema = Schema(Or(str, {
-        'values': eval,
+        'values': with_py.eval,
         'location': str,
-        Optional('root_key'): eval,
-        Optional('schema'): eval,
+        Optional('root_key'): with_py.eval,
+        Optional('schema'): with_py.eval,
+        Optional('linenos'): with_py.eval,
     }))
     layer = schema(layer)
     layer = with_appcli.eval(layer) if isinstance(layer, str) else \
             appcli.DictLayer(**layer)
     return LayerWrapper(layer)
+
+def eval_meta(meta):
+    with_meta = Namespace(
+            with_appcli,
+            'from appcli.meta import *',
+            MetaWrapper=MetaWrapper,
+    )
+    dict_schema = {
+            'type': with_meta.eval,
+            Optional('location', default=None): Or(None, str),
+            str: with_py.eval,
+    }
+    schema = Schema(Or(dict_schema, with_meta.eval))
+    meta = schema(meta)
+
+    if isinstance(meta, MetaWrapper):
+        return meta
+    elif isinstance(meta, dict):
+        return MetaWrapper(**meta)
+    else:
+        return MetaWrapper(meta)
 
 def collect_layers(obj):
     wrapped_configs = appcli.model.get_wrapped_configs(obj)

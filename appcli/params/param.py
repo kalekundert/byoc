@@ -4,6 +4,7 @@ from .. import model
 from ..model import UNSPECIFIED
 from ..getters import Getter, Key, ImplicitKey
 from ..pickers import ValuesIter, first
+from ..meta import NeverAccessedMeta, ExceptionMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
 
@@ -15,6 +16,7 @@ class param:
             self.getters = []
             self.setattr_value = UNSPECIFIED
             self.cache_value = UNSPECIFIED
+            self.cache_meta = NeverAccessedMeta()
             self.cache_exception = UNSPECIFIED
             self.cache_version = -1
             self.default_value = default
@@ -103,7 +105,7 @@ class param:
             )
             if is_cache_stale:
                 try:
-                    state.cache_value = self._calc_value(obj)
+                    state.cache_value, state.cache_meta = self._calc_value(obj)
                     state.cache_exception = UNSPECIFIED
 
                 # Cache the exception indicating that this parameter is 
@@ -119,6 +121,7 @@ class param:
 
                 except NoValueFound as err:
                     state.cache_value = UNSPECIFIED
+                    state.cache_meta = ExceptionMeta(err)
                     state.cache_exception = err
 
                 state.cache_version = model_version
@@ -147,7 +150,7 @@ class param:
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)
         values = ValuesIter(bound_getters, default, log)
-        return self._pick(values)
+        return self._pick(values), values.meta
 
     def _calc_bound_getters(self, obj):
         from appcli import Config

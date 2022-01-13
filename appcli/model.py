@@ -3,11 +3,11 @@
 from .errors import ApiError
 
 CONFIG_ATTR = '__config__'
-META_ATTR = '__appcli__'
+STATE_ATTR = '__appcli__'
 
 UNSPECIFIED = object()
 
-class Meta:
+class State:
 
     def __init__(self, obj):
         self.wrapped_configs = [
@@ -39,10 +39,10 @@ class WrappedConfig:
         self.is_loaded = True
 
 def init(obj):
-    if hasattr(obj, META_ATTR):
+    if hasattr(obj, STATE_ATTR):
         return False
 
-    setattr(obj, META_ATTR, Meta(obj))
+    setattr(obj, STATE_ATTR, State(obj))
 
     _load_configs(
             obj,
@@ -79,8 +79,8 @@ def append_config(obj, config_factory):
 
 def append_configs(obj, config_factories):
     init(obj)
-    meta = get_meta(obj)
-    i = len(meta.wrapped_configs)
+    state = get_state(obj)
+    i = len(state.wrapped_configs)
     insert_configs(obj, i, config_factories)
 
 def prepend_config(obj, config_factory):
@@ -100,11 +100,11 @@ def insert_configs(obj, i, config_factories):
             for cf in config_factories
     ]
 
-    meta = get_meta(obj)
-    meta.wrapped_configs = \
-            meta.wrapped_configs[:i] + \
+    state = get_state(obj)
+    state.wrapped_configs = \
+            state.wrapped_configs[:i] + \
             new_wrapped_configs + \
-            meta.wrapped_configs[i:]
+            state.wrapped_configs[i:]
 
     _load_configs(
             obj,
@@ -114,14 +114,14 @@ def insert_configs(obj, i, config_factories):
 def share_configs(donor, acceptor):
     init(donor); init(acceptor)
 
-    donor_meta = get_meta(donor)
-    acceptor_meta = get_meta(acceptor)
+    donor_state = get_state(donor)
+    acceptor_state = get_state(acceptor)
 
-    acceptor_meta.wrapped_configs.extend(donor_meta.wrapped_configs)
-    acceptor_meta.cache_version += 1
+    acceptor_state.wrapped_configs.extend(donor_state.wrapped_configs)
+    acceptor_state.cache_version += 1
 
-def get_meta(obj):
-    return getattr(obj, META_ATTR)
+def get_state(obj):
+    return getattr(obj, STATE_ATTR)
 
 def get_config_factories(obj):
     try:
@@ -136,10 +136,10 @@ def get_config_factories(obj):
         raise err
 
 def get_wrapped_configs(obj):
-    return get_meta(obj).wrapped_configs
+    return get_state(obj).wrapped_configs
 
 def get_cache_version(obj):
-    return get_meta(obj).cache_version
+    return get_state(obj).cache_version
 
 def get_load_callbacks(obj):
     from .configs.on_load import OnLoad
@@ -154,13 +154,34 @@ def get_load_callbacks(obj):
     return hits
 
 def get_param_states(obj):
-    return get_meta(obj).param_states
+    return get_state(obj).param_states
+
+def get_meta(obj, param):
+    from .meta import NeverAccessedMeta, SetAttrMeta
+
+    try:
+        states = get_param_states(obj)
+    except AttributeError:
+        return NeverAccessedMeta()
+
+    try:
+        state = states[param]
+    except KeyError:
+        return NeverAccessedMeta()
+
+    # This is a temporary hack.  I want to get rid of the distinction between 
+    # `setattr_value` and `cache_value` in `param`, and when I do that the 
+    # param will be able to manage this itself.
+    if state.setattr_value is not UNSPECIFIED:
+        return SetAttrMeta()
+
+    return state.cache_meta
 
 
 def _load_configs(obj, predicate):
-    meta = get_meta(obj)
-    meta.wrapped_configs, wrapped_configs = [], meta.wrapped_configs
-    meta.cache_version += 1
+    state = get_state(obj)
+    state.wrapped_configs, wrapped_configs = [], state.wrapped_configs
+    state.cache_version += 1
     updated_configs = []
 
     # Rebuild the `wrapped_configs` list from scratch and iterate through the 
@@ -171,10 +192,10 @@ def _load_configs(obj, predicate):
             wrapped_config.load()
             updated_configs.append(wrapped_config.config)
 
-        meta.wrapped_configs.insert(0, wrapped_config)
-        meta.cache_version += 1
+        state.wrapped_configs.insert(0, wrapped_config)
+        state.cache_version += 1
 
-    for callback in meta.load_callbacks:
+    for callback in state.load_callbacks:
         if callback.is_relevant(updated_configs):
             callback(obj)
 
