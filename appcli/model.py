@@ -35,6 +35,16 @@ class WrappedConfig:
         return bool(self.layers)
 
     def load(self):
+        # While it's tempting to defer actually loading the config until the 
+        # layers are needed (e.g. in `__iter__()`), this doesn't work.  The 
+        # problem is that configs are allowed to access previous (but not 
+        # upcoming) configs during loading.  If loading is deferred, the object 
+        # won't have the appropriate configs in place anymore.
+        #
+        # It may be possible to defer loading configs that promise not to 
+        # access prior configs during loading.  But my initial instinct is that 
+        # this would be too likely to cause bugs, and too unlikely to actually 
+        # save any time.  See #11 for more discussion.
         self.layers = list(self.config.load())
         self.is_loaded = True
 
