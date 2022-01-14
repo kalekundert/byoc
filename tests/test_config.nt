@@ -3,12 +3,12 @@ test_argparse_docopt_config:
     id: argparse
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.ArgparseConfig]
+      >     __config__ = [ArgparseConfig]
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.param()
-      >     y = byoc.param()
+      >     x = byoc.attr()
+      >     y = byoc.attr()
       >
       >     def get_argparse(self):
       >         import argparse
@@ -48,7 +48,7 @@ test_argparse_docopt_config:
     obj:
       > class DummyObj:
       >     __config__ = [
-      >         byoc.ArgparseConfig.setup(
+      >         ArgparseConfig.setup(
       >             parser_getter=lambda obj: obj.get_my_argparse(),
       >             schema=lambda d: {**d, 'x': 'x*'},
       >         ),
@@ -56,8 +56,8 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.param()
-      >     y = byoc.param()
+      >     x = byoc.attr()
+      >     y = byoc.attr()
       >
       >     def get_my_argparse(self):
       >         import argparse
@@ -102,13 +102,13 @@ test_argparse_docopt_config:
       >     Usage:
       >         app <x> [<y>...] [-z]
       >     """
-      >     __config__ = [byoc.DocoptConfig]
+      >     __config__ = [DocoptConfig]
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.param('<x>')
-      >     y = byoc.param('<y>', default=None)
-      >     z = byoc.param('-z', default=None)
+      >     x = byoc.attr('<x>')
+      >     y = byoc.attr('<y>', default=None)
+      >     z = byoc.attr('-z', default=None)
     usage:
       > Do something.
       >
@@ -148,7 +148,7 @@ test_argparse_docopt_config:
       >     app <x> [<y>...] [-z]
       > """
       >     __config__ = [
-      >         byoc.DocoptConfig.setup(
+      >         DocoptConfig.setup(
       >             usage_getter=lambda obj: obj.doc,
       >             options_first=True,
       >             schema=lambda d: {**d, '<x>': d['<x>'] + '*'},
@@ -158,9 +158,9 @@ test_argparse_docopt_config:
       >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = byoc.param('<x>')
-      >     y = byoc.param('<y>', default=None)
-      >     z = byoc.param('-z', default=None)
+      >     x = byoc.attr('<x>')
+      >     y = byoc.attr('<y>', default=None)
+      >     z = byoc.attr('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -191,7 +191,7 @@ test_argparse_docopt_config:
   -
     id: docopt-class-attrs
     obj:
-      > class DummyDocoptConfig(byoc.DocoptConfig):
+      > class DummyDocoptConfig(DocoptConfig):
       >     usage_getter = lambda obj: obj.doc
       >     options_first = True
       >     schema = lambda d: {**d, '<x>': d['<x>'] + '*'}
@@ -206,9 +206,9 @@ test_argparse_docopt_config:
       >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = byoc.param('<x>')
-      >     y = byoc.param('<y>', default=None)
-      >     z = byoc.param('-z', default=None)
+      >     x = byoc.attr('<x>')
+      >     y = byoc.attr('<y>', default=None)
+      >     z = byoc.attr('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -247,12 +247,12 @@ test_argparse_docopt_config:
       > Options:
       >     -y Y  [default: ${app.y.upper()}]
       > """
-      >     __config__ = [byoc.DocoptConfig]
+      >     __config__ = [DocoptConfig]
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.param('<x>')
-      >     y = byoc.param('-y', default='a')
+      >     x = byoc.attr('<x>')
+      >     y = byoc.attr('-y', default='a')
     usage:
       > Usage:
       >     app <x> [-y Y]
@@ -278,7 +278,7 @@ test_argparse_docopt_config:
 test_appdirs_config:
   -
     obj:
-      > class DummyAppDirsConfig(byoc.AppDirsConfig):
+      > class DummyAppDirsConfig(AppDirsConfig):
       >   name = 'conf.yml'
       >
       > class DummyObj:
@@ -301,7 +301,7 @@ test_appdirs_config:
         location: site/conf.yml
   -
     obj:
-      > class DummyAppDirsConfig(byoc.AppDirsConfig):
+      > class DummyAppDirsConfig(AppDirsConfig):
       >   name = 'conf.yml'
       >   slug = 'slug'
       >   author = 'author'
@@ -329,27 +329,27 @@ test_appdirs_config:
 test_appdirs_config_get_name_and_config_cls:
   -
     id: error
-    config: byoc.AppDirsConfig()
+    config: AppDirsConfig
     error:
-      type: byoc.ConfigError
+      type: byoc.ApiError
       message:
         - must specify `AppDirsConfig.name` or `AppDirsConfig.config_cls`
   -
     id: error
-    config: byoc.AppDirsConfig(name='conf.yml', format=byoc.TomlConfig)
+    config: AppDirsConfig.setup(name='conf.yml', format=TomlConfig)
     error:
-      type: byoc.ConfigError
-      message:
+      type: byoc.ApiError
+      pattern:
         - can't specify `AppDirsConfig.name` and `AppDirsConfig.format`
         - name: 'conf.yml'
         - format: <class 'byoc.*TomlConfig'>
         - use `AppDirsConfig.stem` to change the filename used by `AppDirsConfig.format`
   -
     id: error
-    config: byoc.AppDirsConfig(name='conf.xyz')
+    config: AppDirsConfig.setup(name='conf.xyz')
     error:
-      type: byoc.ConfigError
-      message:
+      type: byoc.ApiError
+      pattern:
         - can't find FileConfig subclass to load 'conf.xyz'
         - found these subclasses:
         - <class 'byoc.*YamlConfig'>: .yml .yaml
@@ -358,62 +358,62 @@ test_appdirs_config_get_name_and_config_cls:
 
   -
     id: name
-    config: byoc.AppDirsConfig(name='my-conf.yml')
+    config: AppDirsConfig.setup(name='my-conf.yml')
     name: my-conf.yml
-    config_cls: byoc.YamlConfig
+    config_cls: YamlConfig
   -
     id: name
-    config: byoc.AppDirsConfig(name='my-conf.yaml')
+    config: AppDirsConfig.setup(name='my-conf.yaml')
     name: my-conf.yaml
-    config_cls: byoc.YamlConfig
+    config_cls: YamlConfig
   -
     id: name
-    config: byoc.AppDirsConfig(name='my-conf.toml')
+    config: AppDirsConfig.setup(name='my-conf.toml')
     name: my-conf.toml
-    config_cls: byoc.TomlConfig
+    config_cls: TomlConfig
   -
     id: name
-    config: byoc.AppDirsConfig(name='my-conf.nt')
+    config: AppDirsConfig.setup(name='my-conf.nt')
     name: my-conf.nt
-    config_cls: byoc.NtConfig
+    config_cls: NtConfig
 
   -
     id: format
-    config: byoc.AppDirsConfig(format=byoc.YamlConfig)
+    config: AppDirsConfig.setup(format=YamlConfig)
     name: conf.yml
-    config_cls: byoc.YamlConfig
+    config_cls: YamlConfig
   -
     id: config_cls
-    config: byoc.AppDirsConfig(format=byoc.YamlConfig, stem='my-conf')
+    config: AppDirsConfig.setup(format=YamlConfig, stem='my-conf')
     name: my-conf.yml
-    config_cls: byoc.YamlConfig
+    config_cls: YamlConfig
   -
     id: config_cls
-    config: byoc.AppDirsConfig(format=byoc.TomlConfig)
+    config: AppDirsConfig.setup(format=TomlConfig)
     name: conf.toml
-    config_cls: byoc.TomlConfig
+    config_cls: TomlConfig
   -
     id: config_cls
-    config: byoc.AppDirsConfig(format=byoc.TomlConfig, stem='my-conf')
+    config: AppDirsConfig.setup(format=TomlConfig, stem='my-conf')
     name: my-conf.toml
-    config_cls: byoc.TomlConfig
+    config_cls: TomlConfig
   -
     id: config_cls
-    config: byoc.AppDirsConfig(format=byoc.NtConfig)
+    config: AppDirsConfig.setup(format=NtConfig)
     name: conf.nt
-    config_cls: byoc.NtConfig
+    config_cls: NtConfig
   -
     id: config_cls
-    config: byoc.AppDirsConfig(format=byoc.NtConfig, stem='my-conf')
+    config: AppDirsConfig.setup(format=NtConfig, stem='my-conf')
     name: my-conf.nt
-    config_cls: byoc.NtConfig
+    config_cls: NtConfig
 
 test_file_config:
   -
     id: yaml
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig]
+      >     __config__ = [YamlConfig]
       >     path = 'x.yml'
     files:
       x.yml:
@@ -426,7 +426,7 @@ test_file_config:
     id: toml
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.TomlConfig]
+      >     __config__ = [TomlConfig]
       >     path = 'x.toml'
     files:
       x.toml:
@@ -439,7 +439,7 @@ test_file_config:
     id: nt
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.NtConfig]
+      >     __config__ = [NtConfig]
       >     path = 'x.nt'
     files:
       x.nt:
@@ -453,7 +453,7 @@ test_file_config:
     id: path-setup
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig.setup('x.yml')]
+      >     __config__ = [YamlConfig.setup('x.yml')]
     files:
       x.yml:
         > x: 1
@@ -465,7 +465,7 @@ test_file_config:
     id: paths-setup
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig.setup(['x.yml', 'y.yml'])]
+      >     __config__ = [YamlConfig.setup(['x.yml', 'y.yml'])]
     files:
       x.yml:
         > x: 1
@@ -481,7 +481,7 @@ test_file_config:
   -
     id: path-getter-cls
     obj:
-      > class DummyYamlConfig(byoc.YamlConfig):
+      > class DummyYamlConfig(YamlConfig):
       >     path_getter = lambda obj: obj.p
       >
       > class DummyObj:
@@ -500,7 +500,7 @@ test_file_config:
     obj:
       > class DummyObj:
       >     __config__ = [
-      >         byoc.YamlConfig.setup(path_getter=lambda x: x.p),
+      >         YamlConfig.setup(path_getter=lambda x: x.p),
       >     ]
       >     p = 'x.yml'
       >
@@ -514,7 +514,7 @@ test_file_config:
   -
     id: schema-cls
     obj:
-      > class DummyYamlConfig(byoc.YamlConfig):
+      > class DummyYamlConfig(YamlConfig):
       >     schema = ...
       >
       > class DummyObj:
@@ -532,7 +532,7 @@ test_file_config:
     id: schema-setup
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig.setup(schema=...)]
+      >     __config__ = [YamlConfig.setup(schema=...)]
       >     path = 'x.yml'
     files:
       x.yml:
@@ -545,7 +545,7 @@ test_file_config:
   -
     id: root-key-cls
     obj:
-      > class DummyYamlConfig(byoc.YamlConfig):
+      > class DummyYamlConfig(YamlConfig):
       >     root_key = 'x'
       >
       > class DummyObj:
@@ -563,7 +563,7 @@ test_file_config:
     id: root-key-setup
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig.setup(root_key='x')]
+      >     __config__ = [YamlConfig.setup(root_key='x')]
       >     path = 'x.nt'
     files:
       x.nt:
@@ -577,21 +577,20 @@ test_file_config:
     id: not-found
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig]
+      >     __config__ = [YamlConfig]
       >     path = 'not-found.yml'
     files:
     layers:
-      - byoc.FileNotFoundLayer('not-found.yml')
+      - FileNotFoundLayer('not-found.yml')
 
   -
     id: not-given-path
     obj:
       > class DummyObj:
-      >     __config__ = [byoc.YamlConfig]
+      >     __config__ = [YamlConfig]
     files:
     layers:
       []
-
 
 test_on_load:
   -

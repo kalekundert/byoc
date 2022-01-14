@@ -10,7 +10,7 @@ def test_app():
 
     class DummyObj(byoc.App):
         __config__ = [DummyConfig]
-        x = byoc.param()
+        x = byoc.attr()
 
         def __bareinit__(self):
             self.y = 0
@@ -22,7 +22,7 @@ def test_app():
     assert obj.x == 2
     assert obj.y == 0
 
-    obj = DummyObj.from_params()
+    obj = DummyObj.from_bare()
     assert obj.x == 1
     assert obj.y == 0
 

@@ -12,21 +12,21 @@ from param_helpers import *
             'expected': {str: with_py.eval},
         })
 )
-def test_param(obj, expected):
+def test_attr(obj, expected):
     obj = obj()
     for attr, value in expected.items():
         assert getattr(obj, attr) == value
 
-def test_param_init_err():
+def test_attr_init_err():
     with pytest.raises(byoc.ApiError) as err:
-        byoc.param(default=1, default_factory=list)
+        byoc.attr(default=1, default_factory=list)
 
     assert err.match(r"can't specify 'default' and 'default_factory'")
     assert err.match(r"default: 1")
     assert err.match(r"default_factory: <class 'list'>")
 
 @pytest.mark.parametrize('dynamic', [True, False])
-def test_param_cache_exc(dynamic):
+def test_attr_cache_exc(dynamic):
     # Make sure exceptions are cached just like values are.
 
     class DummyConfig(byoc.Config):
@@ -35,7 +35,7 @@ def test_param_cache_exc(dynamic):
 
     class DummyObj:
         __config__ = [DummyConfig]
-        x = byoc.param(dynamic=dynamic)
+        x = byoc.attr(dynamic=dynamic)
 
     obj = DummyObj()
 
@@ -52,7 +52,7 @@ def test_param_cache_exc(dynamic):
     assert obj.x == 1
 
 @pytest.mark.parametrize('dynamic', [True, False])
-def test_param_cache_reload(dynamic):
+def test_attr_cache_reload(dynamic):
 
     class BackgroundConfig(byoc.Config):
         def load(self):
@@ -62,16 +62,16 @@ def test_param_cache_reload(dynamic):
         values = {'x': 1}
 
         def load(self):
-            # Access the value of the parameter during the load function so 
+            # Access the value of the attribute during the load function so 
             # that we can tell if an intermediate value from the loading 
-            # process (e.g. -1) is mistakenly saved as the cache value.
+            # process (e.g.  -1) is mistakenly saved as the cache value.
             self.obj.x
 
             yield byoc.DictLayer(values=self.values)
     
     class DummyObj:
         __config__ = [ForegroundConfig, BackgroundConfig]
-        x = byoc.param(dynamic=dynamic)
+        x = byoc.attr(dynamic=dynamic)
 
     
     obj = DummyObj()
@@ -85,7 +85,7 @@ def test_param_cache_reload(dynamic):
     byoc.reload(obj)
     assert obj.x == 2
 
-def test_param_cache_instance_values():
+def test_attr_cache_instance_values():
     # Test to make sure the independent instances have independent caches.
 
     class Background(byoc.Config):
@@ -99,7 +99,7 @@ def test_param_cache_instance_values():
     
     class DummyObj:
         __config__ = [Foreground, Background]
-        x = byoc.param()
+        x = byoc.attr()
 
     o1 = DummyObj()
     o2 = DummyObj()
@@ -112,7 +112,7 @@ def test_param_cache_instance_values():
     assert o1.x == 1
     assert o2.x == 2
     
-def test_param_cache_instance_key_map():
+def test_attr_cache_instance_key_map():
     # Test to make sure that key map values, if cached, aren't shared between 
     # instances of different classes.
     
@@ -125,7 +125,7 @@ def test_param_cache_instance_key_map():
             yield byoc.DictLayer(values={'x': 2})
     
     class ParentObj:
-        x = byoc.param()
+        x = byoc.attr()
     
     class DummyObj(ParentObj):
         __config__ = [DummyConfig]
@@ -139,8 +139,8 @@ def test_param_cache_instance_key_map():
     obj = DummyObj()
     assert obj.x == 1
 
-def test_param_cache_get():
-    # Test to make sure that the get function is called on every parameter 
+def test_attr_cache_get():
+    # Test to make sure that the get function is called on every attribute 
     # access, even if the underlying value is cached.
     
     class DummyConfig(byoc.Config):
@@ -158,7 +158,7 @@ def test_param_cache_get():
             self.y += 1
             return x
 
-        x = byoc.param(get=_update_y)
+        x = byoc.attr(get=_update_y)
     
     obj = DummyObj()
     assert obj.y == 0
@@ -172,14 +172,14 @@ def test_param_cache_get():
     assert obj.x == 1
     assert obj.y == 3
 
-def test_param_set_non_comparable():
+def test_attr_set_non_comparable():
     class NonComparable:
         def __eq__(self, other):
             raise AssertionError
 
     class DummyObj:
         __config__ = []
-        x = byoc.param()
+        x = byoc.attr()
 
     obj = DummyObj()
     obj.x = nc = NonComparable()

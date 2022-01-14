@@ -9,7 +9,7 @@ from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
 from math import inf
 
-class param:
+class attr:
 
     class _State:
 
@@ -92,7 +92,7 @@ class param:
 
     def _load_state(self, obj):
         model.init(obj)
-        states = model.get_param_states(obj)
+        states = model.get_attr_states(obj)
 
         if self._name not in states:
             default = self._default_factory()
@@ -116,9 +116,9 @@ class param:
                 state.meta = values_iter.meta
                 state.dynamic = values_iter.dynamic
 
-            # Cache the exception indicating that this parameter is 
-            # missing, since that is likely to be raised several times (and 
-            # unlikely to terminate the program).
+            # Cache the exception indicating that this attribute is missing, 
+            # since that is likely to be raised several times (and unlikely to 
+            # terminate the program).
             #
             # Note that other exceptions will not update the cache, and 
             # therefore may need to be calculated on each access.  I could 
@@ -151,7 +151,7 @@ class param:
 
     def _calc_value(self, obj):
         log = Log()
-        log.info("getting {param!r} parameter for {obj!r}", obj=obj, param=self._name)
+        log.info("getting {attr!r} attribute for {obj!r}", obj=obj, attr=self._name)
 
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)

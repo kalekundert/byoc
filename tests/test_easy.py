@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from byoc import param, Config, DictLayer
+import byoc
+from byoc import Config, DictLayer
 
 class DictConfig(Config):
 
@@ -16,28 +17,25 @@ class DictConfigAC(DictConfig):
 
 def test_easy_1():
 
-    class Foo:
-        __config__ = [
-                DictConfigAB,
-        ]
+    class DummyObj:
+        __config__ = [DictConfigAB]
+        a = byoc.attr()
 
-        a = param()
-
-    f = Foo()
-    assert f.a == 1
+    obj = DummyObj()
+    assert obj.a == 1
 
 def test_easy_2():
-    class Foo:
+
+    class DummyObj:
         __config__ = [
                 DictConfigAB,
                 DictConfigAC,
         ]
+        a = byoc.attr()
+        b = byoc.attr()
+        c = byoc.attr()
 
-        a = param()
-        b = param()
-        c = param()
-
-    f = Foo()
-    assert f.a == 1
-    assert f.b == 1
-    assert f.c == 2
+    obj = DummyObj()
+    assert obj.a == 1
+    assert obj.b == 1
+    assert obj.c == 2

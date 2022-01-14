@@ -42,7 +42,7 @@ def test_toggle(layers, expected, error):
     class DummyObj:
         __config__ = configs
 
-        flag = byoc.toggle_param(*keys)
+        flag = byoc.toggle_attr(*keys)
 
     obj = DummyObj()
     with error:

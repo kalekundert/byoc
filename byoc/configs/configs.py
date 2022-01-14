@@ -170,6 +170,18 @@ class AppDirsConfig(Config):
     root_key = None
     stem = 'conf'
 
+    def __init__(self, obj, **kwargs):
+        self.name = kwargs.pop('name', self.name)
+        self.config_cls = kwargs.pop('format', self.config_cls)
+        self.slug = kwargs.pop('slug', self.slug)
+        self.author = kwargs.pop('author', self.author)
+        self.version = kwargs.pop('version', self.version)
+        self.schema = kwargs.pop('schema', unbind_method(self.schema))
+        self.root_key = kwargs.pop('root_key', self.root_key)
+        self.stem = kwargs.pop('stem', self.stem)
+
+        super().__init__(obj, **kwargs)
+
     def load(self):
         for path, config_cls in self.config_map.items():
             yield from config_cls.load_from_path(

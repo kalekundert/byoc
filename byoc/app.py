@@ -6,18 +6,18 @@ class AppMeta(type):
     """
     A metaclass that allows a class to be instantiated either in the usual way, 
     or without calling the constructor.  The latter is useful if the object 
-    will be initialized in another way, e.g. `byoc.param()` parameters that 
+    will be initialized in another way, e.g. `byoc.attr()` attributes that 
     read from the command line.
     """
 
-    def from_params(cls):
+    def from_bare(cls):
         self = super(cls, cls).__new__(cls)
         if hasattr(self, '__bareinit__'):
             self.__bareinit__()
         return self
 
     def __call__(cls, *args, **kwargs):
-        self = cls.from_params()
+        self = cls.from_bare()
         self.__init__(*args, **kwargs)
         return self
 
@@ -28,7 +28,7 @@ class App(metaclass=AppMeta):
 
     @classmethod
     def entry_point(cls):
-        app = cls.from_params()
+        app = cls.from_bare()
         app.main()
 
     def main(self):

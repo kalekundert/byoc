@@ -61,7 +61,8 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 
         # These attributes should be available even before `init()` is called.  
         # Note that accessing these attributes may trigger `init()`, e.g. if 
-        # the usage text contains default values based on parameters.
+        # the usage text contains default values based on BYOC-managed 
+        # attributes.
         assert test_obj.usage == usage
         assert test_obj.brief == brief
 
@@ -79,7 +80,7 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 def test_environment_config():
     class DummyObj:
         __config__ = [byoc.EnvironmentConfig]
-        x = byoc.param()
+        x = byoc.attr()
 
     obj = DummyObj()
     assert obj.x == "1"
@@ -123,6 +124,23 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
 
 @parametrize_from_file(
         schema=Schema({
+            'config': with_byoc.eval(defer=True),
+            **with_byoc.error_or({
+                'name': str,
+                'config_cls': with_byoc.eval,
+            }),
+        }),
+)
+def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error):
+    config = config()(Mock())
+
+    with error:
+        actual_name, actual_config_cls = config.get_name_and_config_cls()
+        assert actual_name == name
+        assert actual_config_cls == config_cls
+
+@parametrize_from_file(
+        schema=Schema({
             'obj': with_byoc.exec(get=get_obj),
             'files': empty_ok({str: str}),
             'layers': eval_config_layers,
@@ -141,7 +159,7 @@ def test_file_config_load_status():
 
     class DummyObj:
         __config__ = [byoc.YamlConfig]
-        x = byoc.param()
+        x = byoc.attr()
 
     obj = DummyObj()
 

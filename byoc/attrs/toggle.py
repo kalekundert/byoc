@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .. import model
-from .param import param, UNSPECIFIED
+from .attr import attr, UNSPECIFIED
 from ..utils import noop
 from ..errors import NoValueFound
 from more_itertools import partition, first
@@ -26,7 +26,7 @@ def pick_toggled(values):
 
     return toggle.value != base
 
-class toggle_param(param):
+class toggle_attr(attr):
 
     def __init__(
             self,

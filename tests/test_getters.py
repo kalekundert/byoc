@@ -22,7 +22,7 @@ def test_getter_repr(getter, expected):
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj:\n __config__ = []'): str,
-            Optional('param', default='byoc.param()'): str,
+            Optional('attr', default='byoc.attr()'): str,
             'getter': str,
             'given': with_py.eval,
             **with_byoc.error_or({
@@ -30,18 +30,18 @@ def test_getter_repr(getter, expected):
             }),
         }),
 )
-def test_getter_cast_value(obj, param, getter, given, expected, error):
+def test_getter_cast_value(obj, attr, getter, given, expected, error):
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
-    param = with_obj.eval(param)
+    attr = with_obj.eval(attr)
     getter = with_obj.eval(getter)
 
     # Pretend to initialize the descriptor.
-    if not hasattr(param, '_name'):
-        param.__set_name__(obj.__class__, '')
+    if not hasattr(attr, '_name'):
+        attr.__set_name__(obj.__class__, '')
 
     byoc.init(obj)
-    bound_getter = getter.bind(obj, param)
+    bound_getter = getter.bind(obj, attr)
 
     with error:
         assert bound_getter.cast_value(given) == expected
@@ -49,7 +49,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj: __config__ = []'): str,
-            Optional('param', default=''): str,
+            Optional('attr', default=''): str,
             'getter': str,
             **with_byoc.error_or({
                 'expected': {
@@ -61,14 +61,14 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             }),
         }),
 )
-def test_getter_iter_values(getter, obj, param, expected, error):
+def test_getter_iter_values(getter, obj, attr, expected, error):
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
-    param = find_param(obj, param)
+    attr = find_attr(obj, attr)
     getter = with_obj.eval(getter)
 
     byoc.init(obj)
-    bound_getter = getter.bind(obj, param)
+    bound_getter = getter.bind(obj, attr)
     log = Log()
 
     with error:
@@ -90,19 +90,19 @@ def test_getter_iter_values(getter, obj, param, expected, error):
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj: __config__ = []'): str,
-            Optional('param', default=''): str,
+            Optional('attr', default=''): str,
             'getter': str,
             'error': with_byoc.error,
         }),
 )
-def test_getter_kwargs_err(obj, param, getter, error):
+def test_getter_kwargs_err(obj, attr, getter, error):
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
-    param = find_param(obj, param)
+    attr = find_attr(obj, attr)
     getter = with_obj.eval(getter)
 
     byoc.init(obj)
 
     with error:
-        getter.bind(obj, param)
+        getter.bind(obj, attr)
 

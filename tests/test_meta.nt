@@ -4,12 +4,12 @@ test_meta_attr:
     obj:
       > class DummyConfig(Config):
       >     def load(self):
-      >         yield DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield DictLayer({'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
       >     meta = byoc.meta_attr()
-      >     x = byoc.param()
+      >     x = byoc.attr()
       >
       > obj = DummyObj()
       > obj.x
@@ -22,6 +22,6 @@ test_meta_attr:
     obj:
       > class DummyObj:
       >     meta = byoc.meta_attr()
-      >     x = byoc.param()
+      >     x = byoc.attr()
     expected:
       x: NeverAccessedMeta

@@ -2,7 +2,7 @@
 
 from copy import copy
 
-class inherited_param:
+class inherited_attr:
 
     def __init__(self, *args, **kwargs):
         self._args = args
@@ -20,8 +20,8 @@ class inherited_param:
                     cls=cls,
                     name=name,
             )
-            err.brief = "no superclass parameter to inherit from"
-            err.info += "attempting to create `inherited_param`:\n{cls.__name__}.{name}"
+            err.brief = "no superclass attribute to inherit from"
+            err.info += "attempting to create `inherited_attr`:\n{cls.__name__}.{name}"
             err.blame += lambda e: "\n".join(
                     "none of the following exist:", *(
                         f'{x.__qualname__}.{e.name}'
@@ -30,8 +30,8 @@ class inherited_param:
             )
             raise err
 
-        param = copy(parent)
-        param._override(self._args, self._kwargs)
+        attr = copy(parent)
+        attr._override(self._args, self._kwargs)
 
-        setattr(cls, name, param)
+        setattr(cls, name, attr)
 

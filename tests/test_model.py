@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import byoc
 import pytest
 import parametrize_from_file
-import byoc
+
 from voluptuous import Schema, Or, Optional, Coerce
 from more_itertools import zip_equal
 from param_helpers import *
@@ -151,11 +152,11 @@ def test_get_config_factories_err():
 @parametrize_from_file(
         schema=Schema({
             'obj': with_byoc.exec(get=get_obj, defer=True),
-            'param': str,
+            'attr': str,
             'expected': eval_meta,
         }),
 )
-def test_get_meta(obj, param, expected):
+def test_get_meta(obj, attr, expected):
     obj = obj()
-    meta = byoc.get_meta(obj, param)
+    meta = byoc.get_meta(obj, attr)
     assert meta == expected

@@ -54,12 +54,12 @@ class meta_attr:
 class meta_view:
     # This class will never refresh the cache, so the results it returns may 
     # change if the value is accessed immediately afterwards.  For this reason, 
-    # it is recommended to always access any parameters of interest before 
-    # accessing the metadata associated with those parameters.
+    # it is recommended to always access any attributes of interest before 
+    # accessing the metadata associated with those attributes.
 
     def __init__(self, obj):
         self.__obj = obj
 
-    def __getattr__(self, param):
-        return get_meta(self.__obj, param)
+    def __getattr__(self, attr):
+        return get_meta(self.__obj, attr)
 

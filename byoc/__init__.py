@@ -13,9 +13,9 @@ from .model import (
         append_configs, prepend_config, prepend_configs, share_configs,
         get_meta,
 )
-from .params.param import param
-from .params.toggle import toggle_param, pick_toggled, Toggle as toggle
-from .params.inherited import inherited_param
+from .attrs.attr import attr
+from .attrs.toggle import toggle_attr, pick_toggled, Toggle as toggle
+from .attrs.inherited import inherited_attr
 from .configs.configs import *
 from .configs.layers import Layer, DictLayer, FileNotFoundLayer, dict_like
 from .configs.attrs import config_attr

@@ -6,7 +6,7 @@ test_values_iter:
   -
     id: layers-1x
     getters:
-      - byoc.Value(1)
+      - Value(1)
     expected:
       - 1
     log:
@@ -14,8 +14,8 @@ test_values_iter:
   -
     id: layers-2x
     getters:
-      - byoc.Value(1)
-      - byoc.Value(2)
+      - Value(1)
+      - Value(2)
     expected:
       - 1
       - 2
@@ -25,15 +25,15 @@ test_values_iter:
   -
     id: layers-repeat
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x')
-      - byoc.Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
     expected:
       - 1
       - 1
@@ -45,16 +45,16 @@ test_values_iter:
   -
     id: layers-repeat
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 1})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x')
-      - byoc.Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
     expected:
       - 1
       - 2
@@ -70,19 +70,19 @@ test_values_iter:
   -
     id: layers-order
     obj:
-      > class DummyConfigA(byoc.Config):
+      > class DummyConfigA(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
-      > class DummyConfigB(byoc.Config):
+      > class DummyConfigB(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getters:
-      - byoc.Key(DummyConfigA, 'x')
-      - byoc.Key(DummyConfigB, 'x')
+      - Key(DummyConfigA, 'x')
+      - Key(DummyConfigB, 'x')
     expected:
       - 1
       - 2
@@ -94,19 +94,19 @@ test_values_iter:
   -
     id: layers-order
     obj:
-      > class DummyConfigA(byoc.Config):
+      > class DummyConfigA(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
-      > class DummyConfigB(byoc.Config):
+      > class DummyConfigB(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getters:
-      - byoc.Key(DummyConfigB, 'x')
-      - byoc.Key(DummyConfigA, 'x')
+      - Key(DummyConfigB, 'x')
+      - Key(DummyConfigA, 'x')
     expected:
       - 2
       - 1
@@ -118,19 +118,19 @@ test_values_iter:
   -
     id: layers-missing
     obj:
-      > class DummyConfigA(byoc.Config):
+      > class DummyConfigA(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
-      > class DummyConfigB(byoc.Config):
+      > class DummyConfigB(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getters:
-      - byoc.Key(DummyConfigA, 'x')
-      - byoc.Key(DummyConfigB, 'y')
+      - Key(DummyConfigA, 'x')
+      - Key(DummyConfigB, 'y')
     expected:
       - 1
     log:
@@ -141,19 +141,19 @@ test_values_iter:
   -
     id: layers-missing
     obj:
-      > class DummyConfigA(byoc.Config):
+      > class DummyConfigA(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
-      > class DummyConfigB(byoc.Config):
+      > class DummyConfigB(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getters:
-      - byoc.Key(DummyConfigA, 'y')
-      - byoc.Key(DummyConfigB, 'x')
+      - Key(DummyConfigA, 'y')
+      - Key(DummyConfigB, 'x')
     expected:
       - 2
     log:
@@ -171,15 +171,15 @@ test_values_iter:
   -
     id: layers-err
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     autoload = False
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
     expected:
     log:
       - skipped DummyConfig(): not loaded
@@ -188,14 +188,14 @@ test_values_iter:
   -
     id: layers-err
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
       >         yield from []
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
     expected:
     log:
       - skipped DummyConfig(): loaded, but no layers
@@ -203,14 +203,14 @@ test_values_iter:
   -
     id: layers-err
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'y')
+      - Key(DummyConfig, 'y')
     expected:
     log:
       - queried DummyConfig():
@@ -219,15 +219,15 @@ test_values_iter:
   -
     id: cast
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
-      >         yield byoc.DictLayer(values={'x': 2})
+      >         yield DictLayer({'x': 1})
+      >         yield DictLayer({'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x', cast=lambda x: x + 1)
+      - Key(DummyConfig, 'x', cast=lambda x: x + 1)
     expected:
       - 2
       - 3
@@ -238,19 +238,19 @@ test_values_iter:
   -
     id: cast
     obj:
-      > class DummyConfigA(byoc.Config):
+      > class DummyConfigA(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
-      > class DummyConfigB(byoc.Config):
+      > class DummyConfigB(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getters:
-      - byoc.Key(DummyConfigA, 'x', cast=lambda x: x + 1)
-      - byoc.Key(DummyConfigB, 'x', cast=lambda x: x + 2)
+      - Key(DummyConfigA, 'x', cast=lambda x: x + 1)
+      - Key(DummyConfigB, 'x', cast=lambda x: x + 2)
     expected:
       - 2
       - 3
@@ -271,7 +271,7 @@ test_values_iter:
   -
     id: default
     getters:
-      - byoc.Value(1)
+      - Value(1)
     default: 0
     expected:
       - 1
@@ -282,14 +282,14 @@ test_values_iter:
   -
     id: default
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'x')
+      - Key(DummyConfig, 'x')
     default: 0
     expected:
       - 1
@@ -301,14 +301,14 @@ test_values_iter:
   -
     id: default
     obj:
-      > class DummyConfig(byoc.Config):
+      > class DummyConfig(Config):
       >     def load(self):
-      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield DictLayer({'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getters:
-      - byoc.Key(DummyConfig, 'y')
+      - Key(DummyConfig, 'y')
     default: 0
     expected:
       - 0
