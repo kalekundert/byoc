@@ -2,6 +2,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.26.0 (2022-01-14)
+### Feature
+* Rename 'param' to 'attr' ([`30a37e7`](https://github.com/kalekundert/byoc/commit/30a37e7d111ad5e620ca44e74b1bf38a37bd0c80))
+* Rename project to 'byoc' ([`0ca13b9`](https://github.com/kalekundert/byoc/commit/0ca13b9fe46d525fae24fcff19bb102b0267408a))
+* Improve log messages for FileConfig ([`6628a19`](https://github.com/kalekundert/byoc/commit/6628a19ff1eee3e01d12b100a8996dffb022eb5c))
+* Configure caching on a per-getter basis ([`75b540d`](https://github.com/kalekundert/byoc/commit/75b540d91727b0e9d6981ff5ae917fc1a4c59eb4))
+* Expose metadata for each parameter ([`7c332ac`](https://github.com/kalekundert/byoc/commit/7c332acdadfe4842719d610144cb68d9dcec5c29))
+* Forbid dotted keys ([`23efa74`](https://github.com/kalekundert/byoc/commit/23efa74e8adbfd74d5a4eba69fee67753ca8b5be))
+* Always invoke param(cast=...) ([`f62ce56`](https://github.com/kalekundert/byoc/commit/f62ce56f4e2991b674e983b3ac4377f59f7dbb91))
+* Be more conservative about exceptions ([`51a9a06`](https://github.com/kalekundert/byoc/commit/51a9a0635c1c19b066a5ef03a01be1ae419d0491))
+
+### Documentation
+* Describe why on-the-fly loading doesn't work ([`6099b42`](https://github.com/kalekundert/byoc/commit/6099b42d47de0ad9bc6c3b2b091396a99c8b126a))
+
 ## v0.25.0 (2022-01-11)
 ### Feature
 * Add a main function to app classes ([`f7e865a`](https://github.com/kalekundert/appcli/commit/f7e865a4f2c4da4647c533fdd2040ec4cdc31b8a))
