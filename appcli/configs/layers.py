@@ -95,6 +95,17 @@ class DictLayer(Layer):
         self._location = loc
         self._is_location_deferred = callable(loc)
 
+class FileNotFoundLayer(Layer):
+
+    def __init__(self, path):
+        self.location = path
+
+    def iter_values(self, key, log):
+        log.info("file does not exist: {path}\ndid not find {key!r}", path=self.location, key=key)
+        return
+        yield
+
+
 def dict_like(*args):
 
     # I want this function to be usable as a decorator, but I also want to 

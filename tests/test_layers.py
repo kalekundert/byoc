@@ -45,7 +45,7 @@ def test_dict_layer_setters(values, location):
             'log': [str],
         }),
 )
-def test_dict_layer_iter_values(layer, key, expected, log):
+def test_layer_iter_values(layer, key, expected, log):
     layer = layer()
     actual_log = Log()
     assert list(layer.iter_values(key, actual_log)) == expected

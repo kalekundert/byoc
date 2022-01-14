@@ -791,6 +791,53 @@ test_getter_iter_values:
           > /path/to/file:
           > found 'x': 1
   -
+    id: key-load-status-with-layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         self.load_status = lambda log: log.hint('config status')
+      >         yield appcli.DictLayer({'x': 1}, location='/path/to/file')
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getter:
+      > appcli.Key(DummyConfig, 'x')
+    expected:
+      values: [1]
+      meta:
+        -
+          type: LayerMeta
+          location: /path/to/file
+          layer.values: {'x': 1}
+      dynamic:
+        - False
+      log:
+        - queried DummyConfig\(\):
+        - config status
+        -
+          > /path/to/file:
+          > found 'x': 1
+  -
+    id: key-load-status-without-layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         self.load_status = lambda log: log.hint('config status')
+      >         return
+      >         yield
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getter:
+      > appcli.Key(DummyConfig, 'x')
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        - skipped DummyConfig\(\): loaded, but no layers
+        - config status
+  -
     id: key-autoload
     obj:
       > class DummyConfig(appcli.Config):
@@ -864,6 +911,24 @@ test_getter_iter_values:
         -
           > /path/to/file:
           > found 'x': 1
+  -
+    id: key-no-layers
+    obj:
+      > class DummyConfig(appcli.Config):
+      >     def load(self):
+      >         return
+      >         yield
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+    getter:
+      > appcli.Key(DummyConfig, 'y')
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        - skipped DummyConfig\(\): loaded, but no layers
   -
     id: key-missing
     obj:

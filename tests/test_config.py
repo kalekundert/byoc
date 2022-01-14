@@ -137,6 +137,20 @@ def test_file_config(tmp_chdir, obj, files, layers):
     appcli.init(obj)
     assert collect_layers(obj)[0] == layers
 
+def test_file_config_load_status():
+
+    class DummyObj:
+        __config__ = [appcli.YamlConfig]
+        x = appcli.param()
+
+    obj = DummyObj()
+
+    with pytest.raises(appcli.NoValueFound) as err:
+        obj.x
+
+    assert err.match(r"failed to get path\(s\):")
+    assert err.match(r"raised AttributeError: 'DummyObj' object has no attribute 'path'")
+
 @parametrize_from_file
 def test_on_load(prepare, load, expected):
 

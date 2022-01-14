@@ -1,4 +1,4 @@
-test_dict_layer_iter_values:
+test_layer_iter_values:
   -
     id: key-found
     layer:
@@ -202,3 +202,14 @@ test_dict_layer_iter_values:
       -
         > loc:
         > found 'x': 1
+  -
+    id: file-not-found
+    layer:
+      > appcli.FileNotFoundLayer('/path/to/file')
+    key: 'x'
+    expected:
+      []
+    log:
+      -
+        > file does not exist: /path/to/file
+        > did not find 'x'

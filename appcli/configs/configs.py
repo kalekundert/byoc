@@ -2,7 +2,7 @@
 
 import sys, os, re, inspect, autoprop
 
-from .layers import DictLayer, dict_like
+from .layers import DictLayer, FileNotFoundLayer, dict_like
 from ..utils import first_specified
 from ..errors import ApiError
 from pathlib import Path
@@ -17,6 +17,7 @@ class Config:
     def __init__(self, obj, **kwargs):
         self.obj = obj
         self.dynamic = kwargs.pop('dynamic', self.dynamic)
+        self.load_status = lambda log: None
 
         if kwargs:
             raise ApiError(
@@ -249,7 +250,11 @@ class FileConfig(Config):
         self.root_key = root_key or self.root_key
 
     def get_paths(self):
-        p = self._path or self._path_getter(self.obj)
+        try:
+            p = self._path or self._path_getter(self.obj)
+        except AttributeError as err:
+            self.load_status = lambda log, err=err: log.info("failed to get path(s):\nraised {err.__class__.__name__}: {err}", err=err)
+            return []
 
         if isinstance(p, Iterable) and not isinstance(p, str):
             return [Path(pi) for pi in p]
@@ -268,16 +273,15 @@ class FileConfig(Config):
     def load_from_path(cls, path, *, schema=None, root_key=None):
         try:
             data, linenos = cls._do_load_with_linenos(path)
+            yield DictLayer(
+                    values=data,
+                    linenos=linenos,
+                    location=path,
+                    schema=schema,
+                    root_key=root_key,
+            )
         except FileNotFoundError:
-            data, linenos = {}, {}
-
-        yield DictLayer(
-                values=data,
-                linenos=linenos,
-                location=path,
-                schema=schema,
-                root_key=root_key,
-        )
+            yield FileNotFoundLayer(path)
 
     @classmethod
     def _do_load_with_linenos(cls, path):

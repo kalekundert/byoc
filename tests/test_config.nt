@@ -581,9 +581,17 @@ test_file_config:
       >     path = 'not-found.yml'
     files:
     layers:
-      -
-        values: {}
-        location: not-found.yml
+      - appcli.FileNotFoundLayer('not-found.yml')
+
+  -
+    id: not-given-path
+    obj:
+      > class DummyObj:
+      >     __config__ = [appcli.YamlConfig]
+    files:
+    layers:
+      []
+
 
 test_on_load:
   -

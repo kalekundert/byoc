@@ -187,24 +187,27 @@ class BoundKey(BoundGetter):
             log.info("no configs of class {config_cls.__name__}", config_cls=self.parent.config_cls)
 
         for wrapped_config in self.wrapped_configs:
+            config = wrapped_config.config
 
             if not wrapped_config.is_loaded:
-                log.info("skipped {config}: not loaded", config=wrapped_config.config)
+                log.info("skipped {config}: not loaded", config=config)
                 log.hint("did you mean to call `appcli.load()`?")
                 continue
 
             if not wrapped_config.layers:
-                log.info("skipped {config}: loaded, but no layers", config=wrapped_config.config)
+                log.info("skipped {config}: loaded, but no layers", config=config)
+                config.load_status(log)
                 continue
 
-            log.info("queried {config}:", config=wrapped_config.config)
+            log.info("queried {config}:", config=config)
+            config.load_status(log)
 
             for layer in wrapped_config:
                 for value in layer.iter_values(self.key, log):
                     yield (
                             value,
                             LayerMeta(self.parent, layer),
-                            wrapped_config.config.dynamic,
+                            config.dynamic,
                     )
 
 

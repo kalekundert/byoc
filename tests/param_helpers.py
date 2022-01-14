@@ -23,28 +23,34 @@ class LayerWrapper:
             return str(x) if x is not None else x
 
         if not isinstance(other, appcli.Layer):
+            print('not a layer')
+            return False
+
+        if type(self.layer) != type(other):
             print('wrong layer type')
             return False
 
-        if self.layer.values != other.values:
-            print('wrong layer values')
-            return False
+        if hasattr(self, 'values'):
+            if self.layer.values != other.values:
+                print('wrong layer values')
+                return False
 
-        if str_or_none(self.layer.location) != str_or_none(other.location):
-            print('wrong layer location')
-            return False
+        if hasattr(self, 'location'):
+            if str_or_none(self.layer.location) != str_or_none(other.location):
+                print('wrong layer location')
+                return False
 
-        if hasattr(other, 'root_key'):
+        if hasattr(self, 'root_key'):
             if self.layer.root_key != other.root_key:
                 print('wrong layer root key')
                 return False
 
-        if hasattr(other, 'schema'):
+        if hasattr(self, 'schema'):
             if self.layer.schema != other.schema:
                 print('wrong layer schema')
                 return False
 
-        if hasattr(other, 'linenos'):
+        if hasattr(self, 'linenos'):
             other_linenos = {k: v.line.lineno for k, v in other.linenos.items()}
             if self.layer.linenos != other_linenos:
                 print('wrong layer linenos')
