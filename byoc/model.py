@@ -3,7 +3,7 @@
 from .errors import ApiError
 
 CONFIG_ATTR = '__config__'
-STATE_ATTR = '__appcli__'
+STATE_ATTR = '__byoc__'
 
 UNSPECIFIED = object()
 
@@ -141,7 +141,7 @@ def get_config_factories(obj):
                 obj=obj,
                 config_attr=CONFIG_ATTR,
         )
-        err.brief = "object not configured for use with appcli"
+        err.brief = "object not configured for use with byoc"
         err.blame += "{obj!r} has no '{config_attr}' attribute"
         raise err
 

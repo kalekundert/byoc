@@ -6,7 +6,7 @@ class AppMeta(type):
     """
     A metaclass that allows a class to be instantiated either in the usual way, 
     or without calling the constructor.  The latter is useful if the object 
-    will be initialized in another way, e.g. `appcli.param()` parameters that 
+    will be initialized in another way, e.g. `byoc.param()` parameters that 
     read from the command line.
     """
 

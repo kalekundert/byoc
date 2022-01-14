@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import pytest
 import parametrize_from_file
 import sys, os, shlex
@@ -20,7 +20,7 @@ def tmp_chdir(tmp_path):
 
 
 def test_config_init():
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         pass
 
     class DummyObj:
@@ -29,12 +29,12 @@ def test_config_init():
     expected = r"DummyConfig\(\) received unexpected keyword argument\(s\): 'a'"
     obj = DummyObj()
 
-    with pytest.raises(appcli.ApiError, match=expected):
+    with pytest.raises(byoc.ApiError, match=expected):
         DummyConfig(obj, a=1)
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj),
+            'obj': with_byoc.exec(get=get_obj),
             'usage': str,
             'brief': str,
             'invocations': [{
@@ -67,10 +67,10 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 
         # Make sure that calling `init()` (if it wasn't implicitly called 
         # above) doesn't cause the command line to be read.
-        appcli.init(test_obj)
+        byoc.init(test_obj)
 
         monkeypatch.setattr(sys, 'argv', test_argv)
-        appcli.load(test_obj)
+        byoc.load(test_obj)
 
         for attr, value in test_expected.items():
             assert getattr(test_obj, attr) == value
@@ -78,15 +78,15 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 @mock.patch.dict(os.environ, {"x": "1"})
 def test_environment_config():
     class DummyObj:
-        __config__ = [appcli.EnvironmentConfig]
-        x = appcli.param()
+        __config__ = [byoc.EnvironmentConfig]
+        x = byoc.param()
 
     obj = DummyObj()
     assert obj.x == "1"
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj),
+            'obj': with_byoc.exec(get=get_obj),
             'slug': with_py.eval,
             'author': with_py.eval,
             'version': with_py.eval,
@@ -118,12 +118,12 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert obj.dirs.author == author
     assert obj.dirs.version == version
 
-    appcli.init(obj)
+    byoc.init(obj)
     assert collect_layers(obj)[0] == layers
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj),
+            'obj': with_byoc.exec(get=get_obj),
             'files': empty_ok({str: str}),
             'layers': eval_config_layers,
         })
@@ -134,18 +134,18 @@ def test_file_config(tmp_chdir, obj, files, layers):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
 
-    appcli.init(obj)
+    byoc.init(obj)
     assert collect_layers(obj)[0] == layers
 
 def test_file_config_load_status():
 
     class DummyObj:
-        __config__ = [appcli.YamlConfig]
-        x = appcli.param()
+        __config__ = [byoc.YamlConfig]
+        x = byoc.param()
 
     obj = DummyObj()
 
-    with pytest.raises(appcli.NoValueFound) as err:
+    with pytest.raises(byoc.NoValueFound) as err:
         obj.x
 
     assert err.match(r"failed to get path\(s\):")
@@ -154,9 +154,9 @@ def test_file_config_load_status():
 @parametrize_from_file
 def test_on_load(prepare, load, expected):
 
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={})
+            yield byoc.DictLayer(values={})
 
     class A(DummyConfig):
         pass
@@ -182,41 +182,41 @@ def test_on_load(prepare, load, expected):
         def __init__(self):
             self.calls = set()
 
-        @appcli.on_load
+        @byoc.on_load
         def on_default(self):
             self.calls.add('default')
 
-        @appcli.on_load(DummyConfig)
+        @byoc.on_load(DummyConfig)
         def on_dummy_config(self):
             self.calls.add('DummyConfig')
 
-        @appcli.on_load(A)
+        @byoc.on_load(A)
         def on_a(self):
             self.calls.add('A')
 
-        @appcli.on_load(A1)
+        @byoc.on_load(A1)
         def on_a1(self):
             self.calls.add('A1')
 
-        @appcli.on_load(A2)
+        @byoc.on_load(A2)
         def on_a2(self):
             self.calls.add('A2')
 
-        @appcli.on_load(B)
+        @byoc.on_load(B)
         def on_b(self):
             self.calls.add('B')
 
-        @appcli.on_load(B1)
+        @byoc.on_load(B1)
         def on_b1(self):
             self.calls.add('B1')
 
-        @appcli.on_load(B2)
+        @byoc.on_load(B2)
         def on_b2(self):
             self.calls.add('B2')
 
     obj = DummyObj()
 
-    with_locals = Namespace(with_appcli, locals())
+    with_locals = Namespace(with_byoc, locals())
     with_locals.exec(prepare)
 
     obj.calls = set()
@@ -226,9 +226,9 @@ def test_on_load(prepare, load, expected):
 
 def test_on_load_inheritance():
 
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={})
+            yield byoc.DictLayer(values={})
 
     class P:
         __config__ = [DummyConfig]
@@ -236,31 +236,31 @@ def test_on_load_inheritance():
         def __init__(self):
             self.calls = set()
 
-        @appcli.on_load
+        @byoc.on_load
         def a(self):
             self.calls.add('P/a')
 
-        @appcli.on_load
+        @byoc.on_load
         def b(self):
             self.calls.add('P/b')
 
-        @appcli.on_load
+        @byoc.on_load
         def c(self):
             self.calls.add('P/c')
 
     class F1(P):
 
-        @appcli.on_load
+        @byoc.on_load
         def a(self):
             self.calls.add('F1/a')
 
-        @appcli.on_load
+        @byoc.on_load
         def b(self):
             self.calls.add('F1/b')
 
     class F2(F1):
 
-        @appcli.on_load
+        @byoc.on_load
         def a(self):
             self.calls.add('F2/a')
 
@@ -268,9 +268,9 @@ def test_on_load_inheritance():
     f1 = F1()
     f2 = F2()
 
-    appcli.init(p)
-    appcli.init(f1)
-    appcli.init(f2)
+    byoc.init(p)
+    byoc.init(f1)
+    byoc.init(f2)
 
     assert p.calls  == { 'P/a',  'P/b', 'P/c'}
     assert f1.calls == {'F1/a', 'F1/b', 'P/c'}
@@ -278,7 +278,7 @@ def test_on_load_inheritance():
 
 @parametrize_from_file(
         schema=Schema({
-            'f': with_appcli.exec(get='f'),
+            'f': with_byoc.exec(get='f'),
             Optional('raises', default=[]): [with_py.eval],
             **with_py.error_or({
                 'x': with_py.eval,
@@ -289,11 +289,11 @@ def test_on_load_inheritance():
 @pytest.mark.parametrize(
         'factory', [
             pytest.param(
-                lambda f, raises: appcli.dict_like(*raises)(f),
+                lambda f, raises: byoc.dict_like(*raises)(f),
                 id='decorator',
             ),
             pytest.param(
-                lambda f, raises: appcli.dict_like(f, *raises),
+                lambda f, raises: byoc.dict_like(f, *raises),
                 id='constructor',
             ),
         ]

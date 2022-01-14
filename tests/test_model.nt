@@ -10,68 +10,68 @@ test_init_load_reload:
   -
     id: 1-layer
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
   -
     id: 2-layers
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
-      >         yield appcli.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='b')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: 2-layers
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='b')
       >
       > class DummyObj:
       >   __config__ = [DummyConfigA, DummyConfigB]
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
 
   -
     id: autoload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -79,16 +79,16 @@ test_init_load_reload:
       0:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
   -
     id: autoload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
-      >         yield appcli.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -96,22 +96,22 @@ test_init_load_reload:
       0:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload
     obj:
-        > class DummyConfigA(appcli.Config):
+        > class DummyConfigA(byoc.Config):
         >     autoload = False
         >
         >     def load(self):
-        >         yield appcli.DictLayer(values={}, location='a')
+        >         yield byoc.DictLayer(values={}, location='a')
         >
-        > class DummyConfigB(appcli.Config):
+        > class DummyConfigB(byoc.Config):
         >     autoload = False
         >
         >     def load(self):
-        >         yield appcli.DictLayer(values={}, location='b')
+        >         yield byoc.DictLayer(values={}, location='b')
         >
         > class DummyObj:
         >     __config__ = [DummyConfigA, DummyConfigB]
@@ -120,118 +120,118 @@ test_init_load_reload:
       1:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload-order
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     init_layers:
       0:
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload-order
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='b')
       >
       > class DummyObj:
       >   __config__ = [DummyConfigA, DummyConfigB]
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload-order
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
-      > class DummyConfigBC(appcli.Config):
+      > class DummyConfigBC(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='b')
-      >         yield appcli.DictLayer(values={}, location='c')
+      >         yield byoc.DictLayer(values={}, location='b')
+      >         yield byoc.DictLayer(values={}, location='c')
       >
-      > class DummyConfigD(appcli.Config):
+      > class DummyConfigD(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='d')
+      >         yield byoc.DictLayer(values={}, location='d')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigBC, DummyConfigD]
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
       2:
-        - appcli.DictLayer(values={}, location='d')
+        - byoc.DictLayer(values={}, location='d')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
-        - appcli.DictLayer(values={}, location='c')
+        - byoc.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='c')
       2:
-        - appcli.DictLayer(values={}, location='d')
+        - byoc.DictLayer(values={}, location='d')
   -
     id: autoload-config-cls
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
       >
       >     def load(self):
-      >         appcli.load(self, DummyConfig)
+      >         byoc.load(self, DummyConfig)
     init_layers:
       0:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
   -
     id: autoload-config-cls
     obj:
-      > class BaseConfig(appcli.Config):
+      > class BaseConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location=self.location)
+      >         yield byoc.DictLayer(values={}, location=self.location)
       >
       > class DummyConfigA(BaseConfig):
       >     location = 'a'
@@ -243,23 +243,23 @@ test_init_load_reload:
       >     __config__ = [DummyConfigA, DummyConfigB]
       >
       >     def load(self):
-      >         appcli.load(self, BaseConfig)
+      >         byoc.load(self, BaseConfig)
     init_layers:
       0:
       1:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload-config-cls
     obj:
-      > class BaseConfig(appcli.Config):
+      > class BaseConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location=self.location)
+      >         yield byoc.DictLayer(values={}, location=self.location)
       >
       > class DummyConfigA(BaseConfig):
       >     location = 'a'
@@ -271,22 +271,22 @@ test_init_load_reload:
       >     __config__ = [DummyConfigA, DummyConfigB]
       >
       >     def load(self):
-      >         appcli.load(self, DummyConfigA)
+      >         byoc.load(self, DummyConfigA)
     init_layers:
       0:
       1:
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
       1:
   -
     id: autoload-config-cls
     obj:
-      > class BaseConfig(appcli.Config):
+      > class BaseConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location=self.location)
+      >         yield byoc.DictLayer(values={}, location=self.location)
       >
       > class DummyConfigA(BaseConfig):
       >     location = 'a'
@@ -298,22 +298,22 @@ test_init_load_reload:
       >     __config__ = [DummyConfigA, DummyConfigB]
       >
       >     def load(self):
-      >         appcli.load(self, DummyConfigB)
+      >         byoc.load(self, DummyConfigB)
     init_layers:
       0:
       1:
     load_layers:
       0:
       1:
-        - appcli.DictLayer(values={}, location='b')
+        - byoc.DictLayer(values={}, location='b')
   -
     id: autoload-config-cls
     obj:
-      > class BaseConfig(appcli.Config):
+      > class BaseConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location=self.location)
+      >         yield byoc.DictLayer(values={}, location=self.location)
       >
       > class DummyConfigA(BaseConfig):
       >     location = 'a'
@@ -328,7 +328,7 @@ test_init_load_reload:
       >     __config__ = [DummyConfigA, DummyConfigB]
       >
       >     def load(self):
-      >         appcli.load(self, DummyConfigC)
+      >         byoc.load(self, DummyConfigC)
     init_layers:
       0:
       1:
@@ -339,34 +339,34 @@ test_init_load_reload:
   -
     id: reload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 0
       >
       >     def load(self):
       >         self.x += 1
-      >         yield appcli.DictLayer(values={'x': self.x}, location='a')
+      >         yield byoc.DictLayer(values={'x': self.x}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     init_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
     load_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
     reload_layers:
       0:
-        - appcli.DictLayer(values={'x': 2}, location='a')
+        - byoc.DictLayer(values={'x': 2}, location='a')
   -
     id: reload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 0
       >     autoload=False
       >
       >     def load(self):
       >         self.x += 1
-      >         yield appcli.DictLayer(values={'x': self.x}, location='a')
+      >         yield byoc.DictLayer(values={'x': self.x}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -374,19 +374,19 @@ test_init_load_reload:
       0:
     load_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
     reload_layers:
       0:
-        - appcli.DictLayer(values={'x': 2}, location='a')
+        - byoc.DictLayer(values={'x': 2}, location='a')
   -
     id: reload-config-cls
     obj:
-      > class BaseConfig(appcli.Config):
+      > class BaseConfig(byoc.Config):
       >     x = 0
       >
       >     def load(self):
       >         self.x += 1
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': self.x},
       >                 location=self.location,
       >         )
@@ -401,29 +401,29 @@ test_init_load_reload:
       >     __config__ = [DummyConfigA, DummyConfigB]
       >
       >     def reload(self):
-      >         appcli.reload(self, DummyConfigB)
+      >         byoc.reload(self, DummyConfigB)
     init_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
       1:
-        - appcli.DictLayer(values={'x': 1}, location='b')
+        - byoc.DictLayer(values={'x': 1}, location='b')
     load_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
       1:
-        - appcli.DictLayer(values={'x': 1}, location='b')
+        - byoc.DictLayer(values={'x': 1}, location='b')
     reload_layers:
       0:
-        - appcli.DictLayer(values={'x': 1}, location='a')
+        - byoc.DictLayer(values={'x': 1}, location='a')
       1:
-        - appcli.DictLayer(values={'x': 2}, location='b')
+        - byoc.DictLayer(values={'x': 2}, location='b')
 
   -
     id: inheritance
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={}, location='a')
+      >         yield byoc.DictLayer(values={}, location='a')
       >
       > class BaseObj:
       >     __config__ = [DummyConfig]
@@ -432,10 +432,10 @@ test_init_load_reload:
       >     pass
     init_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
     load_layers:
       0:
-        - appcli.DictLayer(values={}, location='a')
+        - byoc.DictLayer(values={}, location='a')
 
   -
     id: param-access
@@ -444,9 +444,9 @@ test_init_load_reload:
       > # are parsed in the correct order, and that the object is always kept 
       > # in a valid state.
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': self.obj.x + self.id},
       >         )
       >
@@ -460,22 +460,22 @@ test_init_load_reload:
       >             DummyConfig2,
       >             DummyConfig1,
       >     ]
-      >     x = appcli.param(default='')
+      >     x = byoc.param(default='')
       >
     init_layers:
       0:
-        - appcli.DictLayer(values={'x': '123'})
+        - byoc.DictLayer(values={'x': '123'})
       1:
-        - appcli.DictLayer(values={'x': '12'})
+        - byoc.DictLayer(values={'x': '12'})
       2:
-        - appcli.DictLayer(values={'x': '1'})
+        - byoc.DictLayer(values={'x': '1'})
     load_layers:
       0:
-        - appcli.DictLayer(values={'x': '123'})
+        - byoc.DictLayer(values={'x': '123'})
       1:
-        - appcli.DictLayer(values={'x': '12'})
+        - byoc.DictLayer(values={'x': '12'})
       2:
-        - appcli.DictLayer(values={'x': '1'})
+        - byoc.DictLayer(values={'x': '1'})
   -
     id: param-access
     obj:
@@ -483,11 +483,11 @@ test_init_load_reload:
       > # are parsed in the correct order, and that the object is always kept 
       > # in a valid state.
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': self.obj.x + self.id},
       >                 location='a',
       >         )
@@ -502,7 +502,7 @@ test_init_load_reload:
       >             DummyConfig2,
       >             DummyConfig1,
       >     ]
-      >     x = appcli.param(default='')
+      >     x = byoc.param(default='')
       >
     init_layers:
       0:
@@ -510,199 +510,199 @@ test_init_load_reload:
       2:
     load_layers:
       0:
-        - appcli.DictLayer(values={'x': '123'}, location='a')
+        - byoc.DictLayer(values={'x': '123'}, location='a')
       1:
-        - appcli.DictLayer(values={'x': '12'},  location='a')
+        - byoc.DictLayer(values={'x': '12'},  location='a')
       2:
-        - appcli.DictLayer(values={'x': '1'},   location='a')
+        - byoc.DictLayer(values={'x': '1'},   location='a')
 
 test_collect_layers:
   -
     id: append-config
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA]
       >
       > obj = DummyObj()
-      > appcli.append_config(obj, DummyConfigB)
+      > byoc.append_config(obj, DummyConfigB)
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
   -
     id: append-config-empty
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
       > class DummyObj:
       >     __config__ = []
       >
       > obj = DummyObj()
-      > appcli.append_config(obj, DummyConfigA)
+      > byoc.append_config(obj, DummyConfigA)
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
   -
     id: append-configs
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='c')
+      >         yield byoc.DictLayer({}, location='c')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA]
       >
       > obj = DummyObj()
-      > appcli.append_configs(obj, [DummyConfigB, DummyConfigC])
+      > byoc.append_configs(obj, [DummyConfigB, DummyConfigC])
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
       2:
-        - appcli.DictLayer({}, location='c')
+        - byoc.DictLayer({}, location='c')
   -
     id: append-configs-noop
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA]
       >
       > obj = DummyObj()
-      > appcli.append_configs(obj, [])
+      > byoc.append_configs(obj, [])
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
   -
     id: prepend-config
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigB]
       >
       > obj = DummyObj()
-      > appcli.prepend_config(obj, DummyConfigA)
+      > byoc.prepend_config(obj, DummyConfigA)
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
   -
     id: prepend-configs
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='c')
+      >         yield byoc.DictLayer({}, location='c')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigC]
       >
       > obj = DummyObj()
-      > appcli.prepend_configs(obj, [DummyConfigA, DummyConfigB])
+      > byoc.prepend_configs(obj, [DummyConfigA, DummyConfigB])
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
       2:
-        - appcli.DictLayer({}, location='c')
+        - byoc.DictLayer({}, location='c')
   -
     id: insert-config
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='c')
+      >         yield byoc.DictLayer({}, location='c')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigC]
       >
       > obj = DummyObj()
-      > appcli.insert_config(obj, 1, DummyConfigB)
+      > byoc.insert_config(obj, 1, DummyConfigB)
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
       2:
-        - appcli.DictLayer({}, location='c')
+        - byoc.DictLayer({}, location='c')
   -
     id: insert-configs
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='a')
+      >         yield byoc.DictLayer({}, location='a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='b')
+      >         yield byoc.DictLayer({}, location='b')
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='c')
+      >         yield byoc.DictLayer({}, location='c')
       >
-      > class DummyConfigD(appcli.Config):
+      > class DummyConfigD(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer({}, location='d')
+      >         yield byoc.DictLayer({}, location='d')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigD]
       >
       > obj = DummyObj()
-      > appcli.insert_configs(obj, 1, [DummyConfigB, DummyConfigC])
+      > byoc.insert_configs(obj, 1, [DummyConfigB, DummyConfigC])
     layers:
       0:
-        - appcli.DictLayer({}, location='a')
+        - byoc.DictLayer({}, location='a')
       1:
-        - appcli.DictLayer({}, location='b')
+        - byoc.DictLayer({}, location='b')
       2:
-        - appcli.DictLayer({}, location='c')
+        - byoc.DictLayer({}, location='c')
       3:
-        - appcli.DictLayer({}, location='d')
+        - byoc.DictLayer({}, location='d')
 
 test_get_meta:
   -
@@ -717,7 +717,7 @@ test_get_meta:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(appcli.Value(1))
+      >     x = byoc.param(byoc.Value(1))
     param: x
     expected: NeverAccessedMeta
   -
@@ -725,7 +725,7 @@ test_get_meta:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(appcli.Value(1))
+      >     x = byoc.param(byoc.Value(1))
       >
       > obj = DummyObj()
       > obj.x
@@ -736,7 +736,7 @@ test_get_meta:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(appcli.Value(1))
+      >     x = byoc.param(byoc.Value(1))
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -751,7 +751,7 @@ test_get_meta:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       >

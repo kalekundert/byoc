@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import parametrize_from_file
 from voluptuous import Schema
 from param_helpers import *
@@ -11,17 +11,17 @@ from param_helpers import *
                 'value': with_py.eval,
                 'toggle': with_py.eval,
             }],
-            **with_appcli.error_or({
+            **with_byoc.error_or({
                 'expected': with_py.eval,
             })
         }),
 )
 def test_toggle(layers, expected, error):
 
-    class BaseConfig(appcli.Config):
+    class BaseConfig(byoc.Config):
 
         def load(self):
-            yield appcli.DictLayer(
+            yield byoc.DictLayer(
                     values={'flag': self.value},
                     location=self.location,
             )
@@ -37,12 +37,12 @@ def test_toggle(layers, expected, error):
             location = str(i+1)
 
         configs.append(DerivedConfig)
-        keys.append(appcli.Key(DerivedConfig, toggle=layer['toggle']))
+        keys.append(byoc.Key(DerivedConfig, toggle=layer['toggle']))
 
     class DummyObj:
         __config__ = configs
 
-        flag = appcli.toggle_param(*keys)
+        flag = byoc.toggle_param(*keys)
 
     obj = DummyObj()
     with error:

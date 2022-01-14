@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import pytest
 import parametrize_from_file
 from voluptuous import Schema, Optional, Or
@@ -8,7 +8,7 @@ from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'obj': with_byoc.exec(get=get_obj, defer=True),
             'expected': {str: with_py.eval},
         })
 )
@@ -18,8 +18,8 @@ def test_param(obj, expected):
         assert getattr(obj, attr) == value
 
 def test_param_init_err():
-    with pytest.raises(appcli.ApiError) as err:
-        appcli.param(default=1, default_factory=list)
+    with pytest.raises(byoc.ApiError) as err:
+        byoc.param(default=1, default_factory=list)
 
     assert err.match(r"can't specify 'default' and 'default_factory'")
     assert err.match(r"default: 1")
@@ -29,13 +29,13 @@ def test_param_init_err():
 def test_param_cache_exc(dynamic):
     # Make sure exceptions are cached just like values are.
 
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(self.obj.values)
+            yield byoc.DictLayer(self.obj.values)
 
     class DummyObj:
         __config__ = [DummyConfig]
-        x = appcli.param(dynamic=dynamic)
+        x = byoc.param(dynamic=dynamic)
 
     obj = DummyObj()
 
@@ -48,17 +48,17 @@ def test_param_cache_exc(dynamic):
     assert (obj.x == 1) if dynamic else not hasattr(obj, 'x')
 
     # After updating the cache:
-    appcli.reload(obj)
+    byoc.reload(obj)
     assert obj.x == 1
 
 @pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_reload(dynamic):
 
-    class BackgroundConfig(appcli.Config):
+    class BackgroundConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={'x': -1})
+            yield byoc.DictLayer(values={'x': -1})
 
-    class ForegroundConfig(appcli.Config):
+    class ForegroundConfig(byoc.Config):
         values = {'x': 1}
 
         def load(self):
@@ -67,11 +67,11 @@ def test_param_cache_reload(dynamic):
             # process (e.g. -1) is mistakenly saved as the cache value.
             self.obj.x
 
-            yield appcli.DictLayer(values=self.values)
+            yield byoc.DictLayer(values=self.values)
     
     class DummyObj:
         __config__ = [ForegroundConfig, BackgroundConfig]
-        x = appcli.param(dynamic=dynamic)
+        x = byoc.param(dynamic=dynamic)
 
     
     obj = DummyObj()
@@ -82,24 +82,24 @@ def test_param_cache_reload(dynamic):
     assert obj.x == (2 if dynamic else 1)
 
     # After updating the cache:
-    appcli.reload(obj)
+    byoc.reload(obj)
     assert obj.x == 2
 
 def test_param_cache_instance_values():
     # Test to make sure the independent instances have independent caches.
 
-    class Background(appcli.Config):
+    class Background(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={'x': 1})
+            yield byoc.DictLayer(values={'x': 1})
     
-    class Foreground(appcli.Config):
+    class Foreground(byoc.Config):
         autoload = False
         def load(self):
-            yield appcli.DictLayer(values={'x': 2})
+            yield byoc.DictLayer(values={'x': 2})
     
     class DummyObj:
         __config__ = [Foreground, Background]
-        x = appcli.param()
+        x = byoc.param()
 
     o1 = DummyObj()
     o2 = DummyObj()
@@ -107,7 +107,7 @@ def test_param_cache_instance_values():
     assert o1.x == 1
     assert o2.x == 1
 
-    appcli.model.load(o2)
+    byoc.model.load(o2)
 
     assert o1.x == 1
     assert o2.x == 2
@@ -116,16 +116,16 @@ def test_param_cache_instance_key_map():
     # Test to make sure that key map values, if cached, aren't shared between 
     # instances of different classes.
     
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={'x': 1})
+            yield byoc.DictLayer(values={'x': 1})
     
-    class DecoyConfig(appcli.Config):
+    class DecoyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={'x': 2})
+            yield byoc.DictLayer(values={'x': 2})
     
     class ParentObj:
-        x = appcli.param()
+        x = byoc.param()
     
     class DummyObj(ParentObj):
         __config__ = [DummyConfig]
@@ -143,10 +143,10 @@ def test_param_cache_get():
     # Test to make sure that the get function is called on every parameter 
     # access, even if the underlying value is cached.
     
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
 
         def load(self):
-            yield appcli.DictLayer(values={'x': 1})
+            yield byoc.DictLayer(values={'x': 1})
     
     class DummyObj:
         __config__ = [DummyConfig]
@@ -158,7 +158,7 @@ def test_param_cache_get():
             self.y += 1
             return x
 
-        x = appcli.param(get=_update_y)
+        x = byoc.param(get=_update_y)
     
     obj = DummyObj()
     assert obj.y == 0
@@ -179,7 +179,7 @@ def test_param_set_non_comparable():
 
     class DummyObj:
         __config__ = []
-        x = appcli.param()
+        x = byoc.param()
 
     obj = DummyObj()
     obj.x = nc = NonComparable()
@@ -190,14 +190,14 @@ def test_param_set_non_comparable():
 
 def locals_or_ab(locals):
     if locals:
-        shared = dict(appcli=appcli)
+        shared = dict(byoc=byoc)
         exec(locals, {}, shared)
         return shared
 
     else:
-        class A(appcli.Config): pass
-        class B(appcli.Config): pass
-        return dict(appcli=appcli, A=A, B=B, a=A(), b=B())
+        class A(byoc.Config): pass
+        class B(byoc.Config): pass
+        return dict(byoc=byoc, A=A, B=B, a=A(), b=B())
 
 def wrap_key_map(map, x):
     return {

@@ -159,7 +159,7 @@ class param:
         return self._pick(values), values
 
     def _calc_bound_getters(self, obj):
-        from appcli import Config
+        from ..configs.configs import Config
         from inspect import isclass
 
         keys = [

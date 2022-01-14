@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 
 def test_app():
 
-    class DummyConfig(appcli.Config):
+    class DummyConfig(byoc.Config):
         def load(self):
-            yield appcli.DictLayer(values={'x': 1}, location='a')
+            yield byoc.DictLayer(values={'x': 1}, location='a')
 
-    class DummyObj(appcli.App):
+    class DummyObj(byoc.App):
         __config__ = [DummyConfig]
-        x = appcli.param()
+        x = byoc.param()
 
         def __bareinit__(self):
             self.y = 0

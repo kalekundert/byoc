@@ -22,7 +22,7 @@ jobs:
           flit install -s --extras=test
       - name: Run test suite
         run: |
-          pytest tests --cov appcli
+          pytest tests --cov byoc
       - name: Report test coverage
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}

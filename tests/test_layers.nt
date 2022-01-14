@@ -2,7 +2,7 @@ test_layer_iter_values:
   -
     id: key-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       > )
     key: 'x'
@@ -13,7 +13,7 @@ test_layer_iter_values:
   -
     id: key-not-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       > )
     key: 'y'
@@ -24,7 +24,7 @@ test_layer_iter_values:
   -
     id: key-callable
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       > )
     key: itemgetter('x')
@@ -37,7 +37,7 @@ test_layer_iter_values:
   -
     id: values-deferred
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values=lambda: {'x': 1},
       > )
     key: 'x'
@@ -48,7 +48,7 @@ test_layer_iter_values:
   -
     id: schema-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         schema=lambda x: {k: v+1 for k,v in x.items()},
       > )
@@ -60,7 +60,7 @@ test_layer_iter_values:
   -
     id: schema-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         schema=lambda x: {k: v+1 for k,v in x.items()},
       > )
@@ -72,7 +72,7 @@ test_layer_iter_values:
   -
     id: root-x
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': {'y': {'z': 1}}},
       >         root_key=('x', 'y'),
       > )
@@ -84,7 +84,7 @@ test_layer_iter_values:
   -
     id: root-y
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': {'y': {'z': 1}}},
       >         root_key=('x', 'y'),
       > )
@@ -96,7 +96,7 @@ test_layer_iter_values:
   -
     id: root-z
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': {'y': {'z': 1}}},
       >         root_key=('x', 'y'),
       > )
@@ -108,7 +108,7 @@ test_layer_iter_values:
   -
     id: root-not-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         root_key='y',
       > )
@@ -120,7 +120,7 @@ test_layer_iter_values:
   -
     id: schema-after-root-x
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': {'y': 1}},
       >         root_key='x',
       >         schema=lambda d: {'y': d['y'] + 1}
@@ -134,7 +134,7 @@ test_layer_iter_values:
   -
     id: schema-after-root-y
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': {'y': 1}},
       >         root_key='x',
       >         schema=lambda d: {'y': d['y'] + 1}
@@ -148,7 +148,7 @@ test_layer_iter_values:
   -
     id: location-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         location='loc',
       > )
@@ -162,7 +162,7 @@ test_layer_iter_values:
   -
     id: location-not-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         location='loc',
       > )
@@ -176,7 +176,7 @@ test_layer_iter_values:
   -
     id: location-root-not-found
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         root_key='y',
       >         location='loc',
@@ -191,7 +191,7 @@ test_layer_iter_values:
   -
     id: location-deferred
     layer:
-      > appcli.DictLayer(
+      > byoc.DictLayer(
       >         values={'x': 1},
       >         location=lambda: 'loc',
       > )
@@ -205,7 +205,7 @@ test_layer_iter_values:
   -
     id: file-not-found
     layer:
-      > appcli.FileNotFoundLayer('/path/to/file')
+      > byoc.FileNotFoundLayer('/path/to/file')
     key: 'x'
     expected:
       []

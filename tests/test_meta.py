@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import parametrize_from_file
 from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'obj': with_byoc.exec(get=get_obj, defer=True),
             'expected': {str: eval_meta},
         }),
 )
@@ -16,7 +16,7 @@ def test_meta_attr(obj, expected):
         assert getattr(obj.meta, attr) == meta
 
 def test_meta_repr():
-    from appcli.meta import GetterMeta, LayerMeta
+    from byoc.meta import GetterMeta, LayerMeta
     from unittest.mock import Mock
 
     meta = GetterMeta(Mock())

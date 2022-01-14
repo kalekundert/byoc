@@ -23,7 +23,7 @@ test_toggle:
         toggle: True
 
     error:
-      type: appcli.NoValueFound
+      type: byoc.NoValueFound
       message: can't find base value to toggle
   -
     id: 1-toggle-0-base-err
@@ -33,7 +33,7 @@ test_toggle:
         toggle: True
 
     error:
-      type: appcli.NoValueFound
+      type: byoc.NoValueFound
       message: can't find base value to toggle
   -
     id: 1-toggle-1-base

@@ -8,8 +8,8 @@ test_meta_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     meta = appcli.meta_attr()
-      >     x = appcli.param()
+      >     meta = byoc.meta_attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -21,7 +21,7 @@ test_meta_attr:
     id: never-accessed
     obj:
       > class DummyObj:
-      >     meta = appcli.meta_attr()
-      >     x = appcli.param()
+      >     meta = byoc.meta_attr()
+      >     x = byoc.param()
     expected:
       x: NeverAccessedMeta

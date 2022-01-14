@@ -6,7 +6,7 @@ from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'obj': with_byoc.exec(get=get_obj, defer=True),
             'expected': {str: with_py.eval},
         })
 )
@@ -17,9 +17,9 @@ def test_config_attr(obj, expected):
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_appcli.exec(get=get_obj, defer=True),
+            'obj': with_byoc.exec(get=get_obj, defer=True),
             'attr': str,
-            'error': with_appcli.error,
+            'error': with_byoc.error,
         })
 )
 def test_config_attr_err(obj, attr, error):

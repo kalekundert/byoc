@@ -2,21 +2,21 @@ test_param:
   -
     id: keys
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1, 'y': 2, 'z': 3})
+      >         yield byoc.DictLayer(values={'x': 1, 'y': 2, 'z': 3})
       >
       > f = lambda d: (d['x'], d['y'])
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
-      >     x1 = appcli.param('x')
-      >     x2 = appcli.param(appcli.Key(DummyConfig, 'x'))
-      >     y = appcli.param(appcli.Key(DummyConfig))
-      >     z = appcli.param(DummyConfig)
-      >     f1 = appcli.param(f)
-      >     f2 = appcli.param(appcli.Key(DummyConfig, f))
+      >     x = byoc.param()
+      >     x1 = byoc.param('x')
+      >     x2 = byoc.param(byoc.Key(DummyConfig, 'x'))
+      >     y = byoc.param(byoc.Key(DummyConfig))
+      >     z = byoc.param(DummyConfig)
+      >     f1 = byoc.param(f)
+      >     f2 = byoc.param(byoc.Key(DummyConfig, f))
     expected:
       x: 1
       x1: 1
@@ -28,29 +28,29 @@ test_param:
   -
     id: keys-order
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 2})
+      >         yield byoc.DictLayer(values={'y': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
-      >     x = appcli.param()
-      >     y = appcli.param()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
-      >     x1 = appcli.param('x', 'z')
-      >     y1 = appcli.param('z', 'y')
+      >     x1 = byoc.param('x', 'z')
+      >     y1 = byoc.param('z', 'y')
       >
-      >     x2 = appcli.param(
-      >             appcli.Key(DummyConfigA, 'x'),
-      >             appcli.Key(DummyConfigB, 'y'),
+      >     x2 = byoc.param(
+      >             byoc.Key(DummyConfigA, 'x'),
+      >             byoc.Key(DummyConfigB, 'y'),
       >     )
-      >     y2 = appcli.param(
-      >             appcli.Key(DummyConfigB, 'y'),
-      >             appcli.Key(DummyConfigA, 'x'),
+      >     y2 = byoc.param(
+      >             byoc.Key(DummyConfigB, 'y'),
+      >             byoc.Key(DummyConfigA, 'x'),
       >     )
     expected:
       x: 1
@@ -68,28 +68,28 @@ test_param:
       > class DummyMixin:
       >     pass
       >
-      > class DummyConfigA(appcli.Config, DummyMixin):
+      > class DummyConfigA(byoc.Config, DummyMixin):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
-      > class DummyConfigB(appcli.Config, DummyMixin):
+      > class DummyConfigB(byoc.Config, DummyMixin):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield byoc.DictLayer(values={'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
-      >     x1 = appcli.param(
-      >             appcli.Key(DummyMixin, 'x'),
+      >     x1 = byoc.param(
+      >             byoc.Key(DummyMixin, 'x'),
       >     )
-      >     x2 = appcli.param(
-      >             appcli.Key(DummyConfigA, 'x'),
-      >             appcli.Key(DummyConfigB, 'x'),
+      >     x2 = byoc.param(
+      >             byoc.Key(DummyConfigA, 'x'),
+      >             byoc.Key(DummyConfigB, 'x'),
       >     )
-      >     x3 = appcli.param(
-      >             appcli.Key(DummyConfigB, 'x'),
-      >             appcli.Key(DummyConfigA, 'x'),
+      >     x3 = byoc.param(
+      >             byoc.Key(DummyConfigB, 'x'),
+      >             byoc.Key(DummyConfigA, 'x'),
       >     )
     expected:
       x: 1
@@ -99,30 +99,30 @@ test_param:
   -
     id: keys-multi
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(
-      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
-      >             appcli.Key(DummyConfig, 'y', cast=lambda x: x-1),
+      >     x = byoc.param(
+      >             byoc.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             byoc.Key(DummyConfig, 'y', cast=lambda x: x-1),
       >     )
     expected:
       x: 2
   -
     id: keys-multi
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 1})
+      >         yield byoc.DictLayer(values={'y': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(
-      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
-      >             appcli.Key(DummyConfig, 'y', cast=lambda y: y-1),
+      >     x = byoc.param(
+      >             byoc.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >             byoc.Key(DummyConfig, 'y', cast=lambda y: y-1),
       >     )
     expected:
       x: 0
@@ -133,8 +133,8 @@ test_param:
       > class DummyObj:
       >     __config__ = []
       >
-      >     x = appcli.param(
-      >         appcli.Method(lambda self: self.y),
+      >     x = byoc.param(
+      >         byoc.Method(lambda self: self.y),
       >     )
       >
       > obj = DummyObj()
@@ -151,16 +151,16 @@ test_param:
   -
     id: pick
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield byoc.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = appcli.param('x')
-      >     x2 = appcli.param('x', pick=list)
-      >     x3 = appcli.param('x', pick=list, default=0)
+      >     x1 = byoc.param('x')
+      >     x2 = byoc.param('x', pick=list)
+      >     x3 = byoc.param('x', pick=list, default=0)
     expected:
       x1: 1
       x2: [1,2]
@@ -171,7 +171,7 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default=1)
+      >     x = byoc.param(default=1)
     expected:
       x: 1
   -
@@ -179,7 +179,7 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default='')
+      >     x = byoc.param(default='')
     expected:
       x: ''
   -
@@ -187,20 +187,20 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default=None)
+      >     x = byoc.param(default=None)
     expected:
       x: None
   -
     id: default-layers
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 0})
+      >         yield byoc.DictLayer(values={'y': 0})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(default=1)
-      >     y = appcli.param(default=1)
+      >     x = byoc.param(default=1)
+      >     y = byoc.param(default=1)
     expected:
       x: 1
       y: 0
@@ -209,7 +209,7 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default_factory=list)
+      >     x = byoc.param(default_factory=list)
       >
       > obj, decoy = DummyObj(), DummyObj()
       >
@@ -225,7 +225,7 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default=1, ignore=None)
+      >     x = byoc.param(default=1, ignore=None)
       >
       > obj = DummyObj()
       > obj.x = None
@@ -238,7 +238,7 @@ test_param:
       > # None work normally.
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default=1)
+      >     x = byoc.param(default=1)
       >
       > obj = DummyObj()
       > obj.x = None
@@ -255,7 +255,7 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default=1, ignore=nc)
+      >     x = byoc.param(default=1, ignore=nc)
       >
       > obj = DummyObj()
       > obj.x = nc
@@ -265,26 +265,26 @@ test_param:
   -
     id: cast
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(cast=lambda x: x+1)
+      >     x = byoc.param(cast=lambda x: x+1)
     expected:
       x: 2
   -
     id: cast
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(
-      >             appcli.Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >     x = byoc.param(
+      >             byoc.Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             cast=lambda x: x*3,
       >     )
     expected:
@@ -292,14 +292,14 @@ test_param:
   -
     id: cast
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(
-      >             appcli.Key(DummyConfig, 'x'),
+      >     x = byoc.param(
+      >             byoc.Key(DummyConfig, 'x'),
       >             cast=lambda x: x+1,
       >     )
     expected:
@@ -310,21 +310,21 @@ test_param:
       # The cast function is not applied to the default.
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(default='not-casted', cast=int)
+      >     x = byoc.param(default='not-casted', cast=int)
     expected:
       x: 'not-casted'
 
   -
     id: get
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1, 'y': 2})
+      >         yield byoc.DictLayer(values={'x': 1, 'y': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(get=lambda self, x: x + self.y)
-      >     y = appcli.param()
+      >     x = byoc.param(get=lambda self, x: x + self.y)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
     expected:
@@ -332,14 +332,14 @@ test_param:
   -
     id: get
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 2})
+      >         yield byoc.DictLayer(values={'y': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(get=lambda self, x: x + self.y, default=1)
-      >     y = appcli.param()
+      >     x = byoc.param(get=lambda self, x: x + self.y, default=1)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
     expected:
@@ -347,14 +347,14 @@ test_param:
   -
     id: get
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 2})
+      >         yield byoc.DictLayer(values={'y': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(get=lambda self, x: x + self.y)
-      >     y = appcli.param()
+      >     x = byoc.param(get=lambda self, x: x + self.y)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 1
@@ -363,15 +363,15 @@ test_param:
   -
     id: get
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1, 'y': 2})
+      >         yield byoc.DictLayer(values={'x': 1, 'y': 2})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     y = appcli.param()
+      >     y = byoc.param()
       >
-      >     @appcli.param()
+      >     @byoc.param()
       >     def x(self, x):
       >         return x + self.y
       >
@@ -384,7 +384,7 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -393,13 +393,13 @@ test_param:
   -
     id: set
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -408,13 +408,13 @@ test_param:
   -
     id: set-del
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -427,13 +427,13 @@ test_param:
       > # Setting a parameter for one instance shouldn't affect other 
       > # instances.
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > decoy = DummyObj()
       > decoy.x = 2
@@ -451,7 +451,7 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -466,7 +466,7 @@ test_param:
       > # being assigned to parameters.  This test is to prevent regressions.
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = [1]
@@ -478,14 +478,14 @@ test_param:
     obj:
       > d = {'x': 1}
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     dynamic = False
       >     def load(self):
-      >         yield appcli.DictLayer(values=d)
+      >         yield byoc.DictLayer(values=d)
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -498,14 +498,14 @@ test_param:
     obj:
       > d = {'x': 1}
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     dynamic = True
       >     def load(self):
-      >         yield appcli.DictLayer(values=d)
+      >         yield byoc.DictLayer(values=d)
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -518,14 +518,14 @@ test_param:
     obj:
       > d = {'x': 1}
       >
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     dynamic = False
       >     def load(self):
-      >         yield appcli.DictLayer(values=d)
+      >         yield byoc.DictLayer(values=d)
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param(dynamic=True)
+      >     x = byoc.param(dynamic=True)
       >
       > obj = DummyObj()
       > obj.x
@@ -539,7 +539,7 @@ test_param:
       > class DummyObj:
       >     __config__ = []
       >     x = 1
-      >     y = appcli.param(Method(lambda self: self.x))
+      >     y = byoc.param(Method(lambda self: self.x))
       >
       > obj = DummyObj()
       > obj.y
@@ -553,7 +553,7 @@ test_param:
       > class DummyObj:
       >     __config__ = []
       >     x = 1
-      >     y = appcli.param(Method(lambda self: self.x, dynamic=False))
+      >     y = byoc.param(Method(lambda self: self.x, dynamic=False))
       >
       > obj = DummyObj()
       > obj.y
@@ -570,7 +570,7 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(Func(f))
+      >     x = byoc.param(Func(f))
       >
       > obj = DummyObj()
       > obj.x
@@ -587,7 +587,7 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(Func(f, dynamic=True))
+      >     x = byoc.param(Func(f, dynamic=True))
       >
       > obj = DummyObj()
       > obj.x
@@ -604,7 +604,7 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param(Func(f), dynamic=True)
+      >     x = byoc.param(Func(f), dynamic=True)
       >
       > obj = DummyObj()
       > obj.x
@@ -616,13 +616,13 @@ test_param:
   -
     id: inheritance
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > class ChildObj(ParentObj):
       >     pass
@@ -633,12 +633,12 @@ test_param:
   -
     id: inheritance
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class ParentObj:
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > class ChildObj(ParentObj):
       >     __config__ = [DummyConfig]
@@ -649,15 +649,15 @@ test_param:
   -
     id: inheritance
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
       >
       > class ChildObj(ParentObj):
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = ChildObj()
     expected:
@@ -666,115 +666,115 @@ test_param:
   -
     id: autoload
     obj:
-      > class PendingConfig(appcli.Config):
+      > class PendingConfig(byoc.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
-      > class ActiveConfig(appcli.Config):
+      > class ActiveConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield byoc.DictLayer(values={'x': 2})
       >
       > class DummyObj:
       >     __config__ = [PendingConfig, ActiveConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
     expected:
       x: 2
   -
     id: autoload
     obj:
-      > class PendingConfig(appcli.Config):
+      > class PendingConfig(byoc.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1})
+      >         yield byoc.DictLayer(values={'x': 1})
       >
-      > class ActiveConfig(appcli.Config):
+      > class ActiveConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2})
+      >         yield byoc.DictLayer(values={'x': 2})
       >
       > class DummyObj:
       >     __config__ = [PendingConfig, ActiveConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
-      > appcli.load(obj)
+      > byoc.load(obj)
     expected:
       x: 1
 
   -
     id: inherited-param-key
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1, 'y': 2})
+      >         yield byoc.DictLayer(values={'x': 1, 'y': 2})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param('y')
+      >     x = byoc.inherited_param('y')
     expected:
       x: 2
   -
     id: inherited-param-cast
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 0, 'y': 1})
+      >         yield byoc.DictLayer(values={'x': 0, 'y': 1})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(cast=lambda x: x+1)
+      >     x = byoc.inherited_param(cast=lambda x: x+1)
     expected:
       x: 2
   -
     id: inherited-param-pick
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 0, 'y': 1})
-      >         yield appcli.DictLayer(values={'x': 0, 'y': 2})
+      >         yield byoc.DictLayer(values={'x': 0, 'y': 1})
+      >         yield byoc.DictLayer(values={'x': 0, 'y': 2})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(pick=list)
+      >     x = byoc.inherited_param(pick=list)
     expected:
       x: [1, 2]
   -
     id: inherited-param-default
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 0})
+      >         yield byoc.DictLayer(values={'x': 0})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param('y', default=1)
+      >     x = byoc.param('y', default=1)
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(default=2)
+      >     x = byoc.inherited_param(default=2)
     expected:
       x: 2
   -
     id: inherited-param-ignore
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 0, 'y': 1})
+      >         yield byoc.DictLayer(values={'x': 0, 'y': 1})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(ignore=None)
+      >     x = byoc.inherited_param(ignore=None)
       >
       > obj = DummyObj()
       > obj.x = None
@@ -783,30 +783,30 @@ test_param:
   -
     id: inherited-param-get
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 0, 'y': 1})
+      >         yield byoc.DictLayer(values={'x': 0, 'y': 1})
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = appcli.inherited_param(get=lambda self, x: x+1)
+      >     x = byoc.inherited_param(get=lambda self, x: x+1)
     expected:
       x: 2
 
   -
     id: toggle-key
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': True})
+      >         yield byoc.DictLayer(values={'x': True})
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.toggle_param(
-      >             appcli.Key(DummyConfig, toggle=True),
+      >     x = byoc.toggle_param(
+      >             byoc.Key(DummyConfig, toggle=True),
       >             default=True,
       >     )
     expected:
@@ -816,8 +816,8 @@ test_param:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.toggle_param(
-      >             appcli.Value(True, toggle=True),
+      >     x = byoc.toggle_param(
+      >             byoc.Value(True, toggle=True),
       >             default=True,
       >     )
     expected:

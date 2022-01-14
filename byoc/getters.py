@@ -12,7 +12,7 @@ class Getter:
         self.kwargs = kwargs
 
     def __repr__(self):
-        cls = f'appcli.{self.__class__.__name__}'
+        cls = f'byoc.{self.__class__.__name__}'
         args = self.__reprargs__()
         kwargs = [f'{k}={v!r}' for k, v in self.kwargs.items()]
         return f'{cls}({", ".join((*args, *kwargs))})'
@@ -191,7 +191,7 @@ class BoundKey(BoundGetter):
 
             if not wrapped_config.is_loaded:
                 log.info("skipped {config}: not loaded", config=config)
-                log.hint("did you mean to call `appcli.load()`?")
+                log.hint("did you mean to call `byoc.load()`?")
                 continue
 
             if not wrapped_config.layers:

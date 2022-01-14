@@ -3,14 +3,14 @@
 import pytest, re
 import parametrize_from_file
 
-from appcli.errors import Log
+from byoc.errors import Log
 from re_assert import Matches
 from more_itertools import zip_equal, unzip
 from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'getter': with_appcli.eval,
+            'getter': with_byoc.eval,
             'expected': str,
         }),
 )
@@ -22,16 +22,16 @@ def test_getter_repr(getter, expected):
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj:\n __config__ = []'): str,
-            Optional('param', default='appcli.param()'): str,
+            Optional('param', default='byoc.param()'): str,
             'getter': str,
             'given': with_py.eval,
-            **with_appcli.error_or({
+            **with_byoc.error_or({
                 'expected': with_py.eval,
             }),
         }),
 )
 def test_getter_cast_value(obj, param, getter, given, expected, error):
-    with_obj = with_appcli.exec(obj)
+    with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = with_obj.eval(param)
     getter = with_obj.eval(getter)
@@ -40,7 +40,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
     if not hasattr(param, '_name'):
         param.__set_name__(obj.__class__, '')
 
-    appcli.init(obj)
+    byoc.init(obj)
     bound_getter = getter.bind(obj, param)
 
     with error:
@@ -51,7 +51,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
             'getter': str,
-            **with_appcli.error_or({
+            **with_byoc.error_or({
                 'expected': {
                     'values': with_py.eval,
                     'meta': empty_ok([eval_meta]),
@@ -62,12 +62,12 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
         }),
 )
 def test_getter_iter_values(getter, obj, param, expected, error):
-    with_obj = with_appcli.exec(obj)
+    with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = find_param(obj, param)
     getter = with_obj.eval(getter)
 
-    appcli.init(obj)
+    byoc.init(obj)
     bound_getter = getter.bind(obj, param)
     log = Log()
 
@@ -92,16 +92,16 @@ def test_getter_iter_values(getter, obj, param, expected, error):
             Optional('obj', default='class DummyObj: __config__ = []'): str,
             Optional('param', default=''): str,
             'getter': str,
-            'error': with_appcli.error,
+            'error': with_byoc.error,
         }),
 )
 def test_getter_kwargs_err(obj, param, getter, error):
-    with_obj = with_appcli.exec(obj)
+    with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = find_param(obj, param)
     getter = with_obj.eval(getter)
 
-    appcli.init(obj)
+    byoc.init(obj)
 
     with error:
         getter.bind(obj, param)

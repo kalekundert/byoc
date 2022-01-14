@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import pytest
 
 from parametrize_from_file.voluptuous import Namespace, empty_ok
@@ -8,7 +8,7 @@ from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
 
 with_py = Namespace('from operator import itemgetter')
-with_appcli = Namespace(appcli, 'from appcli import *')
+with_byoc = Namespace(byoc, 'from byoc import *')
 
 class LayerWrapper:
 
@@ -22,7 +22,7 @@ class LayerWrapper:
         def str_or_none(x):
             return str(x) if x is not None else x
 
-        if not isinstance(other, appcli.Layer):
+        if not isinstance(other, byoc.Layer):
             print('not a layer')
             return False
 
@@ -61,7 +61,7 @@ class LayerWrapper:
 class DictLayerWrapper(LayerWrapper):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(appcli.DictLayer(*args, **kwargs))
+        super().__init__(byoc.DictLayer(*args, **kwargs))
 
 class MetaWrapper:
 
@@ -143,14 +143,14 @@ def eval_layer(layer):
         Optional('linenos'): with_py.eval,
     }))
     layer = schema(layer)
-    layer = with_appcli.eval(layer) if isinstance(layer, str) else \
-            appcli.DictLayer(**layer)
+    layer = with_byoc.eval(layer) if isinstance(layer, str) else \
+            byoc.DictLayer(**layer)
     return LayerWrapper(layer)
 
 def eval_meta(meta):
     with_meta = Namespace(
-            with_appcli,
-            'from appcli.meta import *',
+            with_byoc,
+            'from byoc.meta import *',
             MetaWrapper=MetaWrapper,
     )
     dict_schema = {
@@ -169,7 +169,7 @@ def eval_meta(meta):
         return MetaWrapper(meta)
 
 def collect_layers(obj):
-    wrapped_configs = appcli.model.get_wrapped_configs(obj)
+    wrapped_configs = byoc.model.get_wrapped_configs(obj)
     return {
             i: wc.layers
             for i, wc in enumerate(wrapped_configs)
@@ -184,9 +184,9 @@ def find_param(obj, name=None):
     else:
         params = (
                 x for x in class_attrs.values()
-                if isinstance(x, appcli.param)
+                if isinstance(x, byoc.param)
         )
-        default = appcli.param()
+        default = byoc.param()
         default.__set_name__(obj.__class__, '')
         return only(params, default)
 

@@ -3,12 +3,12 @@ test_argparse_docopt_config:
     id: argparse
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.ArgparseConfig]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     __config__ = [byoc.ArgparseConfig]
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >
-      >     x = appcli.param()
-      >     y = appcli.param()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
       >     def get_argparse(self):
       >         import argparse
@@ -48,16 +48,16 @@ test_argparse_docopt_config:
     obj:
       > class DummyObj:
       >     __config__ = [
-      >         appcli.ArgparseConfig.setup(
+      >         byoc.ArgparseConfig.setup(
       >             parser_getter=lambda obj: obj.get_my_argparse(),
       >             schema=lambda d: {**d, 'x': 'x*'},
       >         ),
       >     ]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >
-      >     x = appcli.param()
-      >     y = appcli.param()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
       >     def get_my_argparse(self):
       >         import argparse
@@ -102,13 +102,13 @@ test_argparse_docopt_config:
       >     Usage:
       >         app <x> [<y>...] [-z]
       >     """
-      >     __config__ = [appcli.DocoptConfig]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     __config__ = [byoc.DocoptConfig]
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >
-      >     x = appcli.param('<x>')
-      >     y = appcli.param('<y>', default=None)
-      >     z = appcli.param('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Do something.
       >
@@ -148,19 +148,19 @@ test_argparse_docopt_config:
       >     app <x> [<y>...] [-z]
       > """
       >     __config__ = [
-      >         appcli.DocoptConfig.setup(
+      >         byoc.DocoptConfig.setup(
       >             usage_getter=lambda obj: obj.doc,
       >             options_first=True,
       >             schema=lambda d: {**d, '<x>': d['<x>'] + '*'},
       >         ),
       >     ]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = appcli.param('<x>')
-      >     y = appcli.param('<y>', default=None)
-      >     z = appcli.param('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -191,7 +191,7 @@ test_argparse_docopt_config:
   -
     id: docopt-class-attrs
     obj:
-      > class DummyDocoptConfig(appcli.DocoptConfig):
+      > class DummyDocoptConfig(byoc.DocoptConfig):
       >     usage_getter = lambda obj: obj.doc
       >     options_first = True
       >     schema = lambda d: {**d, '<x>': d['<x>'] + '*'}
@@ -202,13 +202,13 @@ test_argparse_docopt_config:
       >     app <x> [<y>...] [-z]
       > """
       >     __config__ = [DummyDocoptConfig]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = appcli.param('<x>')
-      >     y = appcli.param('<y>', default=None)
-      >     z = appcli.param('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -247,12 +247,12 @@ test_argparse_docopt_config:
       > Options:
       >     -y Y  [default: ${app.y.upper()}]
       > """
-      >     __config__ = [appcli.DocoptConfig]
-      >     usage = appcli.config_attr()
-      >     brief = appcli.config_attr()
+      >     __config__ = [byoc.DocoptConfig]
+      >     usage = byoc.config_attr()
+      >     brief = byoc.config_attr()
       >
-      >     x = appcli.param('<x>')
-      >     y = appcli.param('-y', default='a')
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('-y', default='a')
     usage:
       > Usage:
       >     app <x> [-y Y]
@@ -278,12 +278,12 @@ test_argparse_docopt_config:
 test_appdirs_config:
   -
     obj:
-      > class DummyAppDirsConfig(appcli.AppDirsConfig):
+      > class DummyAppDirsConfig(byoc.AppDirsConfig):
       >   name = 'conf.yml'
       >
       > class DummyObj:
       >     __config__ = [DummyAppDirsConfig]
-      >     dirs = appcli.config_attr()
+      >     dirs = byoc.config_attr()
     slug: 'dummyobj'
     author: None
     version: None
@@ -301,7 +301,7 @@ test_appdirs_config:
         location: site/conf.yml
   -
     obj:
-      > class DummyAppDirsConfig(appcli.AppDirsConfig):
+      > class DummyAppDirsConfig(byoc.AppDirsConfig):
       >   name = 'conf.yml'
       >   slug = 'slug'
       >   author = 'author'
@@ -309,7 +309,7 @@ test_appdirs_config:
       >
       > class DummyObj:
       >     __config__ = [DummyAppDirsConfig]
-      >     dirs = appcli.config_attr()
+      >     dirs = byoc.config_attr()
     slug: 'slug'
     author: 'author'
     version: 'version'
@@ -329,91 +329,91 @@ test_appdirs_config:
 test_appdirs_config_get_name_and_config_cls:
   -
     id: error
-    config: appcli.AppDirsConfig()
+    config: byoc.AppDirsConfig()
     error:
-      type: appcli.ConfigError
+      type: byoc.ConfigError
       message:
         - must specify `AppDirsConfig.name` or `AppDirsConfig.config_cls`
   -
     id: error
-    config: appcli.AppDirsConfig(name='conf.yml', format=appcli.TomlConfig)
+    config: byoc.AppDirsConfig(name='conf.yml', format=byoc.TomlConfig)
     error:
-      type: appcli.ConfigError
+      type: byoc.ConfigError
       message:
         - can't specify `AppDirsConfig.name` and `AppDirsConfig.format`
         - name: 'conf.yml'
-        - format: <class 'appcli.*TomlConfig'>
+        - format: <class 'byoc.*TomlConfig'>
         - use `AppDirsConfig.stem` to change the filename used by `AppDirsConfig.format`
   -
     id: error
-    config: appcli.AppDirsConfig(name='conf.xyz')
+    config: byoc.AppDirsConfig(name='conf.xyz')
     error:
-      type: appcli.ConfigError
+      type: byoc.ConfigError
       message:
         - can't find FileConfig subclass to load 'conf.xyz'
         - found these subclasses:
-        - <class 'appcli.*YamlConfig'>: .yml .yaml
-        - <class 'appcli.*TomlConfig'>: .toml
-        - <class 'appcli.*NtConfig'>: .nt
+        - <class 'byoc.*YamlConfig'>: .yml .yaml
+        - <class 'byoc.*TomlConfig'>: .toml
+        - <class 'byoc.*NtConfig'>: .nt
 
   -
     id: name
-    config: appcli.AppDirsConfig(name='my-conf.yml')
+    config: byoc.AppDirsConfig(name='my-conf.yml')
     name: my-conf.yml
-    config_cls: appcli.YamlConfig
+    config_cls: byoc.YamlConfig
   -
     id: name
-    config: appcli.AppDirsConfig(name='my-conf.yaml')
+    config: byoc.AppDirsConfig(name='my-conf.yaml')
     name: my-conf.yaml
-    config_cls: appcli.YamlConfig
+    config_cls: byoc.YamlConfig
   -
     id: name
-    config: appcli.AppDirsConfig(name='my-conf.toml')
+    config: byoc.AppDirsConfig(name='my-conf.toml')
     name: my-conf.toml
-    config_cls: appcli.TomlConfig
+    config_cls: byoc.TomlConfig
   -
     id: name
-    config: appcli.AppDirsConfig(name='my-conf.nt')
+    config: byoc.AppDirsConfig(name='my-conf.nt')
     name: my-conf.nt
-    config_cls: appcli.NtConfig
+    config_cls: byoc.NtConfig
 
   -
     id: format
-    config: appcli.AppDirsConfig(format=appcli.YamlConfig)
+    config: byoc.AppDirsConfig(format=byoc.YamlConfig)
     name: conf.yml
-    config_cls: appcli.YamlConfig
+    config_cls: byoc.YamlConfig
   -
     id: config_cls
-    config: appcli.AppDirsConfig(format=appcli.YamlConfig, stem='my-conf')
+    config: byoc.AppDirsConfig(format=byoc.YamlConfig, stem='my-conf')
     name: my-conf.yml
-    config_cls: appcli.YamlConfig
+    config_cls: byoc.YamlConfig
   -
     id: config_cls
-    config: appcli.AppDirsConfig(format=appcli.TomlConfig)
+    config: byoc.AppDirsConfig(format=byoc.TomlConfig)
     name: conf.toml
-    config_cls: appcli.TomlConfig
+    config_cls: byoc.TomlConfig
   -
     id: config_cls
-    config: appcli.AppDirsConfig(format=appcli.TomlConfig, stem='my-conf')
+    config: byoc.AppDirsConfig(format=byoc.TomlConfig, stem='my-conf')
     name: my-conf.toml
-    config_cls: appcli.TomlConfig
+    config_cls: byoc.TomlConfig
   -
     id: config_cls
-    config: appcli.AppDirsConfig(format=appcli.NtConfig)
+    config: byoc.AppDirsConfig(format=byoc.NtConfig)
     name: conf.nt
-    config_cls: appcli.NtConfig
+    config_cls: byoc.NtConfig
   -
     id: config_cls
-    config: appcli.AppDirsConfig(format=appcli.NtConfig, stem='my-conf')
+    config: byoc.AppDirsConfig(format=byoc.NtConfig, stem='my-conf')
     name: my-conf.nt
-    config_cls: appcli.NtConfig
+    config_cls: byoc.NtConfig
 
 test_file_config:
   -
     id: yaml
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig]
+      >     __config__ = [byoc.YamlConfig]
       >     path = 'x.yml'
     files:
       x.yml:
@@ -426,7 +426,7 @@ test_file_config:
     id: toml
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.TomlConfig]
+      >     __config__ = [byoc.TomlConfig]
       >     path = 'x.toml'
     files:
       x.toml:
@@ -439,7 +439,7 @@ test_file_config:
     id: nt
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.NtConfig]
+      >     __config__ = [byoc.NtConfig]
       >     path = 'x.nt'
     files:
       x.nt:
@@ -453,7 +453,7 @@ test_file_config:
     id: path-setup
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig.setup('x.yml')]
+      >     __config__ = [byoc.YamlConfig.setup('x.yml')]
     files:
       x.yml:
         > x: 1
@@ -465,7 +465,7 @@ test_file_config:
     id: paths-setup
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig.setup(['x.yml', 'y.yml'])]
+      >     __config__ = [byoc.YamlConfig.setup(['x.yml', 'y.yml'])]
     files:
       x.yml:
         > x: 1
@@ -481,7 +481,7 @@ test_file_config:
   -
     id: path-getter-cls
     obj:
-      > class DummyYamlConfig(appcli.YamlConfig):
+      > class DummyYamlConfig(byoc.YamlConfig):
       >     path_getter = lambda obj: obj.p
       >
       > class DummyObj:
@@ -500,7 +500,7 @@ test_file_config:
     obj:
       > class DummyObj:
       >     __config__ = [
-      >         appcli.YamlConfig.setup(path_getter=lambda x: x.p),
+      >         byoc.YamlConfig.setup(path_getter=lambda x: x.p),
       >     ]
       >     p = 'x.yml'
       >
@@ -514,7 +514,7 @@ test_file_config:
   -
     id: schema-cls
     obj:
-      > class DummyYamlConfig(appcli.YamlConfig):
+      > class DummyYamlConfig(byoc.YamlConfig):
       >     schema = ...
       >
       > class DummyObj:
@@ -532,7 +532,7 @@ test_file_config:
     id: schema-setup
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig.setup(schema=...)]
+      >     __config__ = [byoc.YamlConfig.setup(schema=...)]
       >     path = 'x.yml'
     files:
       x.yml:
@@ -545,7 +545,7 @@ test_file_config:
   -
     id: root-key-cls
     obj:
-      > class DummyYamlConfig(appcli.YamlConfig):
+      > class DummyYamlConfig(byoc.YamlConfig):
       >     root_key = 'x'
       >
       > class DummyObj:
@@ -563,7 +563,7 @@ test_file_config:
     id: root-key-setup
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig.setup(root_key='x')]
+      >     __config__ = [byoc.YamlConfig.setup(root_key='x')]
       >     path = 'x.nt'
     files:
       x.nt:
@@ -577,17 +577,17 @@ test_file_config:
     id: not-found
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig]
+      >     __config__ = [byoc.YamlConfig]
       >     path = 'not-found.yml'
     files:
     layers:
-      - appcli.FileNotFoundLayer('not-found.yml')
+      - byoc.FileNotFoundLayer('not-found.yml')
 
   -
     id: not-given-path
     obj:
       > class DummyObj:
-      >     __config__ = [appcli.YamlConfig]
+      >     __config__ = [byoc.YamlConfig]
     files:
     layers:
       []
@@ -598,7 +598,7 @@ test_on_load:
     id: init
     prepare:
     load:
-      > appcli.init(obj)
+      > byoc.init(obj)
     expected:
       - default
       - DummyConfig
@@ -609,9 +609,9 @@ test_on_load:
   -
     id: load
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj)
+      > byoc.load(obj)
     expected:
       - default
       - DummyConfig
@@ -621,30 +621,30 @@ test_on_load:
   -
     id: load-a
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, A)
+      > byoc.load(obj, A)
     expected:
   -
     id: load-a1
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, A1)
+      > byoc.load(obj, A1)
     expected:
   -
     id: load-a2
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, A2)
+      > byoc.load(obj, A2)
     expected:
   -
     id: load-b
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, B)
+      > byoc.load(obj, B)
     expected:
       - default
       - DummyConfig
@@ -654,9 +654,9 @@ test_on_load:
   -
     id: load-b1
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, B1)
+      > byoc.load(obj, B1)
     expected:
       - default
       - DummyConfig
@@ -665,9 +665,9 @@ test_on_load:
   -
     id: load-b2
     prepare:
-      > appcli.init(obj)
+      > byoc.init(obj)
     load:
-      > appcli.load(obj, B2)
+      > byoc.load(obj, B2)
     expected:
       - default
       - DummyConfig
@@ -677,9 +677,9 @@ test_on_load:
   -
     id: reload
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj)
+      > byoc.reload(obj)
     expected:
       - default
       - DummyConfig
@@ -692,9 +692,9 @@ test_on_load:
   -
     id: reload-a
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, A)
+      > byoc.reload(obj, A)
     expected:
       - default
       - DummyConfig
@@ -704,9 +704,9 @@ test_on_load:
   -
     id: reload-a1
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, A1)
+      > byoc.reload(obj, A1)
     expected:
       - default
       - DummyConfig
@@ -715,9 +715,9 @@ test_on_load:
   -
     id: reload-a2
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, A2)
+      > byoc.reload(obj, A2)
     expected:
       - default
       - DummyConfig
@@ -726,9 +726,9 @@ test_on_load:
   -
     id: reload-b
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, B)
+      > byoc.reload(obj, B)
     expected:
       - default
       - DummyConfig
@@ -738,9 +738,9 @@ test_on_load:
   -
     id: reload-b1
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, B1)
+      > byoc.reload(obj, B1)
     expected:
       - default
       - DummyConfig
@@ -749,9 +749,9 @@ test_on_load:
   -
     id: reload-b2
     prepare:
-      > appcli.load(obj)
+      > byoc.load(obj)
     load:
-      > appcli.reload(obj, B2)
+      > byoc.reload(obj, B2)
     expected:
       - default
       - DummyConfig

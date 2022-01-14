@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from appcli import param, Config, DictLayer
+from byoc import param, Config, DictLayer
 
 class DictConfig(Config):
 

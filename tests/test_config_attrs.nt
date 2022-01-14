@@ -2,7 +2,7 @@ test_config_attr:
   -
     id: config_cls
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
@@ -19,9 +19,9 @@ test_config_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
-      >     x = appcli.config_attr()
-      >     y = appcli.config_attr(DummyConfigA)
-      >     z = appcli.config_attr(DummyConfigB)
+      >     x = byoc.config_attr()
+      >     y = byoc.config_attr(DummyConfigA)
+      >     z = byoc.config_attr(DummyConfigB)
     expected:
       x: 1
       y: 1
@@ -29,7 +29,7 @@ test_config_attr:
   -
     id: getter
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 1
       >     def load(self):
       >         yield from []
@@ -37,8 +37,8 @@ test_config_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.config_attr()
-      >     y = appcli.config_attr(getter=lambda cfg: cfg.x)
+      >     x = byoc.config_attr()
+      >     y = byoc.config_attr(getter=lambda cfg: cfg.x)
     expected:
       x: 1
       y: 1
@@ -46,7 +46,7 @@ test_config_attr:
   -
     id: iterate
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
@@ -58,13 +58,13 @@ test_config_attr:
       >             DummyConfigA,
       >             DummyConfigB,
       >     ]
-      >     x = appcli.config_attr()
+      >     x = byoc.config_attr()
     expected:
       x: 1
   -
     id: iterate
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
@@ -76,8 +76,8 @@ test_config_attr:
       >             DummyConfigX,
       >             DummyConfigY,
       >     ]
-      >     x = appcli.config_attr()
-      >     y = appcli.config_attr()
+      >     x = byoc.config_attr()
+      >     y = byoc.config_attr()
     expected:
       x: 1
       y: 2
@@ -85,14 +85,14 @@ test_config_attr:
   -
     id: inherit
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 1
       >     def load(self):
       >         yield from []
       >
       > class Parent:
       >     __config__ = [DummyConfig]
-      >     x = appcli.config_attr()
+      >     x = byoc.config_attr()
       >
       > class Child(Parent):
       >     pass
@@ -103,13 +103,13 @@ test_config_attr:
   -
     id: inherit
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 1
       >     def load(self):
       >         yield from []
       >
       > class Parent:
-      >     x = appcli.config_attr()
+      >     x = byoc.config_attr()
       >
       > class Child(Parent):
       >     __config__ = [DummyConfig]
@@ -120,7 +120,7 @@ test_config_attr:
   -
     id: inherit
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     x = 1
       >     def load(self):
       >         yield from []
@@ -129,7 +129,7 @@ test_config_attr:
       >     __config__ = [DummyConfig]
       >
       > class Child(Parent):
-      >     x = appcli.config_attr()
+      >     x = byoc.config_attr()
       >
       > obj = Child()
     expected:
@@ -138,7 +138,7 @@ test_config_attr:
   -
     id: decoy
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >
       >     def load(self):
       >         yield from []
@@ -149,7 +149,7 @@ test_config_attr:
       >
       > class Obj:
       >     __config__ = [DummyConfig]
-      >     y = appcli.config_attr()
+      >     y = byoc.config_attr()
       >
       > obj = Obj()
       > obj.x = 1
@@ -163,13 +163,13 @@ test_config_attr:
 test_config_attr_err:
   -
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.config_attr()
+      >     x = byoc.config_attr()
     attr: x
     error:
       type: AttributeError
@@ -179,13 +179,13 @@ test_config_attr_err:
         - skipped DummyConfig\(\): 'DummyConfig' object has no attribute 'x'
   -
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.config_attr(getter=lambda cfg: cfg.x)
+      >     x = byoc.config_attr(getter=lambda cfg: cfg.x)
     attr: x
     error:
       type: AttributeError
@@ -195,7 +195,7 @@ test_config_attr_err:
         - skipped DummyConfig\(\): <function DummyObj.<lambda> at 0x[0-9a-f]*> raised AttributeError: 'DummyConfig' object has no attribute 'x'
   -
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield from []
       >
@@ -204,7 +204,7 @@ test_config_attr_err:
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA,DummyConfigB]
-      >     x = appcli.config_attr(DummyConfigB)
+      >     x = byoc.config_attr(DummyConfigB)
     attr: x
     error:
       type: AttributeError

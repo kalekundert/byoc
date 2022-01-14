@@ -1,42 +1,42 @@
 test_getter_repr:
   -
-    getter: appcli.Key(appcli.Config)
-    expected: appcli.Key\(Config\)
+    getter: byoc.Key(byoc.Config)
+    expected: byoc.Key\(Config\)
   -
-    getter: appcli.Key(appcli.Config, 'x')
-    expected: appcli.Key\(Config, 'x'\)
+    getter: byoc.Key(byoc.Config, 'x')
+    expected: byoc.Key\(Config, 'x'\)
   -
-    getter: appcli.Key(appcli.Config, cast=int)
-    expected: appcli.Key\(Config, cast=<class 'int'>\)
+    getter: byoc.Key(byoc.Config, cast=int)
+    expected: byoc.Key\(Config, cast=<class 'int'>\)
   -
-    getter: appcli.Key(appcli.Config, toggle=True)
-    expected: appcli.Key\(Config, toggle=True\)
+    getter: byoc.Key(byoc.Config, toggle=True)
+    expected: byoc.Key\(Config, toggle=True\)
   -
-    getter: appcli.Method(lambda self: 1)
-    expected: appcli.Method\(<function <lambda> at 0x.*>\)
+    getter: byoc.Method(lambda self: 1)
+    expected: byoc.Method\(<function <lambda> at 0x.*>\)
   -
-    getter: appcli.Func(lambda: 1)
-    expected: appcli.Func\(<function <lambda> at 0x.*>\)
+    getter: byoc.Func(lambda: 1)
+    expected: byoc.Func\(<function <lambda> at 0x.*>\)
   -
-    getter: appcli.Value(1)
-    expected: appcli.Value\(1\)
+    getter: byoc.Value(1)
+    expected: byoc.Value\(1\)
 
 test_getter_cast_value:
   -
     id: value
-    getter: appcli.Value(None)
+    getter: byoc.Value(None)
     given: 1
     expected: 1
   -
     id: value
-    getter: appcli.Value(None)
-    param: appcli.param(cast=int)
+    getter: byoc.Value(None)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: value-err
-    getter: appcli.Value(None)
-    param: appcli.param(cast=int)
+    getter: byoc.Value(None)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -45,19 +45,19 @@ test_getter_cast_value:
 
   -
     id: func
-    getter: appcli.Func(lambda: None)
+    getter: byoc.Func(lambda: None)
     given: 1
     expected: 1
   -
     id: func
-    getter: appcli.Func(lambda: None)
-    param: appcli.param(cast=int)
+    getter: byoc.Func(lambda: None)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: func-err
-    getter: appcli.Func(lambda: None)
-    param: appcli.param(cast=int)
+    getter: byoc.Func(lambda: None)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -66,19 +66,19 @@ test_getter_cast_value:
 
   -
     id: method
-    getter: appcli.Method(lambda self: None)
+    getter: byoc.Method(lambda self: None)
     given: 1
     expected: 1
   -
     id: method
-    getter: appcli.Method(lambda self: None)
-    param: appcli.param(cast=int)
+    getter: byoc.Method(lambda self: None)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: method-err
-    getter: appcli.Method(lambda self: None)
-    param: appcli.param(cast=int)
+    getter: byoc.Method(lambda self: None)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -87,29 +87,29 @@ test_getter_cast_value:
 
   -
     id: key
-    getter: appcli.Key(appcli.Config)
+    getter: byoc.Key(byoc.Config)
     given: 1
     expected: 1
   -
     id: key
-    getter: appcli.Key(appcli.Config, cast=int)
+    getter: byoc.Key(byoc.Config, cast=int)
     given: '1'
     expected: 1
   -
     id: key
-    getter: appcli.Key(appcli.Config)
-    param: appcli.param(cast=int)
+    getter: byoc.Key(byoc.Config)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: key
-    getter: appcli.Key(appcli.Config, cast=int)
-    param: appcli.param(cast=lambda x: x+1)
+    getter: byoc.Key(byoc.Config, cast=int)
+    param: byoc.param(cast=lambda x: x+1)
     given: '1'
     expected: 2
   -
     id: key-err
-    getter: appcli.Key(appcli.Config, cast=int)
+    getter: byoc.Key(byoc.Config, cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -117,8 +117,8 @@ test_getter_cast_value:
         - invalid literal for int() with base 10: 'a'
   -
     id: key-err
-    getter: appcli.Key(appcli.Config)
-    param: appcli.param(cast=int)
+    getter: byoc.Key(byoc.Config)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -127,12 +127,12 @@ test_getter_cast_value:
 
   -
     id: compose
-    getter: appcli.Key(appcli.Config, cast=[int, lambda x: x+1])
+    getter: byoc.Key(byoc.Config, cast=[int, lambda x: x+1])
     given: '1'
     expected: 2
   -
     id: compose-err
-    getter: appcli.Key(appcli.Config, cast=[int, lambda x: x])
+    getter: byoc.Key(byoc.Config, cast=[int, lambda x: x])
     given: 'a'
     error:
       type: ValueError
@@ -140,7 +140,7 @@ test_getter_cast_value:
         - invalid literal for int() with base 10: 'a'
   -
     id: compose-err
-    getter: appcli.Key(appcli.Config, cast=[lambda x: x, int])
+    getter: byoc.Key(byoc.Config, cast=[lambda x: x, int])
     given: 'a'
     error:
       type: ValueError
@@ -150,7 +150,7 @@ test_getter_cast_value:
 test_getter_iter_values:
   -
     id: value
-    getter: appcli.Value(1)
+    getter: byoc.Value(1)
     expected:
       values: [1]
       meta:
@@ -165,7 +165,7 @@ test_getter_iter_values:
 
   -
     id: func
-    getter: appcli.Func(lambda: 1)
+    getter: byoc.Func(lambda: 1)
     expected:
       values: [1]
       meta:
@@ -180,7 +180,7 @@ test_getter_iter_values:
           > returned: 1
   -
     id: func-partial
-    getter: appcli.Func(lambda x: x + 1).partial(1)
+    getter: byoc.Func(lambda x: x + 1).partial(1)
     expected:
       values: [2]
       meta:
@@ -195,7 +195,7 @@ test_getter_iter_values:
           > returned: 2
   -
     id: func-dynamic
-    getter: appcli.Func(lambda: 1, dynamic=True)
+    getter: byoc.Func(lambda: 1, dynamic=True)
     expected:
       values: [1]
       meta:
@@ -210,12 +210,12 @@ test_getter_iter_values:
           > returned: 1
   -
     id: func-err
-    getter: appcli.Func(lambda: 1/0)
+    getter: byoc.Func(lambda: 1/0)
     error:
       type: ZeroDivisionError
   -
     id: func-err-skip
-    getter: appcli.Func(lambda: 1/0, skip=ZeroDivisionError)
+    getter: byoc.Func(lambda: 1/0, skip=ZeroDivisionError)
     expected:
       values: []
       meta:
@@ -232,7 +232,7 @@ test_getter_iter_values:
       >     __config__ = []
       >     x = 1
       >
-    getter: appcli.Method(lambda self: self.x)
+    getter: byoc.Method(lambda self: self.x)
     expected:
       values: [1]
       meta:
@@ -255,7 +255,7 @@ test_getter_iter_values:
       >     def helper(self):
       >         return self.x + 1
       >
-    getter: appcli.Method(DummyObj.helper)
+    getter: byoc.Method(DummyObj.helper)
     expected:
       values: [2]
       meta:
@@ -275,7 +275,7 @@ test_getter_iter_values:
       >     __config__ = []
       >     x = 1
       >
-    getter: appcli.Method(lambda self, y: self.x + y).partial(1)
+    getter: byoc.Method(lambda self, y: self.x + y).partial(1)
     expected:
       values: [2]
       meta:
@@ -295,7 +295,7 @@ test_getter_iter_values:
       >     __config__ = []
       >     x = 1
       >
-    getter: appcli.Method(lambda self: self.x, dynamic=False)
+    getter: byoc.Method(lambda self: self.x, dynamic=False)
     expected:
       values: [1]
       meta:
@@ -314,7 +314,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = []
       >
-    getter: appcli.Method(lambda self: 1/0)
+    getter: byoc.Method(lambda self: 1/0)
     error:
       type: ZeroDivisionError
   -
@@ -323,7 +323,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = []
       >
-    getter: appcli.Method(lambda self: 1/0, skip=ZeroDivisionError)
+    getter: byoc.Method(lambda self: 1/0, skip=ZeroDivisionError)
     expected:
       values: []
       meta:
@@ -337,9 +337,9 @@ test_getter_iter_values:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.param()
+      >     x = byoc.param()
       >
-    getter: appcli.Method(lambda self: self.x)
+    getter: byoc.Method(lambda self: self.x)
     expected:
       values: []
       meta:
@@ -355,15 +355,15 @@ test_getter_iter_values:
   -
     id: key-implicit
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
     getter:
-      > appcli.Key(DummyConfig)
+      > byoc.Key(DummyConfig)
     expected:
       values: [1]
       meta:
@@ -381,14 +381,14 @@ test_getter_iter_values:
   -
     id: key-explicit
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'y': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'y')
+      > byoc.Key(DummyConfig, 'y')
     expected:
       values: [1]
       meta:
@@ -406,9 +406,9 @@ test_getter_iter_values:
   -
     id: key-callable
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'y': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
@@ -417,7 +417,7 @@ test_getter_iter_values:
     # Avoid using `lambda` because it doesn't have a consistent string 
     # representation.
     getter:
-      > appcli.Key(DummyConfig, itemgetter('y'))
+      > byoc.Key(DummyConfig, itemgetter('y'))
     expected:
       values: [1]
       meta:
@@ -436,9 +436,9 @@ test_getter_iter_values:
   -
     id: key-iter
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': {'y': 1}},
       >                 location='/path/to/file',
       >         )
@@ -446,7 +446,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, ('x', 'y'))
+      > byoc.Key(DummyConfig, ('x', 'y'))
     expected:
       values: [1]
       meta:
@@ -464,18 +464,18 @@ test_getter_iter_values:
   -
     id: key-falsy
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={None: 1},
       >                 location='/path/to/file',
       >         )
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = appcli.param()
+      >     x = byoc.param()
     getter:
-      > appcli.Key(DummyConfig, None)
+      > byoc.Key(DummyConfig, None)
     expected:
       values: [1]
       meta:
@@ -493,27 +493,27 @@ test_getter_iter_values:
   -
     id: key-config-cls
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location='/path/to/a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 2},
       >                 location='/path/to/b',
       >         )
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     pass
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(DummyConfigC, 'x')
+      > byoc.Key(DummyConfigC, 'x')
     expected:
       values: []
       meta:
@@ -523,27 +523,27 @@ test_getter_iter_values:
   -
     id: key-config-cls
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location='/path/to/a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 2},
       >                 location='/path/to/b',
       >         )
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     pass
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(DummyConfigA, 'x')
+      > byoc.Key(DummyConfigA, 'x')
     expected:
       values: [1]
       meta:
@@ -561,27 +561,27 @@ test_getter_iter_values:
   -
     id: key-config-cls
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location='/path/to/a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 2},
       >                 location='/path/to/b',
       >         )
       >
-      > class DummyConfigC(appcli.Config):
+      > class DummyConfigC(byoc.Config):
       >     pass
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(DummyConfigB, 'x')
+      > byoc.Key(DummyConfigB, 'x')
     expected:
       values: [2]
       meta:
@@ -599,14 +599,14 @@ test_getter_iter_values:
   -
     id: key-config-factory
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [lambda obj: DummyConfig(obj)]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -624,19 +624,19 @@ test_getter_iter_values:
   -
     id: key-config-setup
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >
       >     def __init__(self, obj, **kwargs):
       >         super().__init__(obj)
       >         self.kwargs = kwargs
       >
       >     def load(self):
-      >         yield appcli.DictLayer(self.kwargs)
+      >         yield byoc.DictLayer(self.kwargs)
       >
       > class DummyObj:
       >     __config__ = [DummyConfig.setup(x=1)]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -651,16 +651,16 @@ test_getter_iter_values:
   -
     id: key-multi-config
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location='/path/to/a',
       >         )
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 2},
       >                 location='/path/to/b',
       >         )
@@ -668,7 +668,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(appcli.Config, 'x')
+      > byoc.Key(byoc.Config, 'x')
     expected:
       values: [1, 2]
       meta:
@@ -695,13 +695,13 @@ test_getter_iter_values:
   -
     id: key-multi-layer
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location='/path/to/a',
       >         )
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 2},
       >                 location='/path/to/b',
       >         )
@@ -709,7 +709,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1, 2]
       meta:
@@ -735,9 +735,9 @@ test_getter_iter_values:
   -
     id: key-deferred-layer-values
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values=lambda: obj.values,  # not yet defined
       >         )
       >
@@ -747,7 +747,7 @@ test_getter_iter_values:
       > obj = DummyObj()
       > obj.values = {'x': 1}
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -762,9 +762,9 @@ test_getter_iter_values:
   -
     id: key-deferred-layer-loc
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(
+      >         yield byoc.DictLayer(
       >                 values={'x': 1},
       >                 location=lambda: obj.loc,  # not yet defined
       >         )
@@ -775,7 +775,7 @@ test_getter_iter_values:
       > obj = DummyObj()
       > obj.loc = '/path/to/file'
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -793,15 +793,15 @@ test_getter_iter_values:
   -
     id: key-load-status-with-layers
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         self.load_status = lambda log: log.hint('config status')
-      >         yield appcli.DictLayer({'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer({'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -820,7 +820,7 @@ test_getter_iter_values:
   -
     id: key-load-status-without-layers
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         self.load_status = lambda log: log.hint('config status')
       >         return
@@ -829,7 +829,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: []
       meta:
@@ -840,37 +840,37 @@ test_getter_iter_values:
   -
     id: key-autoload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: []
       meta:
       dynamic:
       log:
         - skipped DummyConfig\(\): not loaded
-        - did you mean to call `appcli.load\(\)`?
+        - did you mean to call `byoc.load\(\)`?
   -
     id: key-autoload
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     autoload = False
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
       >
       > obj = DummyObj()
-      > appcli.load(obj)
+      > byoc.load(obj)
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -888,15 +888,15 @@ test_getter_iter_values:
   -
     id: key-dynamic
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     dynamic = True
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'x')
+      > byoc.Key(DummyConfig, 'x')
     expected:
       values: [1]
       meta:
@@ -914,7 +914,7 @@ test_getter_iter_values:
   -
     id: key-no-layers
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         return
       >         yield
@@ -922,7 +922,7 @@ test_getter_iter_values:
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'y')
+      > byoc.Key(DummyConfig, 'y')
     expected:
       values: []
       meta:
@@ -932,14 +932,14 @@ test_getter_iter_values:
   -
     id: key-missing
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/file')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'y')
+      > byoc.Key(DummyConfig, 'y')
     expected:
       values: []
       meta:
@@ -952,15 +952,15 @@ test_getter_iter_values:
   -
     id: key-missing
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
-      >         yield appcli.DictLayer(values={'x': 2}, location='/path/to/b')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield byoc.DictLayer(values={'x': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'y')
+      > byoc.Key(DummyConfig, 'y')
     expected:
       values: []
       meta:
@@ -976,15 +976,15 @@ test_getter_iter_values:
   -
     id: key-missing
     obj:
-      > class DummyConfig(appcli.Config):
+      > class DummyConfig(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
-      >         yield appcli.DictLayer(values={'y': 2}, location='/path/to/b')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield byoc.DictLayer(values={'y': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
     getter:
-      > appcli.Key(DummyConfig, 'y')
+      > byoc.Key(DummyConfig, 'y')
     expected:
       values: [2]
       meta:
@@ -1005,18 +1005,18 @@ test_getter_iter_values:
   -
     id: key-missing
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 2}, location='/path/to/b')
+      >         yield byoc.DictLayer(values={'x': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(appcli.Config, 'y')
+      > byoc.Key(byoc.Config, 'y')
     expected:
       values: []
       meta:
@@ -1033,18 +1033,18 @@ test_getter_iter_values:
   -
     id: key-missing
     obj:
-      > class DummyConfigA(appcli.Config):
+      > class DummyConfigA(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'x': 1}, location='/path/to/a')
+      >         yield byoc.DictLayer(values={'x': 1}, location='/path/to/a')
       >
-      > class DummyConfigB(appcli.Config):
+      > class DummyConfigB(byoc.Config):
       >     def load(self):
-      >         yield appcli.DictLayer(values={'y': 2}, location='/path/to/b')
+      >         yield byoc.DictLayer(values={'y': 2}, location='/path/to/b')
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
     getter:
-      > appcli.Key(appcli.Config, 'y')
+      > byoc.Key(byoc.Config, 'y')
     expected:
       values: [2]
       meta:
@@ -1067,25 +1067,25 @@ test_getter_iter_values:
 test_getter_kwargs_err:
   -
     id: kwargs-err
-    getter: appcli.Value(1, toggle=True)
+    getter: byoc.Value(1, toggle=True)
     error:
-      type: appcli.ApiError
+      type: byoc.ApiError
       message:
         - unexpected keyword argument
         - param() allows the following kwargs:
         - cast
-        - appcli.Value(1, toggle=True) has the following unexpected kwargs:
+        - byoc.Value(1, toggle=True) has the following unexpected kwargs:
         - toggle
   -
     id: kwargs-err
-    getter: appcli.Value(1, cats=int, toggle=True)
+    getter: byoc.Value(1, cats=int, toggle=True)
     error:
-      type: appcli.ApiError
+      type: byoc.ApiError
       message:
         - unexpected keyword argument
         - param() allows the following kwargs:
         - cast
-        - appcli.Value(1, cats=<class 'int'>, toggle=True) has the following
+        - byoc.Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats
         - toggle
   -
@@ -1093,15 +1093,15 @@ test_getter_kwargs_err:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = appcli.toggle_param()
+      >     x = byoc.toggle_param()
 
-    getter: appcli.Value(1, cats=int, toggle=True)
+    getter: byoc.Value(1, cats=int, toggle=True)
     error:
-      type: appcli.ApiError
+      type: byoc.ApiError
       message:
         - unexpected keyword argument
         - param() allows the following kwargs:
         - cast
         - toggle
-        - appcli.Value(1, cats=<class 'int'>, toggle=True) has the following
+        - byoc.Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats

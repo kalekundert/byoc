@@ -1,12 +1,12 @@
 import sys, os
-import appcli
+import byoc
 
 ## General
 
-project = 'AppCLI'
+project = 'BYOC'
 copyright = '2020, Kale Kundert'
-version = appcli.__version__
-release = appcli.__version__
+version = byoc.__version__
+release = byoc.__version__
 
 master_doc = 'index'
 source_suffix = '.rst'

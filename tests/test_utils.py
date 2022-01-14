@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appcli
+import byoc
 import pytest
 import parametrize_from_file
 from voluptuous import Schema, Optional
@@ -14,7 +14,7 @@ from param_helpers import *
         })
 )
 def test_first_specified(args, kwargs, expected):
-    assert appcli.utils.first_specified(*args, **kwargs) == expected
+    assert byoc.utils.first_specified(*args, **kwargs) == expected
 
 @parametrize_from_file(
         schema=Schema({
@@ -23,8 +23,8 @@ def test_first_specified(args, kwargs, expected):
         })
 )
 def test_first_specified_err(args, kwargs):
-    with pytest.raises(appcli.ApiError) as err:
-        appcli.utils.first_specified(*args, **kwargs)
+    with pytest.raises(byoc.ApiError) as err:
+        byoc.utils.first_specified(*args, **kwargs)
 
     assert err.match(no_templates)
 
@@ -36,4 +36,4 @@ def test_first_specified_err(args, kwargs):
         })
 )
 def test_lookup(x, key, expected):
-    assert appcli.utils.lookup(x, key) == expected
+    assert byoc.utils.lookup(x, key) == expected
