@@ -1,5 +1,5 @@
 **********************************
-``byoc`` --- Bring your own config
+``byoc`` --- Bring Your Own Config
 **********************************
 
 .. image:: https://img.shields.io/pypi/v/byoc.svg
@@ -19,16 +19,21 @@
 
 BYOC is a python library for loading configuration values from any number of 
 sources, e.g. files, command-line arguments, environment variables, remote JSON 
-APIs, etc.  The primary goals of BYOC are to give the user:
+APIs, etc.  The primary goal of BYOC is to give you complete control over your 
+configuration.  This means:
 
 - Complete control over how things are named and organized.
 
 - Complete control over how values from different config sources are merged.
 
-The basic idea is to create a class with properties that know where to look for 
-configuration values.  When such a property is accessed, the correct value(s) 
-are looked up, possibly merged, possibly cached, and returned.  Here's a brief 
-example to show what this looks like::
+- Support for any kind of file format, argument parsing library, etc.
+
+- No opinions about anything enforced by BYOC.
+
+The basic idea is to create a class with special attributes that know where to 
+look for configuration values.  When such an attribute is accessed, the correct 
+value(s) are looked up, possibly merged, possibly cached, and returned.  Here's 
+a brief example to show what this looks like::
 
     import byoc
     from byoc import App, DocoptConfig, AppDirsConfig, Key
@@ -43,14 +48,14 @@ example to show what this looks like::
         # Define which config sources are available to this class.
         __config__ = [
                 DocoptConfig,
-                AppDirsConfig(name='conf.yml'),
+                AppDirsConfig.setup(name='conf.yml'),
         ]
 
         # Define how to search for each config value.
-        name = byoc.param(
+        name = byoc.attr(
                 Key(DocoptConfig, '<name>'),
         )
-        greeting = byoc.param(
+        greeting = byoc.attr(
                 Key(DocoptConfig, '-g'),
                 Key(AppDirsConfig, 'greeting'),
                 default='Hello',
@@ -58,7 +63,7 @@ example to show what this looks like::
 
         def main(self):
             self.load(DocoptConfig)
-            return f"{self.greeting}, {self.name}!"
+            print(f"{self.greeting}, {self.name}!")
 
     if __name__ == '__main__':
         Greet.entry_point()
@@ -79,7 +84,8 @@ We can also configure this script via its configuration files::
 
 This example only scratches the surface, but hopefully you can already get a 
 sense for how powerful and flexible this property-based approach is.  For more 
-information, visit the documentation.
+information, refer to the following examples (in lieu of complete 
+documentation).
 
 Examples
 ========
@@ -105,11 +111,11 @@ Complex scripts:
 
 - `serial_dilution.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/serial_dilution.py>`_
 
-  This script features parameters that depend on other parameters.  
+  This script features attributes that depend on other attributes.  
   Specifically, the user must provide values for any three of ``volume``, 
   ``conc_high``, ``conc_low``, and ``factor``.  Whichever one isn't specified 
   is inferred from the ones that are.  This is implemented by making the 
-  ``byoc`` parameters (which in this case read only from the command-line and 
+  ``byoc`` attributes (which in this case read only from the command-line and 
   not from any config files) private, then adding public properties that are 
   calculated from the private ones.
 
