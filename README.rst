@@ -1,6 +1,6 @@
-**********************************
-``byoc`` --- Bring Your Own Config
-**********************************
+********************************
+``byoc`` — Bring Your Own Config
+********************************
 
 .. image:: https://img.shields.io/pypi/v/byoc.svg
    :target: https://pypi.python.org/pypi/byoc
