@@ -1,3 +1,50 @@
+test_config_init:
+  -
+    id: config
+    factory:
+      > DummyConfig = Config
+    expected:
+      autoload: True
+      dynamic: False
+  -
+    id: config-autoload-setup
+    factory:
+      > DummyConfig = Config.setup(autoload=False)
+    expected:
+      autoload: False
+      dynamic: False
+  -
+    id: config-autoload-cls
+    factory:
+      > class DummyConfig(Config):
+      >     autoload = False
+    expected:
+      autoload: False
+      dynamic: False
+  -
+    id: config-dynamic-setup
+    factory:
+      > DummyConfig = Config.setup(dynamic=True)
+    expected:
+      autoload: True
+      dynamic: True
+  -
+    id: config-dynamic-cls
+    factory:
+      > class DummyConfig(Config):
+      >     dynamic = True
+    expected:
+      autoload: True
+      dynamic: True
+  -
+    id: config-err
+    factory:
+      > DummyConfig = Config.setup(unknown_arg=1)
+    error:
+      type: byoc.ApiError
+      message:
+        - Config() received unexpected keyword argument(s): 'unknown_arg'
+
 test_argparse_docopt_config:
   -
     id: argparse

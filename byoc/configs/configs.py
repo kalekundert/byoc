@@ -16,6 +16,7 @@ class Config:
 
     def __init__(self, obj, **kwargs):
         self.obj = obj
+        self.autoload = kwargs.pop('autoload', self.autoload)
         self.dynamic = kwargs.pop('dynamic', self.dynamic)
         self.load_status = lambda log: None
 

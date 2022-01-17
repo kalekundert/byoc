@@ -19,18 +19,26 @@ def tmp_chdir(tmp_path):
         os.chdir(cwd)
 
 
-def test_config_init():
-    class DummyConfig(byoc.Config):
-        pass
-
+@parametrize_from_file(
+        schema=Schema({
+            'factory': with_byoc.exec(get='DummyConfig', defer=True),
+            **with_byoc.error_or({
+                'expected': {str: with_py.eval},
+            }),
+        }),
+)
+def test_config_init(factory, expected, error):
     class DummyObj:
         pass
 
-    expected = r"DummyConfig\(\) received unexpected keyword argument\(s\): 'a'"
+    factory = factory()
     obj = DummyObj()
 
-    with pytest.raises(byoc.ApiError, match=expected):
-        DummyConfig(obj, a=1)
+    with error:
+        config = factory(obj)
+
+        for attr, value in expected.items():
+            assert getattr(config, attr) == value
 
 @parametrize_from_file(
         schema=Schema({
