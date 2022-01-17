@@ -17,10 +17,10 @@
 .. image:: https://img.shields.io/coveralls/kalekundert/byoc.svg
    :target: https://coveralls.io/github/kalekundert/byoc?branch=master
 
-BYOC is a python library for loading configuration values from any number of 
-sources, e.g. files, command-line arguments, environment variables, remote JSON 
-APIs, etc.  The primary goal of BYOC is to give you complete control over your 
-configuration.  This means:
+BYOC is a python library for loading configuration values from any number/kind 
+of sources, e.g. files, command-line arguments, environment variables, remote 
+JSON APIs, etc.  The primary goal of BYOC is to give you complete control over 
+your configuration.  This means:
 
 - Complete control over how things are named and organized.
 
