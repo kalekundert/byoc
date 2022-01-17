@@ -9,21 +9,16 @@ from param_helpers import *
 @parametrize_from_file(
         schema=Schema({
             'obj': with_byoc.exec(get=get_obj, defer=True),
-            'expected': {str: with_py.eval},
-        })
+            **with_byoc.error_or({
+                'expected': {str: with_py.eval},
+            }),
+        }),
 )
-def test_param(obj, expected):
-    obj = obj()
-    for attr, value in expected.items():
-        assert getattr(obj, attr) == value
-
-def test_param_init_err():
-    with pytest.raises(byoc.ApiError) as err:
-        byoc.param(default=1, default_factory=list)
-
-    assert err.match(r"can't specify 'default' and 'default_factory'")
-    assert err.match(r"default: 1")
-    assert err.match(r"default_factory: <class 'list'>")
+def test_param(obj, expected, error):
+    with error:
+        obj = obj.exec()
+        for param, value in expected.items():
+            assert getattr(obj, param) == value
 
 @pytest.mark.parametrize('dynamic', [True, False])
 def test_param_cache_exc(dynamic):

@@ -31,9 +31,6 @@ class WrappedConfig:
     def __iter__(self):
         yield from self.layers
 
-    def __bool__(self):
-        return bool(self.layers)
-
     def load(self):
         # While it's tempting to defer actually loading the config until the 
         # layers are needed (e.g. in `__iter__()`), this doesn't work.  The 

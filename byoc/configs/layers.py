@@ -103,7 +103,7 @@ class FileNotFoundLayer(Layer):
     def iter_values(self, key, log):
         log.info("file does not exist: {path}\ndid not find {key!r}", path=self.location, key=key)
         return
-        yield
+        yield  # pragma: no cover
 
 
 def dict_like(*args):

@@ -8,9 +8,15 @@ from re_assert import Matches
 from more_itertools import zip_equal, unzip, padded
 from param_helpers import *
 
+with_getters = Namespace(
+        with_byoc,
+        'from byoc.getters import ImplicitKey',
+        'from byoc.model import WrappedConfig',
+)
+
 @parametrize_from_file(
         schema=Schema({
-            'getter': with_byoc.eval,
+            'getter': with_getters.eval,
             'expected': str,
         }),
 )

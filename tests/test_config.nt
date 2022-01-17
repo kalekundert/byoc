@@ -331,6 +331,7 @@ test_appdirs_config:
       > class DummyObj:
       >     __config__ = [DummyAppDirsConfig]
       >     dirs = byoc.config_attr()
+      >     config_paths = byoc.config_attr()
     slug: 'dummyobj'
     author: None
     version: None
@@ -357,6 +358,7 @@ test_appdirs_config:
       > class DummyObj:
       >     __config__ = [DummyAppDirsConfig]
       >     dirs = byoc.config_attr()
+      >     config_paths = byoc.config_attr()
     slug: 'slug'
     author: 'author'
     version: 'version'

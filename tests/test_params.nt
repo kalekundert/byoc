@@ -126,6 +126,49 @@ test_param:
       >     )
     expected:
       x: 0
+  -
+    id: keys-mixed-types-err
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'y': 1, 'z': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(
+      >             'y',
+      >             Key(DummyConfig, 'z'),
+      >     )
+    expected:
+      x: Mock()
+    error:
+      type: byoc.ApiError
+      message:
+        - can't mix string keys with Key/Method/Func/Value objects
+        - keys:
+        - 'y'
+        - Key(DummyConfig, 'z')
+  -
+    id: keys-wrong-len-err
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 1, 'y': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param('x', 'y')
+    expected:
+      x: Mock()
+    error:
+      type: byoc.ApiError
+      message:
+        - number of keys must match number of configs
+        - configs (1):
+        - DummyConfig
+        - keys (2):
+        - 'x'
+        - 'y'
 
   -
     id: method-two-instances
@@ -219,6 +262,19 @@ test_param:
       > decoy.x.append(4)
     expected:
       x: [1, 3]
+  -
+    id: default-overspecified-err
+    obj:
+      > class DummyObj:
+      >     __config__ = []
+      >     x = byoc.param(default=1, default_factory=list)
+    error:
+      type: byoc.ApiError
+      cause: 1
+      message:
+        - can't specify 'default' and 'default_factory'
+        - default: 1
+        - default_factory: <class 'list'>
 
   -
     id: ignore
@@ -795,6 +851,23 @@ test_param:
       >     x = byoc.inherited_param(get=lambda self, x: x+1)
     expected:
       x: 2
+  -
+    id: inherited-param-err
+    obj:
+      > class ParentObj:
+      >     __config__ = []
+      >
+      > class DummyObj(ParentObj):
+      >     y = byoc.inherited_param()
+    error:
+      type: byoc.ApiError
+      cause: 2
+      message:
+        - no superclass parameter to inherit from
+        - attempting to create `inherited_param`: DummyObj.y
+        - none of the following exist:
+        - ParentObj.y
+        - object.y
 
   -
     id: toggle-key
@@ -822,4 +895,6 @@ test_param:
       >     )
     expected:
       x: False
+
+test_param_err:
 

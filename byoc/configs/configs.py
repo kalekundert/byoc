@@ -35,7 +35,7 @@ class Config:
         return lambda obj: cls(obj, *args, **kwargs)
 
     def load(self):
-        raise NotImplmentedError
+        raise NotImplementedError
 
 class EnvironmentConfig(Config):
 

@@ -7,7 +7,7 @@ from parametrize_from_file.voluptuous import Namespace, empty_ok
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
 
-with_py = Namespace('from operator import itemgetter')
+with_py = Namespace('from operator import itemgetter', Mock=Mock)
 with_byoc = Namespace(byoc, 'from byoc import *')
 
 class LayerWrapper:

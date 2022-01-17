@@ -48,6 +48,27 @@ def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
 
     assert collect_layers(obj) == reload_layers
 
+def test_reload_instead_of_init():
+
+    class DummyConfig(byoc.Config):
+        def __init__(self, obj):
+            super().__init__(obj)
+            self.x = 0
+        def load(self):
+            self.x += 1
+            yield byoc.DictLayer({'x': self.x})
+
+    class DummyObj:
+        __config__ = [DummyConfig]
+        x = byoc.param()
+
+    obj = DummyObj()
+    byoc.reload(obj)
+    assert obj.x == 1
+
+    byoc.reload(obj)
+    assert obj.x == 2
+
 @parametrize_from_file(
         schema=Schema({
             'obj': with_byoc.exec(get=get_obj),

@@ -12,6 +12,9 @@ test_getter_repr:
     getter: Key(Config, toggle=True)
     expected: byoc.Key\(Config, toggle=True\)
   -
+    getter: ImplicitKey(WrappedConfig(Config(None)), 'x')
+    expected: byoc.ImplicitKey\(WrappedConfig\(Config\(\), is_loaded=False\), 'x'\)
+  -
     getter: Method(lambda self: 1)
     expected: byoc.Method\(<function <lambda> at 0x.*>\)
   -

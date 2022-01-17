@@ -5,7 +5,9 @@ import pytest
 import parametrize_from_file
 import sys, os, shlex
 
+from pytest_unordered import unordered
 from unittest import mock
+from pathlib import Path
 from param_helpers import *
 
 @pytest.fixture
@@ -126,6 +128,7 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert obj.dirs.slug == slug
     assert obj.dirs.author == author
     assert obj.dirs.version == version
+    assert list(obj.config_paths) == unordered([Path(x) for x in files.keys()])
 
     byoc.init(obj)
     assert collect_layers(obj)[0] == layers
@@ -328,4 +331,8 @@ def test_dict_like(factory, f, raises, x, expected, error):
     with error:
         g = factory(f, raises)
         assert g[x] == expected
+
+def test_dict_like_repr():
+    d = byoc.dict_like(int)
+    assert repr(d) == "dict_like(<class 'int'>)"
 

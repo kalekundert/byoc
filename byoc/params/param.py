@@ -177,7 +177,7 @@ class param:
                     keys=keys,
             )
             err.brief = "can't mix string keys with Key/Method/Func/Value objects"
-            err.info = lambda e: '\n'.join((
+            err.info += lambda e: '\n'.join((
                     "keys:",
                     *map(repr, e['keys']),
             ))
@@ -194,7 +194,7 @@ class param:
                     configs=[x.config for x in wrapped_configs],
                     keys=keys,
             )
-            err.brief = "number of keys must match the number of configs"
+            err.brief = "number of keys must match number of configs"
             err.info += lambda e: '\n'.join((
                     f"configs ({len(e.configs)}):",
                     *map(repr, e.configs),
@@ -203,7 +203,7 @@ class param:
                     f"keys ({len(e['keys'])}):",
                     *map(repr, e['keys']),
             ))
-            return err
+            raise err
 
         else:
             getters = [

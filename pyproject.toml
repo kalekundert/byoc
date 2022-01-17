@@ -29,6 +29,7 @@ classifiers = [
 tests = [
   'pytest',
   'pytest-cov',
+  'pytest-unordered',
   'coveralls',
   'parametrize_from_file',
   'voluptuous',

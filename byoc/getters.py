@@ -18,7 +18,7 @@ class Getter:
         return f'{cls}({", ".join((*args, *kwargs))})'
 
     def __reprargs__(self):
-        return []
+        return []  # pragma: no cover
 
     def bind(self, obj, param):
         raise NotImplementedError
@@ -51,7 +51,7 @@ class ImplicitKey(Getter):
         self.wrapped_config = wrapped_config
 
     def __reprargs__(self):
-        return [repr(self.key), repr(self.wrapped_config)]
+        return [repr(self.wrapped_config), repr(self.key)]
 
     def bind(self, obj, param):
         return BoundKey(self, obj, param, [self.wrapped_config])

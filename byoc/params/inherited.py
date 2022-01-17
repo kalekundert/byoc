@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from copy import copy
+from ..errors import ApiError
 
 class inherited_param:
 
@@ -21,12 +22,12 @@ class inherited_param:
                     name=name,
             )
             err.brief = "no superclass parameter to inherit from"
-            err.info += "attempting to create `inherited_param`:\n{cls.__name__}.{name}"
-            err.blame += lambda e: "\n".join(
+            err.info += "attempting to create `inherited_param`: {cls.__name__}.{name}"
+            err.blame += lambda e: "\n".join((
                     "none of the following exist:", *(
                         f'{x.__qualname__}.{e.name}'
                         for x in e.cls.__mro__[1:]
-                    )
+                    ))
             )
             raise err
 

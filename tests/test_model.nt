@@ -717,6 +717,16 @@ test_get_meta:
     obj:
       > class DummyObj:
       >     __config__ = []
+      >
+      > obj = DummyObj()
+      > byoc.init(obj)
+    param: x
+    expected: NeverAccessedMeta
+  -
+    id: never-accessed
+    obj:
+      > class DummyObj:
+      >     __config__ = []
       >     x = byoc.param(Value(1))
     param: x
     expected: NeverAccessedMeta
