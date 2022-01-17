@@ -1,5 +1,5 @@
 ********************************
-``byoc`` — Bring Your Own Config
+``byoc`` — Build Your Own Config
 ********************************
 
 .. image:: https://img.shields.io/pypi/v/byoc.svg
@@ -31,14 +31,14 @@ configuration.  This means:
 - No opinions about anything enforced by BYOC.
 
 The basic idea is to create a class with special attributes that know where to 
-look for configuration values.  When such an attribute is accessed, the correct 
-value(s) are looked up, possibly merged, possibly cached, and returned.  Here's 
-a brief example to show what this looks like::
+look for configuration values.  When these attributes are accessed, the correct 
+values are looked up, possibly merged, possibly cached, and returned.  Here's a 
+brief example to show what this looks like::
 
     import byoc
-    from byoc import App, DocoptConfig, AppDirsConfig, Key
+    from byoc import Key, DocoptConfig, AppDirsConfig
 
-    class Greet(App):
+    class Greet(byoc.App):
         """
     Say a greeting.
 
