@@ -20,7 +20,7 @@ class Getter:
     def __reprargs__(self):
         return []
 
-    def bind(self, obj, attr):
+    def bind(self, obj, param):
         raise NotImplementedError
 
 class Key(Getter):
@@ -36,12 +36,12 @@ class Key(Getter):
         else:
             return [self.config_cls.__name__, repr(self.key)]
 
-    def bind(self, obj, attr):
+    def bind(self, obj, param):
         wrapped_configs = [
                 wc for wc in model.get_wrapped_configs(obj)
                 if isinstance(wc.config, self.config_cls)
         ]
-        return BoundKey(self, obj, attr, wrapped_configs)
+        return BoundKey(self, obj, param, wrapped_configs)
 
 class ImplicitKey(Getter):
 
@@ -53,8 +53,8 @@ class ImplicitKey(Getter):
     def __reprargs__(self):
         return [repr(self.key), repr(self.wrapped_config)]
 
-    def bind(self, obj, attr):
-        return BoundKey(self, obj, attr, [self.wrapped_config])
+    def bind(self, obj, param):
+        return BoundKey(self, obj, param, [self.wrapped_config])
 
 class Func(Getter):
 
@@ -74,9 +74,9 @@ class Func(Getter):
         self.partial_kwargs = kwargs
         return self
 
-    def bind(self, obj, attr):
+    def bind(self, obj, param):
         return BoundCallable(
-                self, obj, attr,
+                self, obj, param,
                 self.callable,
                 self.partial_args,
                 self.partial_kwargs,
@@ -89,15 +89,15 @@ class Method(Func):
     def __init__(self, *args, dynamic=True, **kwargs):
         super().__init__(*args, dynamic=dynamic, **kwargs)
 
-    def bind(self, obj, attr):
+    def bind(self, obj, param):
         # Methods used with this getter this will typically attempt to 
         # calculate a value based on other BYOC-managed attributes.  In most 
-        # cases, a NoValueFound exception will be raised if any of those 
+        # cases, a `NoValueFound` exception will be raised if any of those 
         # attributes is missing a value.  The most sensible thing to do when 
-        # this happens is to silently skip this getter, allowing the attribute 
+        # this happens is to silently skip this getter, allowing the parameter 
         # that invoked it to continue searching other getters for a value.
 
-        bc = super().bind(obj, attr)
+        bc = super().bind(obj, param)
         bc.partial_args = (obj, *bc.partial_args)
         bc.exceptions = bc.exceptions or (NoValueFound,)
         return bc
@@ -111,48 +111,48 @@ class Value(Getter):
     def __reprargs__(self):
         return [repr(self.value)]
 
-    def bind(self, obj, attr):
-        return BoundValue(self, obj, attr, self.value)
+    def bind(self, obj, param):
+        return BoundValue(self, obj, param, self.value)
 
 
 
 class BoundGetter:
 
-    def __init__(self, parent, obj, attr):
+    def __init__(self, parent, obj, param):
         self.parent = parent
         self.obj = obj
-        self.attr = attr
+        self.param = param
 
         # The following attributes are public and may be accessed or modified 
-        # by `attr` subclasses (e.g. `toggle_attr`).  Be careful when making 
+        # by `param` subclasses (e.g. `toggle_param`).  Be careful when making 
         # modifications, though, because any modifications will need to be 
         # re-applied each time the cache expires (because the getters are 
         # re-bound when this happens).
         self.kwargs = parent.kwargs
         self.cast_funcs = list(value_chain(
             self.kwargs.get('cast', []),
-            attr._get_default_cast()
+            param._get_default_cast()
         ))
 
         self._check_kwargs()
 
     def _check_kwargs(self):
         given_kwargs = set(self.kwargs.keys())
-        known_kwargs = self.attr._get_known_getter_kwargs()
+        known_kwargs = self.param._get_known_getter_kwargs()
         unknown_kwargs = given_kwargs - known_kwargs
 
         if unknown_kwargs:
             err = ApiError(
                     getter=self.parent,
                     obj=self.obj,
-                    attr=self.attr,
+                    param=self.param,
                     given_kwargs=given_kwargs,
                     known_kwargs=known_kwargs,
                     unknown_kwargs=unknown_kwargs,
             )
             err.brief = f'unexpected keyword argument'
             err.info += lambda e: '\n'.join([
-                f"{e.attr.__class__.__name__}() allows the following kwargs:",
+                f"{e.param.__class__.__name__}() allows the following kwargs:",
                 *e.known_kwargs,
             ])
             err.blame += lambda e: '\n'.join([
@@ -171,13 +171,13 @@ class BoundGetter:
 
 class BoundKey(BoundGetter):
 
-    def __init__(self, parent, obj, attr, wrapped_configs):
-        super().__init__(parent, obj, attr)
+    def __init__(self, parent, obj, param, wrapped_configs):
+        super().__init__(parent, obj, param)
         self.key = parent.key
         self.wrapped_configs = wrapped_configs
 
         if self.key is UNSPECIFIED:
-            self.key = attr._get_default_key()
+            self.key = param._get_default_key()
 
     def iter_values(self, log):
         assert self.key is not UNSPECIFIED
@@ -213,8 +213,8 @@ class BoundKey(BoundGetter):
 
 class BoundCallable(BoundGetter):
 
-    def __init__(self, parent, obj, attr, callable, args, kwargs, dynamic, exc=()):
-        super().__init__(parent, obj, attr)
+    def __init__(self, parent, obj, param, callable, args, kwargs, dynamic, exc=()):
+        super().__init__(parent, obj, param)
         self.callable = callable
         self.partial_args = args
         self.partial_kwargs = kwargs
@@ -234,8 +234,8 @@ class BoundCallable(BoundGetter):
 
 class BoundValue(BoundGetter):
 
-    def __init__(self, parent, obj, attr, value):
-        super().__init__(parent, obj, attr)
+    def __init__(self, parent, obj, param, value):
+        super().__init__(parent, obj, param)
         self.value = value
 
     def iter_values(self, log):

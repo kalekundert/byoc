@@ -175,20 +175,20 @@ def collect_layers(obj):
             for i, wc in enumerate(wrapped_configs)
     }
 
-def find_attr(obj, name=None):
+def find_param(obj, name=None):
     from more_itertools import only
     class_attrs = obj.__class__.__dict__
 
     if name:
         return class_attrs[name]
     else:
-        attrs = (
+        params = (
                 x for x in class_attrs.values()
-                if isinstance(x, byoc.attr)
+                if isinstance(x, byoc.param)
         )
-        default = byoc.attr()
+        default = byoc.param()
         default.__set_name__(obj.__class__, '')
-        return only(attrs, default)
+        return only(params, default)
 
 def get_obj_or_cls(obj_name, cls_name=None):
     if not cls_name:

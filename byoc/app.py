@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 from . import model
+from .meta import meta_view
 
-class AppMeta(type):
+class BareMeta(type):
     """
     A metaclass that allows a class to be instantiated either in the usual way, 
     or without calling the constructor.  The latter is useful if the object 
-    will be initialized in another way, e.g. `byoc.attr()` attributes that 
+    will be initialized in another way, e.g. `byoc.param()` parameters that 
     read from the command line.
     """
 
@@ -21,7 +22,8 @@ class AppMeta(type):
         self.__init__(*args, **kwargs)
         return self
 
-class App(metaclass=AppMeta):
+class App(metaclass=BareMeta):
+    meta = meta_view()
 
     def __bareinit__(self):
         pass

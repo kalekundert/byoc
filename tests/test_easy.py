@@ -19,7 +19,7 @@ def test_easy_1():
 
     class DummyObj:
         __config__ = [DictConfigAB]
-        a = byoc.attr()
+        a = byoc.param()
 
     obj = DummyObj()
     assert obj.a == 1
@@ -31,9 +31,9 @@ def test_easy_2():
                 DictConfigAB,
                 DictConfigAC,
         ]
-        a = byoc.attr()
-        b = byoc.attr()
-        c = byoc.attr()
+        a = byoc.param()
+        b = byoc.param()
+        c = byoc.param()
 
     obj = DummyObj()
     assert obj.a == 1

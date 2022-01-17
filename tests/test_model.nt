@@ -438,7 +438,7 @@ test_init_load_reload:
         - DictLayer(values={}, location='a')
 
   -
-    id: attr-access
+    id: param-access
     obj:
       > # Access a value from an earlier layer.  This requires that the layers 
       > # are parsed in the correct order, and that the object is always kept 
@@ -460,7 +460,7 @@ test_init_load_reload:
       >             DummyConfig2,
       >             DummyConfig1,
       >     ]
-      >     x = byoc.attr(default='')
+      >     x = byoc.param(default='')
       >
     init_layers:
       0:
@@ -477,7 +477,7 @@ test_init_load_reload:
       2:
         - DictLayer(values={'x': '1'})
   -
-    id: attr-access
+    id: param-access
     obj:
       > # Access a value from an earlier layer.  This requires that the layers 
       > # are parsed in the correct order, and that the object is always kept 
@@ -502,7 +502,7 @@ test_init_load_reload:
       >             DummyConfig2,
       >             DummyConfig1,
       >     ]
-      >     x = byoc.attr(default='')
+      >     x = byoc.param(default='')
       >
     init_layers:
       0:
@@ -710,37 +710,37 @@ test_get_meta:
     obj:
       > class DummyObj:
       >     pass
-    attr: x
+    param: x
     expected: NeverAccessedMeta
   -
     id: never-accessed
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Value(1))
-    attr: x
+      >     x = byoc.param(Value(1))
+    param: x
     expected: NeverAccessedMeta
   -
     id: cache-meta
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Value(1))
+      >     x = byoc.param(Value(1))
       >
       > obj = DummyObj()
       > obj.x
-    attr: x
+    param: x
     expected: GetterMeta
   -
     id: setattr
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Value(1))
+      >     x = byoc.param(Value(1))
       >
       > obj = DummyObj()
       > obj.x = 2
-    attr: x
+    param: x
     expected: SetAttrMeta
   -
     id: exception
@@ -751,7 +751,7 @@ test_get_meta:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       >
@@ -759,6 +759,6 @@ test_get_meta:
       >     obj.x
       > except NoValueFound:
       >     pass
-    attr: x
+    param: x
     expected: ExceptionMeta
 

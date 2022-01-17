@@ -10,7 +10,7 @@ def test_app():
 
     class DummyObj(byoc.App):
         __config__ = [DummyConfig]
-        x = byoc.attr()
+        x = byoc.param()
 
         def __bareinit__(self):
             self.y = 0

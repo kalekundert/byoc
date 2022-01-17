@@ -10,10 +10,10 @@ from param_helpers import *
             'expected': {str: eval_meta},
         }),
 )
-def test_meta_attr(obj, expected):
+def test_meta_view(obj, expected):
     obj = obj()
-    for attr, meta in expected.items():
-        assert getattr(obj.meta, attr) == meta
+    for param, meta in expected.items():
+        assert getattr(obj.meta, param) == meta
 
 def test_meta_repr():
     from byoc.meta import GetterMeta, LayerMeta

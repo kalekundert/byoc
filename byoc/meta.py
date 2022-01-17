@@ -46,20 +46,20 @@ class UnknownMeta(Meta):
 
 
 
-class meta_attr:
+class meta_view:
 
     def __get__(self, obj, cls=None):
-        return meta_view(obj)
+        return _meta_view(obj)
 
-class meta_view:
+class _meta_view:
     # This class will never refresh the cache, so the results it returns may 
     # change if the value is accessed immediately afterwards.  For this reason, 
-    # it is recommended to always access any attributes of interest before 
-    # accessing the metadata associated with those attributes.
+    # it is recommended to always access any parameters of interest before 
+    # accessing the metadata associated with those parameters.
 
     def __init__(self, obj):
         self.__obj = obj
 
-    def __getattr__(self, attr):
-        return get_meta(self.__obj, attr)
+    def __getattr__(self, param):
+        return get_meta(self.__obj, param)
 

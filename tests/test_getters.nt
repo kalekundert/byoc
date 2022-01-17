@@ -30,13 +30,13 @@ test_getter_cast_value:
   -
     id: value
     getter: Value(None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: value-err
     getter: Value(None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -51,13 +51,13 @@ test_getter_cast_value:
   -
     id: func
     getter: Func(lambda: None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: func-err
     getter: Func(lambda: None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -72,13 +72,13 @@ test_getter_cast_value:
   -
     id: method
     getter: Method(lambda self: None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: method-err
     getter: Method(lambda self: None)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -98,13 +98,13 @@ test_getter_cast_value:
   -
     id: key
     getter: Key(Config)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: '1'
     expected: 1
   -
     id: key
     getter: Key(Config, cast=int)
-    attr: byoc.attr(cast=lambda x: x+1)
+    param: byoc.param(cast=lambda x: x+1)
     given: '1'
     expected: 2
   -
@@ -118,7 +118,7 @@ test_getter_cast_value:
   -
     id: key-err
     getter: Key(Config)
-    attr: byoc.attr(cast=int)
+    param: byoc.param(cast=int)
     given: 'a'
     error:
       type: ValueError
@@ -337,7 +337,7 @@ test_getter_iter_values:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
     getter: Method(lambda self: self.x)
     expected:
@@ -347,8 +347,8 @@ test_getter_iter_values:
       log:
         -
           > called: <function <lambda> at .*>
-          > raised NoValueFound: can't find value for attribute
-          > . getting 'x' attribute for <DummyObj object at .*>
+          > raised NoValueFound: can't find value for parameter
+          > . getting 'x' parameter for <DummyObj object at .*>
           > . nowhere to look for values
           > . did you mean to provide a default\?
 
@@ -361,7 +361,7 @@ test_getter_iter_values:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
     getter:
       > Key(DummyConfig)
     expected:
@@ -473,7 +473,7 @@ test_getter_iter_values:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
     getter:
       > Key(DummyConfig, None)
     expected:
@@ -1072,7 +1072,7 @@ test_getter_kwargs_err:
       type: byoc.ApiError
       message:
         - unexpected keyword argument
-        - attr() allows the following kwargs:
+        - param() allows the following kwargs:
         - cast
         - Value(1, toggle=True) has the following unexpected kwargs:
         - toggle
@@ -1083,7 +1083,7 @@ test_getter_kwargs_err:
       type: byoc.ApiError
       message:
         - unexpected keyword argument
-        - attr() allows the following kwargs:
+        - param() allows the following kwargs:
         - cast
         - Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats
@@ -1093,14 +1093,14 @@ test_getter_kwargs_err:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.toggle_attr()
+      >     x = byoc.toggle_param()
 
     getter: Value(1, cats=int, toggle=True)
     error:
       type: byoc.ApiError
       message:
         - unexpected keyword argument
-        - attr() allows the following kwargs:
+        - param() allows the following kwargs:
         - cast
         - toggle
         - Value(1, cats=<class 'int'>, toggle=True) has the following

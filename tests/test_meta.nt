@@ -1,4 +1,4 @@
-test_meta_attr:
+test_meta_view:
   -
     id: base
     obj:
@@ -8,8 +8,8 @@ test_meta_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     meta = byoc.meta_attr()
-      >     x = byoc.attr()
+      >     meta = byoc.meta_view()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -21,7 +21,7 @@ test_meta_attr:
     id: never-accessed
     obj:
       > class DummyObj:
-      >     meta = byoc.meta_attr()
-      >     x = byoc.attr()
+      >     meta = byoc.meta_view()
+      >     x = byoc.param()
     expected:
       x: NeverAccessedMeta

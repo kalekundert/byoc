@@ -49,5 +49,5 @@ def first(values):
         values.meta = meta
         return value
     except StopIteration as err:
-        raise NoValueFound("can't find value for attribute", values.log)
+        raise NoValueFound("can't find value for parameter", values.log)
 

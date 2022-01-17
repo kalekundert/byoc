@@ -80,7 +80,7 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
 def test_environment_config():
     class DummyObj:
         __config__ = [byoc.EnvironmentConfig]
-        x = byoc.attr()
+        x = byoc.param()
 
     obj = DummyObj()
     assert obj.x == "1"
@@ -159,7 +159,7 @@ def test_file_config_load_status():
 
     class DummyObj:
         __config__ = [byoc.YamlConfig]
-        x = byoc.attr()
+        x = byoc.param()
 
     obj = DummyObj()
 

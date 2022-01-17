@@ -14,17 +14,17 @@ class ApiError(Error):
 
 class NoValueFound(AttributeError):
     """
-    The default exception raised when no value can be found for an attribute.
+    The default exception raised when no value can be found for a parameter.
 
     BYOC tries to avoid raising or interpreting any exceptions relating to 
-    accessing attribute values.  Instead, user-provided callbacks are expected 
+    accessing parameter values.  Instead, user-provided callbacks are expected 
     to raise if they notice something wrong.  This puts the user in control of 
     exception handling and error messages, both good things for a 
     general-purpose framework like this.
 
     `NoValueFound` is a bit of an exception to this philosophy.  It's raised by 
     the default picker (`first`) in the event that no values were found for an 
-    attribute.  It's interpreted by some parts of BYOC (specifically the 
+    parameter.  It's interpreted by some parts of BYOC (specifically the 
     `Method` and `Function` getters) to mean that an attempt to get a value 
     should be silently skipped.  Both of these behaviors can be overridden, but 
     they're useful defaults.

@@ -14,7 +14,7 @@ class State:
                 WrappedConfig(cf(obj))
                 for cf in get_config_factories(obj)
         ]
-        self.attr_states = {}
+        self.param_states = {}
         self.cache_version = 0
         self.load_callbacks = get_load_callbacks(obj).values()
 
@@ -163,19 +163,19 @@ def get_load_callbacks(obj):
 
     return hits
 
-def get_attr_states(obj):
-    return get_state(obj).attr_states
+def get_param_states(obj):
+    return get_state(obj).param_states
 
-def get_meta(obj, attr):
+def get_meta(obj, param):
     from .meta import NeverAccessedMeta
 
     try:
-        states = get_attr_states(obj)
+        states = get_param_states(obj)
     except AttributeError:
         return NeverAccessedMeta()
 
     try:
-        state = states[attr]
+        state = states[param]
     except KeyError:
         return NeverAccessedMeta()
 

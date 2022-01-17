@@ -52,10 +52,10 @@ a brief example to show what this looks like::
         ]
 
         # Define how to search for each config value.
-        name = byoc.attr(
+        name = byoc.param(
                 Key(DocoptConfig, '<name>'),
         )
-        greeting = byoc.attr(
+        greeting = byoc.param(
                 Key(DocoptConfig, '-g'),
                 Key(AppDirsConfig, 'greeting'),
                 default='Hello',
@@ -111,11 +111,11 @@ Complex scripts:
 
 - `serial_dilution.py <https://github.com/kalekundert/stepwise_mol_bio/blob/master/stepwise_mol_bio/serial_dilution.py>`_
 
-  This script features attributes that depend on other attributes.  
+  This script features parameters that depend on other parameters.  
   Specifically, the user must provide values for any three of ``volume``, 
   ``conc_high``, ``conc_low``, and ``factor``.  Whichever one isn't specified 
   is inferred from the ones that are.  This is implemented by making the 
-  ``byoc`` attributes (which in this case read only from the command-line and 
+  ``byoc`` parameters (which in this case read only from the command-line and 
   not from any config files) private, then adding public properties that are 
   calculated from the private ones.
 

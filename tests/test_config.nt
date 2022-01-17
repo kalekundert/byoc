@@ -7,8 +7,8 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.attr()
-      >     y = byoc.attr()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
       >     def get_argparse(self):
       >         import argparse
@@ -56,8 +56,8 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.attr()
-      >     y = byoc.attr()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
       >     def get_my_argparse(self):
       >         import argparse
@@ -106,9 +106,9 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.attr('<x>')
-      >     y = byoc.attr('<y>', default=None)
-      >     z = byoc.attr('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Do something.
       >
@@ -158,9 +158,9 @@ test_argparse_docopt_config:
       >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = byoc.attr('<x>')
-      >     y = byoc.attr('<y>', default=None)
-      >     z = byoc.attr('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -206,9 +206,9 @@ test_argparse_docopt_config:
       >     brief = byoc.config_attr()
       >     version = '1.0'
       >
-      >     x = byoc.attr('<x>')
-      >     y = byoc.attr('<y>', default=None)
-      >     z = byoc.attr('-z', default=None)
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('<y>', default=None)
+      >     z = byoc.param('-z', default=None)
     usage:
       > Usage:
       >     app <x> [<y>...] [-z]
@@ -251,8 +251,8 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.attr('<x>')
-      >     y = byoc.attr('-y', default='a')
+      >     x = byoc.param('<x>')
+      >     y = byoc.param('-y', default='a')
     usage:
       > Usage:
       >     app <x> [-y Y]

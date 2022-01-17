@@ -1,4 +1,4 @@
-test_attr:
+test_param:
   -
     id: keys
     obj:
@@ -10,13 +10,13 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
-      >     x1 = byoc.attr('x')
-      >     x2 = byoc.attr(Key(DummyConfig, 'x'))
-      >     y = byoc.attr(Key(DummyConfig))
-      >     z = byoc.attr(DummyConfig)
-      >     f1 = byoc.attr(f)
-      >     f2 = byoc.attr(Key(DummyConfig, f))
+      >     x = byoc.param()
+      >     x1 = byoc.param('x')
+      >     x2 = byoc.param(Key(DummyConfig, 'x'))
+      >     y = byoc.param(Key(DummyConfig))
+      >     z = byoc.param(DummyConfig)
+      >     f1 = byoc.param(f)
+      >     f2 = byoc.param(Key(DummyConfig, f))
     expected:
       x: 1
       x1: 1
@@ -38,17 +38,17 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
-      >     x = byoc.attr()
-      >     y = byoc.attr()
+      >     x = byoc.param()
+      >     y = byoc.param()
       >
-      >     x1 = byoc.attr('x', 'z')
-      >     y1 = byoc.attr('z', 'y')
+      >     x1 = byoc.param('x', 'z')
+      >     y1 = byoc.param('z', 'y')
       >
-      >     x2 = byoc.attr(
+      >     x2 = byoc.param(
       >             Key(DummyConfigA, 'x'),
       >             Key(DummyConfigB, 'y'),
       >     )
-      >     y2 = byoc.attr(
+      >     y2 = byoc.param(
       >             Key(DummyConfigB, 'y'),
       >             Key(DummyConfigA, 'x'),
       >     )
@@ -78,16 +78,16 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfigA, DummyConfigB]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
-      >     x1 = byoc.attr(
+      >     x1 = byoc.param(
       >             Key(DummyMixin, 'x'),
       >     )
-      >     x2 = byoc.attr(
+      >     x2 = byoc.param(
       >             Key(DummyConfigA, 'x'),
       >             Key(DummyConfigB, 'x'),
       >     )
-      >     x3 = byoc.attr(
+      >     x3 = byoc.param(
       >             Key(DummyConfigB, 'x'),
       >             Key(DummyConfigA, 'x'),
       >     )
@@ -105,7 +105,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(
+      >     x = byoc.param(
       >             Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             Key(DummyConfig, 'y', cast=lambda x: x-1),
       >     )
@@ -120,7 +120,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(
+      >     x = byoc.param(
       >             Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             Key(DummyConfig, 'y', cast=lambda y: y-1),
       >     )
@@ -133,7 +133,7 @@ test_attr:
       > class DummyObj:
       >     __config__ = []
       >
-      >     x = byoc.attr(
+      >     x = byoc.param(
       >         byoc.Method(lambda self: self.y),
       >     )
       >
@@ -158,9 +158,9 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.attr('x')
-      >     x2 = byoc.attr('x', pick=list)
-      >     x3 = byoc.attr('x', pick=list, default=0)
+      >     x1 = byoc.param('x')
+      >     x2 = byoc.param('x', pick=list)
+      >     x3 = byoc.param('x', pick=list, default=0)
     expected:
       x1: 1
       x2: [1,2]
@@ -171,7 +171,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default=1)
+      >     x = byoc.param(default=1)
     expected:
       x: 1
   -
@@ -179,7 +179,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default='')
+      >     x = byoc.param(default='')
     expected:
       x: ''
   -
@@ -187,7 +187,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default=None)
+      >     x = byoc.param(default=None)
     expected:
       x: None
   -
@@ -199,8 +199,8 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(default=1)
-      >     y = byoc.attr(default=1)
+      >     x = byoc.param(default=1)
+      >     y = byoc.param(default=1)
     expected:
       x: 1
       y: 0
@@ -209,7 +209,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default_factory=list)
+      >     x = byoc.param(default_factory=list)
       >
       > obj, decoy = DummyObj(), DummyObj()
       >
@@ -225,7 +225,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default=1, ignore=None)
+      >     x = byoc.param(default=1, ignore=None)
       >
       > obj = DummyObj()
       > obj.x = None
@@ -238,7 +238,7 @@ test_attr:
       > # None work normally.
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default=1)
+      >     x = byoc.param(default=1)
       >
       > obj = DummyObj()
       > obj.x = None
@@ -255,7 +255,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default=1, ignore=nc)
+      >     x = byoc.param(default=1, ignore=nc)
       >
       > obj = DummyObj()
       > obj.x = nc
@@ -271,7 +271,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(cast=lambda x: x+1)
+      >     x = byoc.param(cast=lambda x: x+1)
     expected:
       x: 2
   -
@@ -283,7 +283,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(
+      >     x = byoc.param(
       >             Key(DummyConfig, 'x', cast=lambda x: x+1),
       >             cast=lambda x: x*3,
       >     )
@@ -298,7 +298,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(
+      >     x = byoc.param(
       >             Key(DummyConfig, 'x'),
       >             cast=lambda x: x+1,
       >     )
@@ -310,7 +310,7 @@ test_attr:
       # The cast function is not applied to the default.
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(default='not-casted', cast=int)
+      >     x = byoc.param(default='not-casted', cast=int)
     expected:
       x: 'not-casted'
 
@@ -323,8 +323,8 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(get=lambda self, x: x + self.y)
-      >     y = byoc.attr()
+      >     x = byoc.param(get=lambda self, x: x + self.y)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
     expected:
@@ -338,8 +338,8 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(get=lambda self, x: x + self.y, default=1)
-      >     y = byoc.attr()
+      >     x = byoc.param(get=lambda self, x: x + self.y, default=1)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
     expected:
@@ -353,8 +353,8 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(get=lambda self, x: x + self.y)
-      >     y = byoc.attr()
+      >     x = byoc.param(get=lambda self, x: x + self.y)
+      >     y = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 1
@@ -369,9 +369,9 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     y = byoc.attr()
+      >     y = byoc.param()
       >
-      >     @byoc.attr()
+      >     @byoc.param()
       >     def x(self, x):
       >         return x + self.y
       >
@@ -384,7 +384,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -399,7 +399,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -414,7 +414,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -424,7 +424,7 @@ test_attr:
   -
     id: set-decoy
     obj:
-      > # Setting an attribute for one instance shouldn't affect other 
+      > # Setting a parameter for one instance shouldn't affect other
       > # instances.
       >
       > class DummyConfig(Config):
@@ -433,7 +433,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > decoy = DummyObj()
       > decoy.x = 2
@@ -444,14 +444,14 @@ test_attr:
   -
     id: set-decoy
     obj:
-      > # The value of an attribute should be kept even if the object is 
+      > # The value of a parameter should be kept even if the object is
       > # shallow-copied.
       >
       > from copy import copy
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = 2
@@ -463,10 +463,10 @@ test_attr:
     id: set-non-hashable
     obj:
       > # The code used to have a bug that prevented non-hashable objects from 
-      > # being assigned to attribute.  This test is to prevent regressions.
+      > # being assigned to parameters.  This test is to prevent regressions.
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x = [1]
@@ -485,7 +485,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -505,7 +505,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > obj.x
@@ -525,7 +525,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr(dynamic=True)
+      >     x = byoc.param(dynamic=True)
       >
       > obj = DummyObj()
       > obj.x
@@ -539,7 +539,7 @@ test_attr:
       > class DummyObj:
       >     __config__ = []
       >     x = 1
-      >     y = byoc.attr(Method(lambda self: self.x))
+      >     y = byoc.param(Method(lambda self: self.x))
       >
       > obj = DummyObj()
       > obj.y
@@ -553,7 +553,7 @@ test_attr:
       > class DummyObj:
       >     __config__ = []
       >     x = 1
-      >     y = byoc.attr(Method(lambda self: self.x, dynamic=False))
+      >     y = byoc.param(Method(lambda self: self.x, dynamic=False))
       >
       > obj = DummyObj()
       > obj.y
@@ -570,7 +570,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Func(f))
+      >     x = byoc.param(Func(f))
       >
       > obj = DummyObj()
       > obj.x
@@ -587,7 +587,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Func(f, dynamic=True))
+      >     x = byoc.param(Func(f, dynamic=True))
       >
       > obj = DummyObj()
       > obj.x
@@ -604,7 +604,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.attr(Func(f), dynamic=True)
+      >     x = byoc.param(Func(f), dynamic=True)
       >
       > obj = DummyObj()
       > obj.x
@@ -622,7 +622,7 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > class ChildObj(ParentObj):
       >     pass
@@ -638,7 +638,7 @@ test_attr:
       >         yield DictLayer({'x': 1})
       >
       > class ParentObj:
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > class ChildObj(ParentObj):
       >     __config__ = [DummyConfig]
@@ -657,7 +657,7 @@ test_attr:
       >     __config__ = [DummyConfig]
       >
       > class ChildObj(ParentObj):
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = ChildObj()
     expected:
@@ -677,7 +677,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [PendingConfig, ActiveConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
     expected:
       x: 2
   -
@@ -694,7 +694,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [PendingConfig, ActiveConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > obj = DummyObj()
       > byoc.load(obj)
@@ -702,7 +702,7 @@ test_attr:
       x: 1
 
   -
-    id: inherited-attr-key
+    id: inherited-param-key
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -710,14 +710,14 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr()
+      >     x = byoc.param()
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr('y')
+      >     x = byoc.inherited_param('y')
     expected:
       x: 2
   -
-    id: inherited-attr-cast
+    id: inherited-param-cast
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -725,14 +725,14 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr(cast=lambda x: x+1)
+      >     x = byoc.inherited_param(cast=lambda x: x+1)
     expected:
       x: 2
   -
-    id: inherited-attr-pick
+    id: inherited-param-pick
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -741,14 +741,14 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr(pick=list)
+      >     x = byoc.inherited_param(pick=list)
     expected:
       x: [1, 2]
   -
-    id: inherited-attr-default
+    id: inherited-param-default
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -756,14 +756,14 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr('y', default=1)
+      >     x = byoc.param('y', default=1)
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr(default=2)
+      >     x = byoc.inherited_param(default=2)
     expected:
       x: 2
   -
-    id: inherited-attr-ignore
+    id: inherited-param-ignore
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -771,17 +771,17 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr(ignore=None)
+      >     x = byoc.inherited_param(ignore=None)
       >
       > obj = DummyObj()
       > obj.x = None
     expected:
       x: 1
   -
-    id: inherited-attr-get
+    id: inherited-param-get
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -789,10 +789,10 @@ test_attr:
       >
       > class ParentObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.attr('y')
+      >     x = byoc.param('y')
       >
       > class DummyObj(ParentObj):
-      >     x = byoc.inherited_attr(get=lambda self, x: x+1)
+      >     x = byoc.inherited_param(get=lambda self, x: x+1)
     expected:
       x: 2
 
@@ -805,7 +805,7 @@ test_attr:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.toggle_attr(
+      >     x = byoc.toggle_param(
       >             Key(DummyConfig, toggle=True),
       >             default=True,
       >     )
@@ -816,7 +816,7 @@ test_attr:
     obj:
       > class DummyObj:
       >     __config__ = []
-      >     x = byoc.toggle_attr(
+      >     x = byoc.toggle_param(
       >             byoc.Value(True, toggle=True),
       >             default=True,
       >     )

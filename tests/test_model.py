@@ -152,11 +152,11 @@ def test_get_config_factories_err():
 @parametrize_from_file(
         schema=Schema({
             'obj': with_byoc.exec(get=get_obj, defer=True),
-            'attr': str,
+            'param': str,
             'expected': eval_meta,
         }),
 )
-def test_get_meta(obj, attr, expected):
+def test_get_meta(obj, param, expected):
     obj = obj()
-    meta = byoc.get_meta(obj, attr)
+    meta = byoc.get_meta(obj, param)
     assert meta == expected
