@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.28.0 (2022-01-17)
+### Feature
+* Allow Config.autoload to be set from Config.setup() ([`9735986`](https://github.com/kalekundert/byoc/commit/97359866775639cce424b4430c69ab1d97f03182))
+
+### Documentation
+* Tweak title and example ([`73bb1fe`](https://github.com/kalekundert/byoc/commit/73bb1fe3bc52ceadddfb94d82a7f4c08c9537897))
+
 ## v0.27.0 (2022-01-17)
 ### Feature
 * Rename 'attr' back to 'param' ([`2bc8e0b`](https://github.com/kalekundert/byoc/commit/2bc8e0b5e3b635ade5c69f28d681383967a758ec))
