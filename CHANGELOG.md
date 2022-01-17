@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.28.1 (2022-01-17)
+### Fix
+* Improve test coverage ([`2e8fa21`](https://github.com/kalekundert/byoc/commit/2e8fa212777468b0545a56cf28f80470f9c30598))
+
+### Documentation
+* Tweak wording ([`1385a2d`](https://github.com/kalekundert/byoc/commit/1385a2d6ecf023884cdcb5ae098c90c088aef588))
+
 ## v0.28.0 (2022-01-17)
 ### Feature
 * Allow Config.autoload to be set from Config.setup() ([`9735986`](https://github.com/kalekundert/byoc/commit/97359866775639cce424b4430c69ab1d97f03182))
