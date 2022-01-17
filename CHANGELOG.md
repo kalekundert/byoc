@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.27.0 (2022-01-17)
+### Feature
+* Rename 'attr' back to 'param' ([`2bc8e0b`](https://github.com/kalekundert/byoc/commit/2bc8e0b5e3b635ade5c69f28d681383967a758ec))
+
+### Documentation
+* Use a real m-dash ([`27cbfcb`](https://github.com/kalekundert/byoc/commit/27cbfcba0e95c4c1dcce3329fe514507820c7811))
+* Improve the introduction ([`6501a6e`](https://github.com/kalekundert/byoc/commit/6501a6eda103a220ecb4721190269d9c32a8f8dc))
+
 ## v0.26.0 (2022-01-14)
 ### Feature
 * Rename 'param' to 'attr' ([`30a37e7`](https://github.com/kalekundert/byoc/commit/30a37e7d111ad5e620ca44e74b1bf38a37bd0c80))
