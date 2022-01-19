@@ -45,9 +45,11 @@ class EnvironmentConfig(Config):
                 location="environment",
         )
 
+class CliConfig(Config):
+    autoload = False
 
 @autoprop
-class ArgparseConfig(Config):
+class ArgparseConfig(CliConfig):
     autoload = False
     parser_getter = lambda obj: obj.get_argparse()
     schema = None
@@ -78,9 +80,8 @@ class ArgparseConfig(Config):
     def get_brief(self):
         return self.parser.description
 
-
 @autoprop
-class DocoptConfig(Config):
+class DocoptConfig(CliConfig):
     autoload = False
     usage_getter = lambda obj: obj.__doc__
     version_getter = lambda obj: getattr(obj, '__version__')

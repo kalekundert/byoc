@@ -55,7 +55,7 @@ test_argparse_docopt_config:
       >     brief = byoc.config_attr()
       >
       >     x = byoc.param()
-      >     y = byoc.param()
+      >     y = byoc.param(Key(CliConfig, 'y'))
       >
       >     def get_argparse(self):
       >         import argparse
@@ -153,7 +153,7 @@ test_argparse_docopt_config:
       >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
       >
-      >     x = byoc.param('<x>')
+      >     x = byoc.param(Key(CliConfig, '<x>'))
       >     y = byoc.param('<y>', default=None)
       >     z = byoc.param('-z', default=None)
     usage:
