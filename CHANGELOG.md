@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.29.0 (2022-01-19)
+### Feature
+* Add a JSON config ([`c8e461c`](https://github.com/kalekundert/byoc/commit/c8e461c22aff73f868322a37993ca3a038d24c60))
+* Make a parent class for CLI configs ([`30f7567`](https://github.com/kalekundert/byoc/commit/30f75674bca565afb9f75c307cabf0394e7f11b9))
+
 ## v0.28.1 (2022-01-17)
 ### Fix
 * Improve test coverage ([`2e8fa21`](https://github.com/kalekundert/byoc/commit/2e8fa212777468b0545a56cf28f80470f9c30598))
