@@ -334,5 +334,14 @@ class NtConfig(FileConfig):
         keymap = {}
         return nt.load(path, keymap=keymap), keymap
 
+class JsonConfig(FileConfig):
+    suffixes = '.json',
+
+    @staticmethod
+    def _do_load(path):
+        import json
+        with open(path) as f:
+            return json.load(f)
+
 def unbind_method(f):
     return getattr(f, '__func__', f)

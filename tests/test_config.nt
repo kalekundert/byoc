@@ -499,6 +499,19 @@ test_file_config:
         location: x.nt
         linenos: {('x',): 0}
   -
+    id: json
+    obj:
+      > class DummyObj:
+      >     __config__ = [JsonConfig]
+      >     path = 'x.json'
+    files:
+      x.json:
+        > {"x": 1}
+    layers:
+      -
+        values: {'x': 1}
+        location: x.json
+  -
     id: path-setup
     obj:
       > class DummyObj:
