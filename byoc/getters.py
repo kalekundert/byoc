@@ -242,4 +242,6 @@ class BoundValue(BoundGetter):
         log.info("got hard-coded value: {getter.value!r}", getter=self)
         yield self.value, GetterMeta(self.parent), False
 
-
+def jmes(expr):
+    from jmespath import compile
+    return compile(expr).search

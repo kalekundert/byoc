@@ -19,6 +19,7 @@ requires = [
   'pyyaml',
   'tidyexc',
   'tomli',
+  'jmespath',
 ]
 classifiers = [
   'Programming Language :: Python :: 3',

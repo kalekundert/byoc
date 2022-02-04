@@ -20,7 +20,7 @@ from .configs.configs import *
 from .configs.layers import Layer, DictLayer, FileNotFoundLayer, dict_like
 from .configs.attrs import config_attr
 from .configs.on_load import on_load
-from .getters import Key, Method, Func, Value
+from .getters import Key, Method, Func, Value, jmes
 from .pickers import first
 from .meta import meta_view
 from .errors import NoValueFound
