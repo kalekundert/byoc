@@ -1,0 +1,20 @@
+button.copybtn {
+  opacity: 1;
+}
+
+/* These colors come from Wyrm, which is where the Sphinx RTD theme imports its 
+ * color scheme from:
+ * git@github.com/snide/wyrm/sass/wyrm_core/_wy_variables.sass
+ */
+:root {
+  --tabs--label-text: hsl(0,0%,25%);
+  --tabs--label-text--hover: #2980B9;  /*blue*/
+  --tabs--label-text--active: #2980B9;  /*blue*/
+  --tabs--label-text--active--hover: #2980B9;  /*blue*/
+
+  --tabs--label-border--hover: transparent;
+  --tabs--label-border--active: #2980B9;  /*blue*/
+  --tabs--label-border--active--hover: #2980B9;  /*blue*/
+
+  --tabs--border: none;
+}
