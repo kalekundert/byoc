@@ -25,8 +25,8 @@ class NoValueFound(AttributeError):
     `NoValueFound` is a bit of an exception to this philosophy.  It's raised by 
     the default picker (`first`) in the event that no values were found for an 
     parameter.  It's interpreted by some parts of BYOC (specifically the 
-    `Method` and `Function` getters) to mean that an attempt to get a value 
-    should be silently skipped.  Both of these behaviors can be overridden, but 
+    `Method` and `Func` getters) to mean that an attempt to get a value should 
+    be silently skipped.  Both of these behaviors can be overridden, but 
     they're useful defaults.
     """
 

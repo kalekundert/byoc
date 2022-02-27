@@ -53,6 +53,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf api/
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml

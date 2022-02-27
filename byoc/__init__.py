@@ -7,6 +7,9 @@ An object-oriented framework for command-line apps.
 __version__ = '0.28.1'
 
 # Define the public API
+pre_import_keys = set()
+pre_import_keys |= set(globals())
+
 from .app import App, BareMeta
 from .model import (
         init, load, reload, insert_config, insert_configs, append_config,
@@ -25,3 +28,11 @@ from .pickers import first
 from .meta import meta_view
 from .errors import NoValueFound
 from .utils import lookup
+
+# Make everything imported above appear to come from this module:
+post_import_keys = set(globals())
+for key in post_import_keys - pre_import_keys:
+    globals()[key].__module__ = 'byoc'
+del pre_import_keys, post_import_keys, key
+
+toggle.__name__ = 'toggle'

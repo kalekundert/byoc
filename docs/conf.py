@@ -22,9 +22,11 @@ extensions = [
         'sphinx.ext.autosummary',
         'sphinx.ext.viewcode',
         'sphinx.ext.intersphinx',
+        'sphinx.ext.napoleon',
         'sphinx_rtd_theme',
 ]
 intersphinx_mapping = { #
+        'python': ('https://docs.python.org/3', None),
 }
 autosummary_generate = True
 autodoc_default_options = {
