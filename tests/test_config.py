@@ -3,7 +3,7 @@
 import byoc
 import pytest
 import parametrize_from_file
-import sys, os, shlex
+import sys, os, shlex, re
 
 from pytest_unordered import unordered
 from unittest import mock
@@ -73,6 +73,9 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
         # Note that accessing these attributes may trigger `init()`, e.g. if 
         # the usage text contains default values based on BYOC-managed 
         # attributes.
+        if sys.version_info[:2] >= (3, 10):
+            usage = re.sub('(?m)^optional arguments:$', 'options:', usage)
+
         assert test_obj.usage == usage
         assert test_obj.brief == brief
 
