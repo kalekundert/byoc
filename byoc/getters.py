@@ -195,6 +195,19 @@ class BoundKey(BoundGetter):
                 continue
 
             if not wrapped_config.layers:
+                # If a config has no layers, that probably means an error 
+                # occurred when the config was being loaded.  Most likely, the 
+                # cause of this error was that some attribute of the object 
+                # either wasn't defined, or didn't have an appropriate value.  
+                # If the attribute in question was given an appropriate value 
+                # after the config was loaded, the config will need to be 
+                # reloaded before that value takes effect.
+                #
+                # That said, I decided to only include a literal description of 
+                # the error here, and to leave it to the configs to suggest how 
+                # to fix the problem, e.g. by calling `reload()`.  The reason 
+                # is that I think a generic message would be wrong/confusing in 
+                # too many cases.
                 log.info("skipped {config}: loaded, but no layers", config=config)
                 config.load_status(log)
                 continue
@@ -209,7 +222,6 @@ class BoundKey(BoundGetter):
                             LayerMeta(self.parent, layer),
                             config.dynamic,
                     )
-
 
 class BoundCallable(BoundGetter):
 

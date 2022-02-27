@@ -50,7 +50,6 @@ class CliConfig(Config):
 
 @autoprop
 class ArgparseConfig(CliConfig):
-    autoload = False
     parser_getter = lambda obj: obj.get_argparse()
     schema = None
 
@@ -82,7 +81,6 @@ class ArgparseConfig(CliConfig):
 
 @autoprop
 class DocoptConfig(CliConfig):
-    autoload = False
     usage_getter = lambda obj: obj.__doc__
     version_getter = lambda obj: getattr(obj, '__version__')
     usage_io_getter = lambda obj: sys.stdout
@@ -252,13 +250,14 @@ class AppDirsConfig(Config):
 
 @autoprop
 class FileConfig(Config):
+    path = None
     path_getter = lambda obj: obj.path
     schema = None
     root_key = None
 
     def __init__(self, obj, path=None, *, path_getter=None, schema=None, root_key=None, **kwargs):
         super().__init__(obj, **kwargs)
-        self._path = path
+        self._path = path or self.path
         self._path_getter = path_getter or unbind_method(self.path_getter)
         self.schema = schema or self.schema
         self.root_key = root_key or self.root_key
@@ -266,9 +265,19 @@ class FileConfig(Config):
     def get_paths(self):
         try:
             p = self._path or self._path_getter(self.obj)
+
         except AttributeError as err:
-            self.load_status = lambda log, err=err: log.info("failed to get path(s):\nraised {err.__class__.__name__}: {err}", err=err)
+
+            def load_status(log, err=err, config=self):
+                log.info("failed to get path(s):\nraised {err.__class__.__name__}: {err}", err=err)
+                if config.paths:
+                    br = '\n'
+                    log.info(f"the following path(s) were specified post-load:{br}{br.join(str(p) for p in config.paths)}")
+                    log.info("to use these path(s), call `byoc.reload()`")
+
+            self.load_status = load_status
             return []
+
 
         if isinstance(p, Iterable) and not isinstance(p, str):
             return [Path(pi) for pi in p]

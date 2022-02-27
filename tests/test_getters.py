@@ -5,7 +5,6 @@ import parametrize_from_file
 import byoc
 
 from byoc.errors import Log
-from re_assert import Matches
 from more_itertools import zip_equal, unzip, padded
 from param_helpers import *
 
@@ -91,8 +90,7 @@ def test_getter_iter_values(getter, obj, param, expected, error):
         assert list(metas) == expected['meta']
         assert list(dynamic) == expected['dynamic']
 
-        for log_str, pattern in zip_equal(log._err.info_strs, expected['log']):
-            Matches(pattern).assert_matches(log_str)
+        assert_log_matches(log, expected['log'])
 
 @parametrize_from_file(
         schema=Schema({

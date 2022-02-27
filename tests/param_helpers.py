@@ -2,10 +2,18 @@
 
 import byoc
 import pytest
+import sys
 
 from parametrize_from_file.voluptuous import Namespace, empty_ok
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
+from re_assert import Matches
+
+if sys.version_info[:2] >= (3, 10):
+    from functools import partial
+    zip_equal = partial(zip, strict=True)
+else:
+    from more_itertools import zip_equal
 
 with_py = Namespace('from operator import itemgetter', Mock=Mock)
 with_byoc = Namespace(byoc, 'from byoc import *')
@@ -174,6 +182,10 @@ def collect_layers(obj):
             i: wc.layers
             for i, wc in enumerate(wrapped_configs)
     }
+
+def assert_log_matches(log, expected):
+    for log_str, pattern in zip_equal(log._err.info_strs, expected):
+        Matches(pattern).assert_matches(log_str)
 
 def find_param(obj, name=None):
     from more_itertools import only
