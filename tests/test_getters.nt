@@ -232,7 +232,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self: self.x)
@@ -252,7 +251,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
       >     def helper(self):
@@ -275,7 +273,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self, y: self.x + y).partial(1)
@@ -295,7 +292,6 @@ test_getter_iter_values:
     id: method-dynamic
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self: self.x, dynamic=False)
@@ -315,7 +311,7 @@ test_getter_iter_values:
     id: method-err
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
     getter: Method(lambda self: 1/0)
     error:
@@ -324,7 +320,7 @@ test_getter_iter_values:
     id: method-err-skip
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
     getter: Method(lambda self: 1/0, skip=ZeroDivisionError)
     expected:
@@ -339,7 +335,6 @@ test_getter_iter_values:
     id: method-err-skip-no-value
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param()
       >
     getter: Method(lambda self: self.x)
@@ -915,6 +910,22 @@ test_getter_iter_values:
           > /path/to/file:
           > found 'x': 1
   -
+    id: key-no-configs
+    obj:
+      > class DummyConfig(Config):
+      >     pass
+      >
+      > class DummyObj:
+      >     pass
+    getter:
+      > Key(DummyConfig)
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        - no configs of class DummyConfig
+  -
     id: key-no-layers
     obj:
       > class DummyConfig(Config):
@@ -1095,7 +1106,6 @@ test_getter_kwargs_err:
     id: kwargs-err
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.toggle_param()
 
     getter: Value(1, cats=int, toggle=True)

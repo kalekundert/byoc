@@ -161,15 +161,6 @@ def test_get_config_factories():
     obj = Obj()
     assert byoc.model.get_config_factories(obj) is sentinel
 
-def test_get_config_factories_err():
-    obj = DummyObj()
-
-    with pytest.raises(byoc.ApiError) as err:
-        byoc.model.get_config_factories(obj)
-
-    assert err.match('object not configured for use with byoc')
-    assert err.match(no_templates)
-
 @parametrize_from_file(
         schema=Schema({
             'obj': with_byoc.exec(get=get_obj, defer=True),

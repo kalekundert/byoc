@@ -12,7 +12,7 @@ class DummyObj:
 
 @parametrize_from_file(
         schema=Schema({
-            Optional('obj', default='class DummyObj: __config__ = []'): str,
+            Optional('obj', default='class DummyObj: pass'): str,
             Optional('param', default=''): str,
             'getters': empty_ok([str]),
             Optional('default', default=''): str,

@@ -173,7 +173,6 @@ def test_param_set_non_comparable():
             raise AssertionError
 
     class DummyObj:
-        __config__ = []
         x = byoc.param()
 
     obj = DummyObj()

@@ -27,7 +27,7 @@ def test_getter_repr(getter, expected):
 
 @parametrize_from_file(
         schema=Schema({
-            Optional('obj', default='class DummyObj:\n __config__ = []'): str,
+            Optional('obj', default='class DummyObj: pass'): str,
             Optional('param', default='byoc.param()'): str,
             'getter': str,
             'given': with_py.eval,
@@ -54,7 +54,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
 
 @parametrize_from_file(
         schema=Schema({
-            Optional('obj', default='class DummyObj: __config__ = []'): str,
+            Optional('obj', default='class DummyObj: pass'): str,
             Optional('param', default=''): str,
             'getter': str,
             **with_byoc.error_or({
@@ -94,7 +94,7 @@ def test_getter_iter_values(getter, obj, param, expected, error):
 
 @parametrize_from_file(
         schema=Schema({
-            Optional('obj', default='class DummyObj: __config__ = []'): str,
+            Optional('obj', default='class DummyObj: pass'): str,
             Optional('param', default=''): str,
             'getter': str,
             'error': with_byoc.error,

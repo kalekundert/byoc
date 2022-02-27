@@ -174,8 +174,6 @@ test_param:
     id: method-two-instances
     obj:
       > class DummyObj:
-      >     __config__ = []
-      >
       >     x = byoc.param(
       >         byoc.Method(lambda self: self.y),
       >     )
@@ -213,7 +211,6 @@ test_param:
     id: default-truthy
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=1)
     expected:
       x: 1
@@ -221,7 +218,6 @@ test_param:
     id: default-falsey
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default='')
     expected:
       x: ''
@@ -229,7 +225,6 @@ test_param:
     id: default-falsey
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=None)
     expected:
       x: None
@@ -251,7 +246,6 @@ test_param:
     id: default-factory
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default_factory=list)
       >
       > obj, decoy = DummyObj(), DummyObj()
@@ -266,7 +260,6 @@ test_param:
     id: default-overspecified-err
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=1, default_factory=list)
     error:
       type: byoc.ApiError
@@ -280,7 +273,6 @@ test_param:
     id: ignore
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=1, ignore=None)
       >
       > obj = DummyObj()
@@ -293,7 +285,6 @@ test_param:
       > # Not directly testing 'ignore', just making sure that assignments to 
       > # None work normally.
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=1)
       >
       > obj = DummyObj()
@@ -310,7 +301,6 @@ test_param:
       > nc = NotComparable()
       >
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default=1, ignore=nc)
       >
       > obj = DummyObj()
@@ -365,7 +355,6 @@ test_param:
     obj:
       # The cast function is not applied to the default.
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(default='not-casted', cast=int)
     expected:
       x: 'not-casted'
@@ -439,7 +428,6 @@ test_param:
     id: set
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param()
       >
       > obj = DummyObj()
@@ -506,7 +494,6 @@ test_param:
       > from copy import copy
       >
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param()
       >
       > obj = DummyObj()
@@ -521,7 +508,6 @@ test_param:
       > # The code used to have a bug that prevented non-hashable objects from 
       > # being assigned to parameters.  This test is to prevent regressions.
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param()
       >
       > obj = DummyObj()
@@ -593,7 +579,6 @@ test_param:
     id: dynamic-method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >     y = byoc.param(Method(lambda self: self.x))
       >
@@ -607,7 +592,6 @@ test_param:
     id: dynamic-method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >     y = byoc.param(Method(lambda self: self.x, dynamic=False))
       >
@@ -625,7 +609,6 @@ test_param:
       >     return d['x']
       >
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Func(f))
       >
       > obj = DummyObj()
@@ -642,7 +625,6 @@ test_param:
       >     return d['x']
       >
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Func(f, dynamic=True))
       >
       > obj = DummyObj()
@@ -659,7 +641,6 @@ test_param:
       >     return d['x']
       >
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Func(f), dynamic=True)
       >
       > obj = DummyObj()
@@ -855,7 +836,7 @@ test_param:
     id: inherited-param-err
     obj:
       > class ParentObj:
-      >     __config__ = []
+      >     pass
       >
       > class DummyObj(ParentObj):
       >     y = byoc.inherited_param()
@@ -888,13 +869,10 @@ test_param:
     id: toggle-value
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.toggle_param(
       >             byoc.Value(True, toggle=True),
       >             default=True,
       >     )
     expected:
       x: False
-
-test_param_err:
 
