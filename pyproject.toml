@@ -35,6 +35,7 @@ tests = [
   'parametrize_from_file',
   'voluptuous',
   're-assert',
+  'dataclasses',
 ]
 docs = [
   'sphinx',
