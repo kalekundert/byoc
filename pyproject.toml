@@ -50,10 +50,6 @@ docs = [
 'Continuous Integration' = 'https://github.com/kalekundert/byoc/actions'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/byoc'
 
-[tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.rst'"
-doctest_optionflags = 'NORMALIZE_WHITESPACE'
-
 [tool.pccc]
 header_length = 72
 types = ["chore", "docs", "feat", "fix", "refactor", "style", "test", "wip"]
