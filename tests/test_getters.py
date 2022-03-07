@@ -67,7 +67,9 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
             }),
         }),
 )
-def test_getter_iter_values(getter, obj, param, expected, error):
+def test_getter_iter_values(getter, obj, param, expected, error, monkeypatch):
+    monkeypatch.setenv('BYOC_VERBOSE', '1')
+
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = find_param(obj, param)

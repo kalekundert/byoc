@@ -20,7 +20,9 @@ class DummyObj:
             'log': empty_ok([str]),
         })
 )
-def test_values_iter(obj, param, getters, default, expected, log):
+def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
+    monkeypatch.setenv('BYOC_VERBOSE', '1')
+
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = find_param(obj, param)

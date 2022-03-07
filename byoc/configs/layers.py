@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import functools
+import functools, os
 from inspect import isclass
 from ..utils import lookup
 
@@ -148,8 +148,20 @@ def repr_dict_short(d):
     from textwrap import shorten
     from pprint import pformat
 
-    return shorten(
-            pformat(d, depth=1, compact=True, width=sys.maxsize),
-            width=70,
-            placeholder='…',
-    )
+    if os.environ.get('BYOC_VERBOSE'):
+        return pformat(d, depth=1, compact=True, width=sys.maxsize)
+
+    try:
+        n_max = int(os.environ['BYOC_DICT_KEY_LIMIT'])
+    except (KeyError, ValueError):
+        n_max = 20
+
+    if len(d) <= n_max:
+        key_strs = [f'{k!r}: …' for k in d]
+    else:
+        n = n_max // 2
+        key_strs = [f'{k!r}: …' for k in list(d)[:n]]
+        key_strs.append(f'and {len(d) - n} others')
+
+    dict_str = '{' + ', '.join(key_strs) + '}'
+    return f'{dict_str}\nTo see the whole dictionary, set the following environment variable: BYOC_VERBOSE=1'
