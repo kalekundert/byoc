@@ -111,20 +111,3 @@ def test_getter_kwargs_err(obj, param, getter, error):
     with error:
         getter.bind(obj, param)
 
-def test_jmes():
-    from byoc import Key, Config, DictLayer, jmes
-
-    class DummyConfig(Config):
-        def load(self):
-            yield DictLayer({'x': {'y': 1}})
-
-    class DummyObj:
-        __config__ = [DummyConfig]
-        x = byoc.param(
-                Key(DummyConfig, jmes('x.y')),
-        )
-
-    obj = DummyObj()
-    assert obj.x == 1
-
-
