@@ -16,7 +16,7 @@ test_arithmetic_eval:
       message:
         - unable to evaluate arithmetic expression
         - expression: "a"
-        - 'a' is not a number
+        # In python>=3.8, this will specify: 'a' is not a number
   -
     id: err-literal-list
     expr: []

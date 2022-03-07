@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from ..errors import Error
 from typing import Union, Any
 
@@ -46,13 +47,18 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
 
     def eval_node(node):
 
-        if isinstance(node, ast.Constant):
-            if isinstance(node.value, (int, float)):
-                return node.value
-            else:
-                err = ArithmeticError(expr, non_number=node.value)
-                err.blame += "{non_number!r} is not a number"
-                raise err
+        if sys.version_info[:2] < (3, 8):
+            if isinstance(node, ast.Num):
+                return node.n
+
+        else:
+            if isinstance(node, ast.Constant):
+                if isinstance(node.value, (int, float)):
+                    return node.value
+                else:
+                    err = ArithmeticError(expr, non_number=node.value)
+                    err.blame += "{non_number!r} is not a number"
+                    raise err
 
         if isinstance(node, ast.BinOp):
             try:
