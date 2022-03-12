@@ -5,22 +5,6 @@ import pytest
 import parametrize_from_file
 from param_helpers import *
 
-def test_jmes():
-    from byoc import Key, Config, DictLayer, jmes
-
-    class DummyConfig(Config):
-        def load(self):
-            yield DictLayer({'x': {'y': 1}})
-
-    class DummyObj:
-        __config__ = [DummyConfig]
-        x = byoc.param(
-                Key(DummyConfig, jmes('x.y')),
-        )
-
-    obj = DummyObj()
-    assert obj.x == 1
-
 @parametrize_from_file(
         schema=Schema({
             'expr': str,
