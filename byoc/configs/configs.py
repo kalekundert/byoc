@@ -269,11 +269,11 @@ class FileConfig(Config):
         except AttributeError as err:
 
             def load_status(log, err=err, config=self):
-                log.info("failed to get path(s):\nraised {err.__class__.__name__}: {err}", err=err)
+                log += f"failed to get path(s):\nraised {err.__class__.__name__}: {err}"
                 if config.paths:
                     br = '\n'
-                    log.info(f"the following path(s) were specified post-load:{br}{br.join(str(p) for p in config.paths)}")
-                    log.info("to use these path(s), call `byoc.reload()`")
+                    log += f"the following path(s) were specified post-load:{br}{br.join(str(p) for p in config.paths)}"
+                    log += "to use these path(s), call `byoc.reload()`"
 
             self.load_status = load_status
             return []

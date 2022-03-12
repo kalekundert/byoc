@@ -793,7 +793,7 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(Config):
       >     def load(self):
-      >         self.load_status = lambda log: log.hint('config status')
+      >         self.load_status = lambda log: log.info('config status')
       >         yield DictLayer({'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
@@ -820,7 +820,7 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(Config):
       >     def load(self):
-      >         self.load_status = lambda log: log.hint('config status')
+      >         self.load_status = lambda log: log.info('config status')
       >         return
       >         yield
       >

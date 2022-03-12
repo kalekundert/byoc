@@ -28,7 +28,7 @@ class ValuesIter:
         self.dynamic = False
 
         if not self.getters:
-            self.log.info("nowhere to look for values")
+            self.log += "nowhere to look for values"
 
         for getter in self.getters:
             for value, meta, dynamic in getter.iter_values(self.log):
@@ -38,11 +38,11 @@ class ValuesIter:
 
         if self.default is not UNSPECIFIED:
             have_value = True
-            self.log.info("got default value: {default!r}", default=self.default)
+            self.log += lambda: f"got default value: {self.default!r}"
             yield self.default, DefaultMeta()
 
         if not have_value:
-            self.log.hint("did you mean to provide a default?")
+            self.log += "did you mean to provide a default?"
 
 def first(values: Iterable):
     try:

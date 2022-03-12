@@ -44,9 +44,9 @@ class DictLayer(Layer):
             try:
                 values = lookup(values, self.root_key)
             except KeyError:
-                log.info(
-                        lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
-                        layer=self, values=values, key=self.root_key,
+                log += lambda: format_loc(
+                        f"did not find {self.root_key!r} in {repr_dict_short(values)}",
+                        self.location,
                 )
                 return
 
@@ -56,18 +56,15 @@ class DictLayer(Layer):
         try:
             value = lookup(values, key)
         except KeyError:
-            log.info(
-                    lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
-                    layer=self, values=values, key=key,
+            log += lambda: format_loc(
+                    f"did not find {key!r} in {repr_dict_short(values)}",
+                    self.location,
             )
         else:
-            log.info(
-                    lambda e: format_loc(
-                        f"called: {e.key!r}\nreturned: {e.value!r}" if callable(e.key) else
-                        f"found {e.key!r}: {e.value!r}",
-                        e.layer.location,
-                    ),
-                    layer=self, key=key, value=value,
+            log += lambda: format_loc(
+                    f"called: {key!r}\nreturned: {value!r}" if callable(key) else
+                    f"found {key!r}: {value!r}",
+                    self.location,
             )
             yield value
 
@@ -101,7 +98,7 @@ class FileNotFoundLayer(Layer):
         self.location = path
 
     def iter_values(self, key, log):
-        log.info("file does not exist: {path}\ndid not find {key!r}", path=self.location, key=key)
+        log += f"file does not exist: {self.location}\ndid not find {key!r}"
         return
         yield  # pragma: no cover
 

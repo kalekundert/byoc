@@ -52,7 +52,7 @@ def test_layer_iter_values(layer, key, expected, log, monkeypatch):
     layer = layer()
     actual_log = Log()
     assert list(layer.iter_values(key, actual_log)) == expected
-    assert actual_log._err.info_strs == log
+    assert actual_log.message_strs == log
 
 @parametrize_from_file(
         schema=Schema({

@@ -184,14 +184,14 @@ class BoundKey(BoundGetter):
         assert self.wrapped_configs is not None
 
         if not self.wrapped_configs:
-            log.info("no configs of class {config_cls.__name__}", config_cls=self.parent.config_cls)
+            log += f"no configs of class {self.parent.config_cls.__name__}"
 
         for wrapped_config in self.wrapped_configs:
             config = wrapped_config.config
 
             if not wrapped_config.is_loaded:
-                log.info("skipped {config}: not loaded", config=config)
-                log.hint("did you mean to call `byoc.load()`?")
+                log += f"skipped {config}: not loaded"
+                log += "did you mean to call `byoc.load()`?"
                 continue
 
             if not wrapped_config.layers:
@@ -208,11 +208,11 @@ class BoundKey(BoundGetter):
                 # to fix the problem, e.g. by calling `reload()`.  The reason 
                 # is that I think a generic message would be wrong/confusing in 
                 # too many cases.
-                log.info("skipped {config}: loaded, but no layers", config=config)
+                log += f"skipped {config}: loaded, but no layers"
                 config.load_status(log)
                 continue
 
-            log.info("queried {config}:", config=config)
+            log += f"queried {config}:"
             config.load_status(log)
 
             for layer in wrapped_config:
@@ -237,10 +237,9 @@ class BoundCallable(BoundGetter):
         try:
             value = self.callable(*self.partial_args, **self.partial_kwargs)
         except self.exceptions as err:
-            log.info("called: {getter.callable}\nraised {err.__class__.__name__}: {err}", getter=self, err=err)
-            pass
+            log += f"called: {self.callable}\nraised {err.__class__.__name__}: {err}"
         else:
-            log.info("called: {getter.callable}\nreturned: {value!r}", getter=self, value=value)
+            log += lambda: f"called: {self.callable}\nreturned: {value!r}"
             yield value, GetterMeta(self.parent), self.dynamic
 
 
@@ -251,5 +250,5 @@ class BoundValue(BoundGetter):
         self.value = value
 
     def iter_values(self, log):
-        log.info("got hard-coded value: {getter.value!r}", getter=self)
+        log += lambda: f"got hard-coded value: {self.value!r}"
         yield self.value, GetterMeta(self.parent), False

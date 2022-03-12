@@ -184,7 +184,7 @@ def collect_layers(obj):
     }
 
 def assert_log_matches(log, expected):
-    for log_str, pattern in zip_equal(log._err.info_strs, expected):
+    for log_str, pattern in zip_equal(log.message_strs, expected):
         Matches(pattern).assert_matches(log_str)
 
 def find_param(obj, name=None):
