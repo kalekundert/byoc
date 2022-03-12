@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-from ..errors import Error
-from typing import Union, Any
-
-def jmes(expr: str) -> Any:
-    from jmespath import compile
-    return compile(expr).search
+from .errors import Error
+from typing import Union
 
 def arithmetic_eval(expr: str) -> Union[int, float]:
     """\
@@ -85,13 +81,13 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
 
 def int_eval(expr: str) -> int:
     """\
-    Same as `arithemtic_eval()`, but convert the result to `int`.
+    Same as `arithmetic_eval()`, but convert the result to `int`.
     """
     return int(arithmetic_eval(expr))
 
 def float_eval(expr: str) -> float:
     """\
-    Same as `arithemtic_eval()`, but convert the result to `float`.
+    Same as `arithmetic_eval()`, but convert the result to `float`.
     """
     return float(arithmetic_eval(expr))
 

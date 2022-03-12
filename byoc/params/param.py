@@ -3,7 +3,7 @@
 from .. import model
 from ..model import UNSPECIFIED
 from ..getters import Getter, Key, ImplicitKey
-from ..pickers import ValuesIter, first
+from ..pick import ValuesIter, first
 from ..meta import NeverAccessedMeta, ExceptionMeta, SetAttrMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log

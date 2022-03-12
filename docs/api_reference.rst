@@ -54,8 +54,6 @@ Parameters
    byoc.toggle_param
    byoc.toggle
    byoc.pick_toggled
-   byoc.jmes
-   byoc.first
 
 Getters
 =======
@@ -66,6 +64,17 @@ Getters
    byoc.Method
    byoc.Func
    byoc.Value
+
+Key/Pick/Cast functions
+=======================
+.. autosummary::
+   :toctree: api
+
+   byoc.first
+   byoc.jmes
+   byoc.int_eval
+   byoc.float_eval
+   byoc.arithmetic_eval
 
 Metadata
 ========

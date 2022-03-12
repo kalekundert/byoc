@@ -36,7 +36,7 @@ def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
             for x in getters
     ]
 
-    values = byoc.pickers.ValuesIter(bound_getters, default, Log())
+    values = byoc.pick.ValuesIter(bound_getters, default, Log())
     assert list(values) == expected
     assert values.log._err.info_strs == log
 

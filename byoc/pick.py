@@ -3,6 +3,7 @@
 from .model import UNSPECIFIED
 from .meta import UnknownMeta, DefaultMeta
 from .errors import NoValueFound
+from typing import Iterable
 
 class ValuesIter:
 
@@ -43,7 +44,7 @@ class ValuesIter:
         if not have_value:
             self.log.hint("did you mean to provide a default?")
 
-def first(values):
+def first(values: Iterable):
     try:
         value, meta = next(iter(values.with_meta))
         values.meta = meta
