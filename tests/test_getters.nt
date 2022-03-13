@@ -150,6 +150,33 @@ test_getter_cast_value:
       message:
         - invalid literal for int() with base 10: 'a'
 
+  -
+    id: context-obj
+    obj:
+      > class DummyObj:
+      >     y = 2
+      >
+      > def f(context: Context):
+      >     return context.value, context.obj.y
+      >
+    getter: Key(Config, cast=f)
+    given: 1
+    expected: 1, 2
+  -
+    id: context-meta
+    obj:
+      > class DummyObj:
+      >     pass
+      >
+      > def f(context: Context):
+      >     return context.value, context.meta.y
+    meta:
+      > class DummyMeta:
+      >     y = 2
+    getter: Key(Config, cast=f)
+    given: 1
+    expected: 1, 2
+
 test_getter_iter_values:
   -
     id: value

@@ -1,8 +1,33 @@
 #!/usr/bin/env python3
 
 import sys
+import inspect
+
 from .errors import Error
+from more_itertools import first
 from typing import Union
+
+class Context:
+
+    def __init__(self, value, meta, obj):
+        self.value = value
+        self.meta = meta
+        self.obj = obj
+
+def call_with_context(f, context):
+    try:
+        sig = inspect.signature(f)
+        param = first(sig.parameters.values())
+
+    except ValueError:
+        pass
+
+    else:
+        if param.annotation is Context:
+            return f(context)
+
+    return f(context.value)
+
 
 def arithmetic_eval(expr: str) -> Union[int, float]:
     """\

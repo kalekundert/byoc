@@ -2,6 +2,7 @@
 
 from . import model
 from .model import UNSPECIFIED
+from .cast import Context, call_with_context
 from .meta import GetterMeta, LayerMeta
 from .errors import ApiError, NoValueFound
 from more_itertools import value_chain, always_iterable
@@ -164,10 +165,11 @@ class BoundGetter:
     def iter_values(self, log):
         raise NotImplementedError
 
-    def cast_value(self, x):
+    def cast_value(self, value, meta):
         for f in self.cast_funcs:
-            x = f(x)
-        return x
+            context = Context(value, meta, self.obj)
+            value = call_with_context(f, context)
+        return value
 
 class BoundKey(BoundGetter):
 
@@ -252,3 +254,9 @@ class BoundValue(BoundGetter):
     def iter_values(self, log):
         log += lambda: f"got hard-coded value: {self.value!r}"
         yield self.value, GetterMeta(self.parent), False
+
+
+
+
+
+

@@ -29,6 +29,7 @@ def test_getter_repr(getter, expected):
         schema=Schema({
             Optional('obj', default='class DummyObj: pass'): str,
             Optional('param', default='byoc.param()'): str,
+            Optional('meta', default='class DummyMeta: pass'): with_py.exec(get=get_meta),
             'getter': str,
             'given': with_py.eval,
             **with_byoc.error_or({
@@ -36,7 +37,7 @@ def test_getter_repr(getter, expected):
             }),
         }),
 )
-def test_getter_cast_value(obj, param, getter, given, expected, error):
+def test_getter_cast_value(obj, param, meta, getter, given, expected, error):
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = with_obj.eval(param)
@@ -50,7 +51,7 @@ def test_getter_cast_value(obj, param, getter, given, expected, error):
     bound_getter = getter.bind(obj, param)
 
     with error:
-        assert bound_getter.cast_value(given) == expected
+        assert bound_getter.cast_value(given, meta) == expected
 
 @parametrize_from_file(
         schema=Schema({

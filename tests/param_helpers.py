@@ -216,4 +216,5 @@ def get_obj_or_cls(obj_name, cls_name=None):
 
 get_obj = get_obj_or_cls('obj')
 get_config = get_obj_or_cls('config')
+get_meta = get_obj_or_cls('meta')
 no_templates = '^[^{}]*$'

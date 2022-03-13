@@ -1,3 +1,64 @@
+test_call_with_context:
+  -
+    id: normal-func
+    func:
+      > def f(x):
+      >   return x + 1
+    value: 1
+    expected: 2
+  -
+    id: optional-args-ok
+    func:
+      > def f(x, y=2):
+      >   return x + y
+    value: 1
+    expected: 3
+  -
+    id: not-introspectable
+    func:
+      > f = set
+    value: [1, 2, 1]
+    expected: {1, 2}
+  -
+    id: context-value
+    func:
+      > def f(context: Context):
+      >   return context.value + 1
+    value: 1
+    expected: 2
+  -
+    id: context-meta
+    func:
+      > def f(context: Context):
+      >   return context.value + context.meta.y
+    meta:
+      > class DummyMeta:
+      >     y = 2
+    value: 1
+    expected: 3
+  -
+    id: context-obj
+    func:
+      > def f(context: Context):
+      >   return context.value + context.obj.y
+    obj:
+      > class DummyObj:
+      >     pass
+      >
+      > obj = DummyObj()
+      > obj.y = 2
+    value: 1
+    expected: 3
+  -
+    id: context-value
+    func:
+      > def f(context: Context):
+      >   raise ValueError(f'value: {context.value}')
+    value: 1
+    error:
+      type: ValueError
+      message: value: 1
+
 test_arithmetic_eval:
   # Literals
   -

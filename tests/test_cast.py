@@ -3,7 +3,25 @@
 import byoc
 import pytest
 import parametrize_from_file
+
+from byoc.cast import call_with_context
 from param_helpers import *
+
+@parametrize_from_file(
+        schema=Schema({
+            'func': with_byoc.exec(get='f'),
+            'value': with_py.eval,
+            Optional('meta', default='class DummyMeta: pass'): with_py.exec(get=get_meta),
+            Optional('obj', default='class DummyObj: pass'): with_py.exec(get=get_obj),
+            **with_py.error_or({
+                'expected': with_py.eval,
+            }),
+        }),
+)
+def test_call_with_context(func, value, meta, obj, expected, error):
+    context = byoc.Context(value, meta, obj)
+    with error:
+        assert call_with_context(func, context) == expected
 
 @parametrize_from_file(
         schema=Schema({
