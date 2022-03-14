@@ -59,6 +59,41 @@ test_call_with_context:
       type: ValueError
       message: value: 1
 
+test_relpath:
+  -
+    id: relative
+    files:
+      conf.nt:
+        > x: a
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: a
+  -
+    id: relative
+    files:
+      a/conf.nt:
+        > x: b
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('a/conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: a/b
+  -
+    id: absolute
+    files:
+      a/conf.nt:
+        > x: /b
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('a/conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: /b
+
 test_arithmetic_eval:
   # Literals
   -

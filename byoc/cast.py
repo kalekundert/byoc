@@ -5,9 +5,29 @@ import inspect
 
 from .errors import Error
 from more_itertools import first
-from typing import Union
+from pathlib import Path
+from typing import Union, Callable, Any
 
 class Context:
+    """
+    Extra information that can be made available to *cast* functions.
+
+    The *cast* argument to `param` is must be a function that takes one 
+    argument and returns one value.  Normally, this argument is simply the 
+    value to cast.  However, BYOC will instead provide a `Context` object if 
+    the type annotation of that argument is `Context`::
+
+        >>> import byoc
+        >>> def f(context: byoc.Context):
+        ...     return context.value
+
+    Context objects have the following attributes:
+
+    - :attr:`value`: The value to convert.  This is the same value that would 
+      normally be passed directly to the *cast* function.
+    - :attr:`meta`: The metadata object associated with the parameter.
+    - :attr:`obj`: The object that owns the parameter, i.e. *self*.
+    """
 
     def __init__(self, value, meta, obj):
         self.value = value
@@ -28,6 +48,36 @@ def call_with_context(f, context):
 
     return f(context.value)
 
+
+def relpath(
+        context: Context,
+        root_from_meta: Callable[[Any], Path]=\
+                lambda meta: Path(meta.location).parent,
+) -> Path:
+    """
+    Resolve paths loaded from a file.  Relative paths are interpreted as being 
+    relative to the parent directory of the file they were loaded from.
+
+    Arguments:
+        context: The context object provided by BYOC to cast functions.
+        root_from_meta: A callable that returns the parent directory for 
+            relative paths, given a metadata object describing how the value in 
+            question was loaded. The default implementation assumes that the 
+            metadata object has a :attr:`location` attribute that specifies the 
+            path to the relevant file.  This will work if (i) the value was 
+            actually loaded from a file and (ii) the default pick function was 
+            used (i.e. `first`).  For other pick functions, you may need to 
+            modify this argument accordingly.
+
+    Returns:
+        An absolute path.
+    """
+    path = Path(context.value)
+    if path.is_absolute():
+        return path
+
+    root = root_from_meta(context.meta)
+    return root.resolve() / path
 
 def arithmetic_eval(expr: str) -> Union[int, float]:
     """\

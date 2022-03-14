@@ -105,9 +105,10 @@ def test_environment_config():
             'slug': with_py.eval,
             'author': with_py.eval,
             'version': with_py.eval,
-            'files': {str: str},
+            'files': files.schema,
             'layers': eval_config_layers,
-        })
+        }),
+        indirect=['files'],
 )
 def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, files, layers):
     import appdirs
@@ -124,15 +125,13 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
 
     monkeypatch.setattr(appdirs, 'AppDirs', AppDirs)
 
-    for name, content in files.items():
-        path = tmp_chdir / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-
     assert obj.dirs.slug == slug
     assert obj.dirs.author == author
     assert obj.dirs.version == version
-    assert list(obj.config_paths) == unordered([Path(x) for x in files.keys()])
+    assert list(obj.config_paths) == unordered([
+        Path(x)
+        for x in files.manifest.keys()
+    ])
 
     byoc.init(obj)
     assert collect_layers(obj)[0] == layers
@@ -160,14 +159,10 @@ def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error)
             'files': empty_ok({str: str}),
             'layers': eval_config_layers,
             Optional('load_status', default=[]): [str],
-        })
+        }),
+        indirect=['files'],
 )
 def test_file_config(tmp_chdir, obj, files, layers, load_status):
-    for name, content in files.items():
-        path = tmp_chdir / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-
     byoc.init(obj)
     assert collect_layers(obj)[0] == layers
 

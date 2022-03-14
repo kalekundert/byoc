@@ -23,6 +23,22 @@ def test_call_with_context(func, value, meta, obj, expected, error):
     with error:
         assert call_with_context(func, context) == expected
 
+
+@parametrize_from_file(
+        schema=Schema({
+            'obj': with_byoc.exec(get=get_obj, defer=True),
+            'expected': {str: str},
+            'files': files.schema
+        }),
+        indirect=['files'],
+)
+def test_relpath(obj, expected, files, monkeypatch):
+    monkeypatch.chdir(files)
+
+    obj = obj.exec()
+    for param, relpath in expected.items():
+        assert getattr(obj, param) == files / relpath
+
 @parametrize_from_file(
         schema=Schema({
             'expr': str,

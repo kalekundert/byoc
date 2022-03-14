@@ -8,6 +8,7 @@ from parametrize_from_file.voluptuous import Namespace, empty_ok
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
 from re_assert import Matches
+from pathlib import Path
 
 if sys.version_info[:2] >= (3, 10):
     from functools import partial
@@ -218,3 +219,28 @@ get_obj = get_obj_or_cls('obj')
 get_config = get_obj_or_cls('config')
 get_meta = get_obj_or_cls('meta')
 no_templates = '^[^{}]*$'
+
+@pytest.fixture
+def files(request, tmp_path):
+
+    # We want to return a `pathlib.Path` instance with an extra `manifest` 
+    # attribute that records the specific file names/contents the were 
+    # provided.  Unfortunately, `pathlib.Path` uses slots, so the only way to 
+    # do this is to make our own subclass.  This is complicated further by the 
+    # fact that `pathlib.Path` is just a factory, and instantiates different 
+    # classes of objects depending on the operating system.
+
+    class TestPath(type(tmp_path)):
+        __slots__ = ('manifest',)
+
+    tmp_path = TestPath._from_parts([tmp_path])
+    tmp_path.manifest = request.param
+
+    for name, contents in request.param.items():
+        p = tmp_path / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(contents)
+
+    return tmp_path
+
+files.schema = empty_ok({str: str})

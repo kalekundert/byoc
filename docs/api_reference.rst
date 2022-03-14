@@ -72,9 +72,11 @@ Key/Pick/Cast functions
 
    byoc.first
    byoc.jmes
+   byoc.relpath
    byoc.int_eval
    byoc.float_eval
    byoc.arithmetic_eval
+   byoc.Context
 
 Metadata
 ========
