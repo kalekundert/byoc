@@ -14,6 +14,7 @@ dependencies = [
   'autoprop',
   'appdirs',
   'docopt~=0.6.2',
+  'funcy',
   'mako',
   'more_itertools',
   'nestedtext',

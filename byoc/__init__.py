@@ -24,7 +24,7 @@ from .configs.layers import Layer, DictLayer, FileNotFoundLayer, dict_like
 from .configs.attrs import config_attr
 from .configs.on_load import on_load
 from .getters import Key, Method, Func, Value
-from .pick import first
+from .pick import first, list, merge_dicts
 from .cast import Context, relpath, arithmetic_eval, float_eval, int_eval
 from .key import jmes
 from .meta import meta_view

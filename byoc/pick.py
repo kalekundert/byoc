@@ -4,6 +4,7 @@ from .model import UNSPECIFIED
 from .meta import UnknownMeta, DefaultMeta
 from .errors import NoValueFound
 from typing import Iterable
+from funcy import autocurry
 
 class ValuesIter:
 
@@ -44,11 +45,39 @@ class ValuesIter:
         if not have_value:
             self.log += "did you mean to provide a default?"
 
-def first(values: Iterable):
+def first(it: Iterable):
     try:
-        value, meta = next(iter(values.with_meta))
-        values.meta = meta
+        value, meta = next(iter(it.with_meta))
+        it.meta = meta
         return value
     except StopIteration as err:
-        raise NoValueFound("can't find value for parameter", values.log)
+        raise NoValueFound("can't find value for parameter", it.log)
+
+def list(it: Iterable):
+    from builtins import list
+
+    items = list(zip(*it.with_meta))
+
+    if items:
+        values, metas = map(list, items)
+    else:
+        values, metas = [], []
+
+    it.meta = metas
+    return values
+
+@autocurry
+def merge_dicts(it: Iterable, keep_last=False):
+    values = {}
+    it.meta = {}
+
+    for dict_, meta in it.with_meta:
+        for key, value in dict_.items():
+            if (key not in values) or keep_last:
+                values[key] = value
+                it.meta[key] = meta
+
+    return values
+
+
 

@@ -10,6 +10,16 @@ from param_helpers import *
 class DummyObj:
     pass
 
+class DummyValueIter(byoc.pick.ValuesIter):
+
+    def __init__(self, values):
+        self._with_meta = values
+        self.log = None
+
+    @property
+    def with_meta(self):
+        return self._with_meta
+
 @parametrize_from_file(
         schema=Schema({
             Optional('obj', default='class DummyObj: pass'): str,
@@ -40,3 +50,19 @@ def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
     assert list(values) == expected
     assert values.log.message_strs == log
 
+@parametrize_from_file(
+        schema=Schema({
+            'pick_func': with_byoc.eval,
+            'values_iter': lambda x: DummyValueIter(with_py.eval(x)),
+            **with_byoc.error_or({
+                'expected': {
+                    'value': with_py.eval,
+                    'meta': with_py.eval,
+                },
+            }),
+        }),
+)
+def test_pick_functions(pick_func, values_iter, expected, error):
+    with error:
+        assert pick_func(values_iter) == expected['value']
+        assert values_iter.meta == expected['meta']
