@@ -17,7 +17,7 @@ else:
     from more_itertools import zip_equal
 
 with_py = Namespace('from operator import itemgetter', Mock=Mock)
-with_byoc = Namespace(byoc, 'from byoc import *')
+with_byoc = Namespace(byoc, 'from byoc import *', list=list)
 
 class LayerWrapper:
 
