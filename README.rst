@@ -34,7 +34,9 @@ complete control over your configuration.  This means:
 To use BYOC, you would create a class with special attributes (called 
 parameters) that know where to look for configuration values.  When these 
 parameters are accessed, the desired values are looked up, possibly merged, 
-possibly cached, and returned.  Here's a brief example::
+possibly cached, and returned.  Here's a brief example:
+
+.. code-block:: python
 
     import byoc
     from byoc import Key, DocoptConfig, AppDirsConfig
@@ -70,14 +72,18 @@ possibly cached, and returned.  Here's a brief example::
     if __name__ == '__main__':
         Greet.entry_point()
 
-We can configure this script from the command line::
+We can configure this script from the command line:
+
+.. code-block:: bash
 
   $ ./greet 'Sir Bedevere'
   Hello, Sir Bedevere!
   $ ./greet 'Sir Lancelot' -g Goodbye
   Goodbye, Sir Lancelot!
 
-...or from its config files::
+...or from its config files:
+
+.. code-block:: bash
 
   $ mkdir -p ~/.config/greet
   $ echo "greeting: Run away" > ~/.config/greet/conf.yml

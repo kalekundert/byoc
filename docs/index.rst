@@ -4,7 +4,7 @@
    :maxdepth: 2
    :hidden:
 
-   getting_started
-   intermediate_topics
+   basic_tutorials/index
+   advanced_tutorials/index
    api_reference
 

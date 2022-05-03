@@ -65,18 +65,32 @@ Getters
    byoc.Func
    byoc.Value
 
-Key/Pick/Cast functions
-=======================
+Key functions
+=============
 .. autosummary::
    :toctree: api
 
-   byoc.first
    byoc.jmes
+
+Cast functions
+==============
+.. autosummary::
+   :toctree: api
+
    byoc.relpath
    byoc.int_eval
    byoc.float_eval
    byoc.arithmetic_eval
    byoc.Context
+
+Pick functions
+==============
+.. autosummary::
+   :toctree: api
+
+   byoc.first
+   byoc.list
+   byoc.merge_dicts
 
 Metadata
 ========
