@@ -37,3 +37,4 @@ def test_first_specified_err(args, kwargs):
 )
 def test_lookup(x, key, expected):
     assert byoc.utils.lookup(x, key) == expected
+

@@ -3,7 +3,7 @@
 from .. import model
 from ..model import UNSPECIFIED
 from ..getters import Getter, Key, ImplicitKey
-from ..pickers import ValuesIter, first
+from ..pick import ValuesIter, first
 from ..meta import NeverAccessedMeta, ExceptionMeta, SetAttrMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
@@ -151,7 +151,7 @@ class param:
 
     def _calc_value(self, obj):
         log = Log()
-        log.info("getting {param!r} parameter for {obj!r}", obj=obj, param=self._name)
+        log += f"getting {self._name!r} parameter for {obj!r}"
 
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)

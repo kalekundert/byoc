@@ -3,8 +3,9 @@
 import byoc
 import pytest
 import parametrize_from_file
-import sys, os, shlex
+import sys, os, shlex, re
 
+from byoc.errors import Log
 from pytest_unordered import unordered
 from unittest import mock
 from pathlib import Path
@@ -73,6 +74,9 @@ def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
         # Note that accessing these attributes may trigger `init()`, e.g. if 
         # the usage text contains default values based on BYOC-managed 
         # attributes.
+        if sys.version_info[:2] >= (3, 10):
+            usage = re.sub('(?m)^optional arguments:$', 'options:', usage)
+
         assert test_obj.usage == usage
         assert test_obj.brief == brief
 
@@ -101,9 +105,10 @@ def test_environment_config():
             'slug': with_py.eval,
             'author': with_py.eval,
             'version': with_py.eval,
-            'files': {str: str},
+            'files': files.schema,
             'layers': eval_config_layers,
-        })
+        }),
+        indirect=['files'],
 )
 def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, files, layers):
     import appdirs
@@ -120,15 +125,13 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
 
     monkeypatch.setattr(appdirs, 'AppDirs', AppDirs)
 
-    for name, content in files.items():
-        path = tmp_chdir / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-
     assert obj.dirs.slug == slug
     assert obj.dirs.author == author
     assert obj.dirs.version == version
-    assert list(obj.config_paths) == unordered([Path(x) for x in files.keys()])
+    assert list(obj.config_paths) == unordered([
+        Path(x)
+        for x in files.manifest.keys()
+    ])
 
     byoc.init(obj)
     assert collect_layers(obj)[0] == layers
@@ -155,16 +158,16 @@ def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error)
             'obj': with_byoc.exec(get=get_obj),
             'files': empty_ok({str: str}),
             'layers': eval_config_layers,
-        })
+            Optional('load_status', default=[]): [str],
+        }),
+        indirect=['files'],
 )
-def test_file_config(tmp_chdir, obj, files, layers):
-    for name, content in files.items():
-        path = tmp_chdir / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-
+def test_file_config(tmp_chdir, obj, files, layers, load_status):
     byoc.init(obj)
     assert collect_layers(obj)[0] == layers
+
+    log = log_load_status(obj)
+    assert_log_matches(log, load_status)
 
 def test_file_config_load_status():
 
@@ -335,4 +338,13 @@ def test_dict_like(factory, f, raises, x, expected, error):
 def test_dict_like_repr():
     d = byoc.dict_like(int)
     assert repr(d) == "dict_like(<class 'int'>)"
+
+
+def log_load_status(obj):
+    log = Log()
+
+    for wc in byoc.model.get_wrapped_configs(obj):
+        wc.config.load_status(log)
+
+    return log
 

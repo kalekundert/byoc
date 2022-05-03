@@ -4,6 +4,7 @@ import pytest, byoc
 import parametrize_from_file
 
 from byoc.errors import Log
+from byoc.configs.layers import repr_dict_short
 from param_helpers import *
 
 values = [
@@ -45,9 +46,25 @@ def test_dict_layer_setters(values, location):
             'log': [str],
         }),
 )
-def test_layer_iter_values(layer, key, expected, log):
+def test_layer_iter_values(layer, key, expected, log, monkeypatch):
+    monkeypatch.setenv('BYOC_VERBOSE', '1')
+
     layer = layer()
     actual_log = Log()
     assert list(layer.iter_values(key, actual_log)) == expected
-    assert actual_log._err.info_strs == log
+    assert actual_log.message_strs == log
+
+@parametrize_from_file(
+        schema=Schema({
+            'dict': with_py.eval,
+            'n_max': Coerce(int),
+            'env': {str: str},
+            'expected': str,
+        }),
+)
+def test_repr_dict_short(dict, env, expected, monkeypatch):
+    for k, v in env.items():
+        monkeypatch.setenv(k, v)
+
+    assert repr_dict_short(dict) == expected
 

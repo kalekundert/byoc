@@ -512,6 +512,21 @@ test_file_config:
         values: {'x': 1}
         location: x.json
   -
+    id: path-cls
+    obj:
+      > class DummyYamlConfig(YamlConfig):
+      >     path = 'x.yml'
+      >
+      > class DummyObj:
+      >     __config__ = [DummyYamlConfig]
+    files:
+      x.yml:
+        > x: 1
+    layers:
+      -
+        values: {'x': 1}
+        location: x.yml
+  -
     id: path-setup
     obj:
       > class DummyObj:
@@ -644,7 +659,6 @@ test_file_config:
     files:
     layers:
       - FileNotFoundLayer('not-found.yml')
-
   -
     id: not-given-path
     obj:
@@ -653,6 +667,34 @@ test_file_config:
     files:
     layers:
       []
+    load_status:
+      -
+        > failed to get path\(s\):
+        > raised AttributeError: 'DummyObj' object has no attribute 'path'
+  -
+    id: path-set-after-load
+    obj:
+      > class DummyObj:
+      >     __config__ = [YamlConfig]
+      >
+      > obj = DummyObj()
+      > byoc.load(obj)
+      >
+      > obj.path = 'x.yml'
+    files:
+      x.yml:
+        > x: 1
+    layers:
+      []
+    load_status:
+      -
+        > failed to get path\(s\):
+        > raised AttributeError: 'DummyObj' object has no attribute 'path'
+      -
+        > the following path\(s\) were specified post-load:
+        > x.yml
+      -
+        > to use these path\(s\), call `byoc.reload\(\)`
 
 test_on_load:
   -

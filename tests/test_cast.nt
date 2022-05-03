@@ -1,0 +1,203 @@
+test_call_with_context:
+  -
+    id: normal-func
+    func:
+      > def f(x):
+      >   return x + 1
+    value: 1
+    expected: 2
+  -
+    id: optional-args-ok
+    func:
+      > def f(x, y=2):
+      >   return x + y
+    value: 1
+    expected: 3
+  -
+    id: not-introspectable
+    func:
+      > f = set
+    value: [1, 2, 1]
+    expected: {1, 2}
+  -
+    id: context-value
+    func:
+      > def f(context: Context):
+      >   return context.value + 1
+    value: 1
+    expected: 2
+  -
+    id: context-meta
+    func:
+      > def f(context: Context):
+      >   return context.value + context.meta.y
+    meta:
+      > class DummyMeta:
+      >     y = 2
+    value: 1
+    expected: 3
+  -
+    id: context-obj
+    func:
+      > def f(context: Context):
+      >   return context.value + context.obj.y
+    obj:
+      > class DummyObj:
+      >     pass
+      >
+      > obj = DummyObj()
+      > obj.y = 2
+    value: 1
+    expected: 3
+  -
+    id: context-value
+    func:
+      > def f(context: Context):
+      >   raise ValueError(f'value: {context.value}')
+    value: 1
+    error:
+      type: ValueError
+      message: value: 1
+
+test_relpath:
+  -
+    id: relative
+    files:
+      conf.nt:
+        > x: a
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: a
+  -
+    id: relative
+    files:
+      a/conf.nt:
+        > x: b
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('a/conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: a/b
+  -
+    id: absolute
+    files:
+      a/conf.nt:
+        > x: /b
+    obj:
+      > class DummyObj:
+      >     __config__ = [NtConfig.setup('a/conf.nt')]
+      >     x = byoc.param(cast=byoc.relpath)
+    expected:
+      x: /b
+
+test_arithmetic_eval:
+  # Literals
+  -
+    id: literal-int
+    expr: 1
+    expected: 1
+  -
+    id: literal-float
+    expr: 1.0
+    expected: 1.0
+  -
+    id: err-literal-str
+    expr: "a"
+    error:
+      type: SyntaxError
+      message:
+        - unable to evaluate arithmetic expression
+        - expression: "a"
+        # In python>=3.8, this will specify: 'a' is not a number
+  -
+    id: err-literal-list
+    expr: []
+    error: SyntaxError
+  -
+    id: err-literal-dict
+    expr: {}
+    error: SyntaxError
+  -
+    id: err-func
+    expr: sqrt(4)
+    error: SyntaxError
+
+  -
+    id: op-add
+    expr: 3 + 2
+    expected: 5
+  -
+    id: op-sub
+    expr: 3 - 2
+    expected: 1
+  -
+    id: op-mul
+    expr: 3 * 2
+    expected: 6
+  -
+    id: op-div
+    expr: 3 / 2
+    expected: 1.5
+  -
+    id: op-floor-div
+    expr: 3 // 2
+    expected: 1
+  -
+    id: op-mod
+    expr: 3 % 2
+    expected: 1
+  -
+    id: op-pow
+    expr: 2**3
+    expected: 8
+  -
+    id: op-unary-plus
+    expr: +1
+    expected: 1
+  -
+    id: op-unary-minus
+    expr: -1
+    expected: -1
+  -
+    id: err-op-rshift
+    expr: 2 >> 3
+    error:
+      type: SyntaxError
+      message:
+        - unable to evaluate arithmetic expression
+        - expression: 2 >> 3
+        - the RShift operator is not supported
+  -
+    id: err-op-lshift
+    expr: 3 << 2
+    error: SyntaxError
+  -
+    id: err-op-and
+    expr: 3 & 2
+    error: SyntaxError
+  -
+    id: err-op-or
+    expr: 2 | 3
+    error: SyntaxError
+  -
+    id: err-op-xor
+    expr: 3 ^ 2
+    error: SyntaxError
+  -
+    id: err-op-mat-mul
+    expr: 3 @ 2
+    error: SyntaxError
+
+  -
+    id: expr
+    expr: 1 + 2 * 3
+    expected: 7
+  -
+    id: expr
+    expr: (1 + 2) * 3
+    expected: 9
+

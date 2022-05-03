@@ -2,13 +2,22 @@
 
 import byoc
 import pytest
+import sys
 
 from parametrize_from_file.voluptuous import Namespace, empty_ok
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
+from re_assert import Matches
+from pathlib import Path
+
+if sys.version_info[:2] >= (3, 10):
+    from functools import partial
+    zip_equal = partial(zip, strict=True)
+else:
+    from more_itertools import zip_equal
 
 with_py = Namespace('from operator import itemgetter', Mock=Mock)
-with_byoc = Namespace(byoc, 'from byoc import *')
+with_byoc = Namespace(byoc, 'from byoc import *', list=list)
 
 class LayerWrapper:
 
@@ -175,6 +184,10 @@ def collect_layers(obj):
             for i, wc in enumerate(wrapped_configs)
     }
 
+def assert_log_matches(log, expected):
+    for log_str, pattern in zip_equal(log.message_strs, expected):
+        Matches(pattern).assert_matches(log_str)
+
 def find_param(obj, name=None):
     from more_itertools import only
     class_attrs = obj.__class__.__dict__
@@ -204,4 +217,30 @@ def get_obj_or_cls(obj_name, cls_name=None):
 
 get_obj = get_obj_or_cls('obj')
 get_config = get_obj_or_cls('config')
+get_meta = get_obj_or_cls('meta')
 no_templates = '^[^{}]*$'
+
+@pytest.fixture
+def files(request, tmp_path):
+
+    # We want to return a `pathlib.Path` instance with an extra `manifest` 
+    # attribute that records the specific file names/contents the were 
+    # provided.  Unfortunately, `pathlib.Path` uses slots, so the only way to 
+    # do this is to make our own subclass.  This is complicated further by the 
+    # fact that `pathlib.Path` is just a factory, and instantiates different 
+    # classes of objects depending on the operating system.
+
+    class TestPath(type(tmp_path)):
+        __slots__ = ('manifest',)
+
+    tmp_path = TestPath._from_parts([tmp_path])
+    tmp_path.manifest = request.param
+
+    for name, contents in request.param.items():
+        p = tmp_path / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(contents)
+
+    return tmp_path
+
+files.schema = empty_ok({str: str})

@@ -213,3 +213,34 @@ test_layer_iter_values:
       -
         > file does not exist: /path/to/file
         > did not find 'x'
+
+test_repr_dict_short:
+  -
+    dict: {'a': 1}
+    env:
+      BYOC_VERBOSE: 1
+    expected:
+      > {'a': 1}
+  -
+    dict: {'a': 1}
+    env:
+      BYOC_DICT_KEY_LIMIT: 2
+    expected:
+      > {'a': …}
+      > To see the whole dictionary, set the following environment variable: BYOC_VERBOSE=1
+  -
+    dict: {'a': 1, 'b': 2}
+    env:
+      BYOC_DICT_KEY_LIMIT: 2
+    expected:
+      > {'a': …, 'b': …}
+      > To see the whole dictionary, set the following environment variable: BYOC_VERBOSE=1
+  -
+    dict: {'a': 1, 'b': 2, 'c': 3}
+    env:
+      BYOC_DICT_KEY_LIMIT: 2
+    expected:
+      > {'a': …, and 2 others}
+      > To see the whole dictionary, set the following environment variable: BYOC_VERBOSE=1
+
+

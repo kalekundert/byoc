@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import textwrap
 from tidyexc import Error
 
 class ApiError(Error):
@@ -25,8 +26,8 @@ class NoValueFound(AttributeError):
     `NoValueFound` is a bit of an exception to this philosophy.  It's raised by 
     the default picker (`first`) in the event that no values were found for an 
     parameter.  It's interpreted by some parts of BYOC (specifically the 
-    `Method` and `Function` getters) to mean that an attempt to get a value 
-    should be silently skipped.  Both of these behaviors can be overridden, but 
+    `Method` and `Func` getters) to mean that an attempt to get a value should 
+    be silently skipped.  Both of these behaviors can be overridden, but 
     they're useful defaults.
     """
 
@@ -34,21 +35,62 @@ class NoValueFound(AttributeError):
         super().__init__('\n'.join(str(x).strip() for x in args))
 
 class Log:
+    """
+    A record of the search for a parameter value.
+
+    Messages are added to the log using the ``+=`` operator::
+
+        >>> log = Log()
+        >>> log += "hello world!"
+
+    Each message can either be a string or a no-argument callable returning a 
+    string.  The callables will be evaluated just before the log is displayed, 
+    and can be used to defer the construction of strings that are likely to be 
+    expensive and/or unlikely to be useful.  For example, it's common to use 
+    callables to log when a value is successfully found, because (i) the log is 
+    usually only displayed in cases where no value is found and (ii) formatting 
+    arbitrary objects could be expensive.
+    """
     
     def __init__(self):
-        # This is a bit of a hack.  We're just using the error class for its 
-        # formatting features.
-        #
-        # If I ever get around to refactoring this, note that the unit tests 
-        # rely on being able to access list of all log messages with parameters 
-        # substituted but without bullet points applied.
-        self._err = Error()
+        self._messages = []
 
     def __str__(self):
-        return str(self._err)
+        return self.format()
 
-    def info(self, message, **kwargs):
-        self._err.put_info(message, **kwargs)
+    def __iadd__(self, message):
+        """
+        Add the given message to the log.
+        """
+        self._messages.append(message)
+        return self
 
-    def hint(self, message):
-        self._err.info += message
+    def info(self, message):
+        """
+        Add the given message to the log.
+
+        The ``+=`` operator is the preferred way to do this.  Only use this 
+        method if the ``+=`` operator is inconvenient for some reason (e.g. its 
+        not allowed in lambda functions).
+        """
+        self += message
+
+    @property
+    def message_strs(self):
+        return [
+                m() if callable(m) else m
+                for m in self._messages
+        ]
+
+    def format(self):
+        out = ''
+        bullet = '• '
+        indent = ' ' * len(bullet)
+
+        for msg in self.message_strs:
+            msg = textwrap.indent(msg, indent)
+            msg = bullet + msg[len(bullet):]
+            out += msg + '\n'
+
+        return out
+

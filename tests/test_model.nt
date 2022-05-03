@@ -3,7 +3,7 @@ test_init_load_reload:
     id: 0-configs
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
     init_layers:
     load_layers:
 
@@ -546,7 +546,7 @@ test_collect_layers:
       >         yield DictLayer({}, location='a')
       >
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
       > obj = DummyObj()
       > byoc.append_config(obj, DummyConfigA)
@@ -716,7 +716,7 @@ test_get_meta:
     id: never-accessed
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
       > obj = DummyObj()
       > byoc.init(obj)
@@ -726,7 +726,6 @@ test_get_meta:
     id: never-accessed
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Value(1))
     param: x
     expected: NeverAccessedMeta
@@ -734,7 +733,6 @@ test_get_meta:
     id: cache-meta
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Value(1))
       >
       > obj = DummyObj()
@@ -745,7 +743,6 @@ test_get_meta:
     id: setattr
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param(Value(1))
       >
       > obj = DummyObj()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import functools
+import functools, os
 from inspect import isclass
 from ..utils import lookup
 
@@ -44,9 +44,9 @@ class DictLayer(Layer):
             try:
                 values = lookup(values, self.root_key)
             except KeyError:
-                log.info(
-                        lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
-                        layer=self, values=values, key=self.root_key,
+                log += lambda: format_loc(
+                        f"did not find {self.root_key!r} in {repr_dict_short(values)}",
+                        self.location,
                 )
                 return
 
@@ -56,18 +56,15 @@ class DictLayer(Layer):
         try:
             value = lookup(values, key)
         except KeyError:
-            log.info(
-                    lambda e: format_loc(f"did not find {e.key!r} in {repr_dict_short(e['values'])}", e.layer.location),
-                    layer=self, values=values, key=key,
+            log += lambda: format_loc(
+                    f"did not find {key!r} in {repr_dict_short(values)}",
+                    self.location,
             )
         else:
-            log.info(
-                    lambda e: format_loc(
-                        f"called: {e.key!r}\nreturned: {e.value!r}" if callable(e.key) else
-                        f"found {e.key!r}: {e.value!r}",
-                        e.layer.location,
-                    ),
-                    layer=self, key=key, value=value,
+            log += lambda: format_loc(
+                    f"called: {key!r}\nreturned: {value!r}" if callable(key) else
+                    f"found {key!r}: {value!r}",
+                    self.location,
             )
             yield value
 
@@ -101,7 +98,7 @@ class FileNotFoundLayer(Layer):
         self.location = path
 
     def iter_values(self, key, log):
-        log.info("file does not exist: {path}\ndid not find {key!r}", path=self.location, key=key)
+        log += f"file does not exist: {self.location}\ndid not find {key!r}"
         return
         yield  # pragma: no cover
 
@@ -148,8 +145,20 @@ def repr_dict_short(d):
     from textwrap import shorten
     from pprint import pformat
 
-    return shorten(
-            pformat(d, depth=1, compact=True, width=sys.maxsize),
-            width=70,
-            placeholder='…',
-    )
+    if os.environ.get('BYOC_VERBOSE'):
+        return pformat(d, depth=1, compact=True, width=sys.maxsize)
+
+    try:
+        n_max = int(os.environ['BYOC_DICT_KEY_LIMIT'])
+    except (KeyError, ValueError):
+        n_max = 20
+
+    if len(d) <= n_max:
+        key_strs = [f'{k!r}: …' for k in d]
+    else:
+        n = n_max // 2
+        key_strs = [f'{k!r}: …' for k in list(d)[:n]]
+        key_strs.append(f'and {len(d) - n} others')
+
+    dict_str = '{' + ', '.join(key_strs) + '}'
+    return f'{dict_str}\nTo see the whole dictionary, set the following environment variable: BYOC_VERBOSE=1'

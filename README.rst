@@ -17,34 +17,38 @@
 .. image:: https://img.shields.io/coveralls/kalekundert/byoc.svg
    :target: https://coveralls.io/github/kalekundert/byoc?branch=master
 
-BYOC is a python library for loading configuration values from any number/kind 
-of sources, e.g. files, command-line arguments, environment variables, remote 
-JSON APIs, etc.  The primary goal of BYOC is to give you complete control over 
-your configuration.  This means:
+BYOC is a python library for integrating configuration values from any 
+number/kind of sources, e.g. files, command-line arguments, environment 
+variables, remote JSON APIs, etc.  The primary goal of BYOC is to give you 
+complete control over your configuration.  This means:
 
-- Complete control over how things are named and organized.
+- Complete control over how files, options, etc. are named and organized.
 
-- Complete control over how values from different config sources are merged.
+- Complete control over how values from different config sources are parsed and  
+  merged.
 
 - Support for any kind of file format, argument parsing library, etc.
 
 - No opinions about anything enforced by BYOC.
 
-The basic idea is to create a class with special attributes that know where to 
-look for configuration values.  When these attributes are accessed, the correct 
-values are looked up, possibly merged, possibly cached, and returned.  Here's a 
-brief example to show what this looks like::
+To use BYOC, you would create a class with special attributes (called 
+parameters) that know where to look for configuration values.  When these 
+parameters are accessed, the desired values are looked up, possibly merged, 
+possibly cached, and returned.  Here's a brief example:
+
+.. code-block:: python
 
     import byoc
     from byoc import Key, DocoptConfig, AppDirsConfig
 
     class Greet(byoc.App):
         """
-    Say a greeting.
+        Say a greeting.
 
-    Usage:
-        greet <name> [-g <greeting>]
-    """
+        Usage:
+            greet <name> [-g <greeting>]
+        """
+
         # Define which config sources are available to this class.
         __config__ = [
                 DocoptConfig,
@@ -68,14 +72,18 @@ brief example to show what this looks like::
     if __name__ == '__main__':
         Greet.entry_point()
 
-We can configure this script from the command line::
+We can configure this script from the command line:
+
+.. code-block:: bash
 
   $ ./greet 'Sir Bedevere'
   Hello, Sir Bedevere!
   $ ./greet 'Sir Lancelot' -g Goodbye
   Goodbye, Sir Lancelot!
 
-We can also configure this script via its configuration files::
+...or from its config files:
+
+.. code-block:: bash
 
   $ mkdir -p ~/.config/greet
   $ echo "greeting: Run away" > ~/.config/greet/conf.yml
@@ -83,7 +91,7 @@ We can also configure this script via its configuration files::
   Run away, Sir Robin!
 
 This example only scratches the surface, but hopefully you can already get a 
-sense for how powerful and flexible this property-based approach is.  For more 
+sense for how powerful and flexible these parameters are.  For more 
 information, refer to the following examples (in lieu of complete 
 documentation).
 

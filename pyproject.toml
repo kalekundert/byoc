@@ -1,31 +1,33 @@
 [build-system]
-requires = ["flit"]
-build-backend = "flit.buildapi"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "byoc"
-author = "Kale Kundert"
-author-email = "kale@thekunderts.net"
-home-page = 'https://github.com/kalekundert/byoc'
-description-file = 'README.rst'
+[project]
+name = "byoc"
+authors = [
+  {name = "Kale Kundert", email = "kale@thekunderts.net"},
+]
+readme = "README.rst"
+dynamic = ["version", "description"]
 requires-python = "~=3.6"
-requires = [
+dependencies = [
   'autoprop',
   'appdirs',
   'docopt~=0.6.2',
+  'funcy',
   'mako',
   'more_itertools',
   'nestedtext',
   'pyyaml',
   'tidyexc',
   'tomli',
+  'jmespath',
 ]
 classifiers = [
-  'Programming Language :: Python :: 3',
-  'License :: OSI Approved :: MIT License',
+  'Programming Language :: Python :: 3.6',
 ]
 
-[tool.flit.metadata.requires-extra]
+[project.optional-dependencies]
 tests = [
   'pytest',
   'pytest-cov',
@@ -34,6 +36,7 @@ tests = [
   'parametrize_from_file',
   'voluptuous',
   're-assert',
+  'dataclasses',
 ]
 docs = [
   'sphinx',
@@ -41,21 +44,19 @@ docs = [
   'autoclasstoc',
 ]
 
-[tool.flit.metadata.urls]
+[project.urls]
 'Documentation' = 'https://byoc.readthedocs.io/en/latest/'
 'Version Control' = 'https://github.com/kalekundert/byoc'
 'Bug Tracker' = 'https://github.com/kalekundert/byoc/issues'
 'Continuous Integration' = 'https://github.com/kalekundert/byoc/actions'
 'Test Coverage' = 'https://coveralls.io/github/kalekundert/byoc'
 
-[tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.rst'"
-doctest_optionflags = 'NORMALIZE_WHITESPACE'
-
 [tool.pccc]
 header_length = 72
 types = ["chore", "docs", "feat", "fix", "refactor", "style", "test", "wip"]
 
 [tool.semantic_release]
+branch = 'release'
 version_variable = 'byoc/__init__.py:__version__'
 build_command = 'python -m pip install flit && flit build'
+major_on_zero = false

@@ -150,6 +150,33 @@ test_getter_cast_value:
       message:
         - invalid literal for int() with base 10: 'a'
 
+  -
+    id: context-obj
+    obj:
+      > class DummyObj:
+      >     y = 2
+      >
+      > def f(context: Context):
+      >     return context.value, context.obj.y
+      >
+    getter: Key(Config, cast=f)
+    given: 1
+    expected: 1, 2
+  -
+    id: context-meta
+    obj:
+      > class DummyObj:
+      >     pass
+      >
+      > def f(context: Context):
+      >     return context.value, context.meta.y
+    meta:
+      > class DummyMeta:
+      >     y = 2
+    getter: Key(Config, cast=f)
+    given: 1
+    expected: 1, 2
+
 test_getter_iter_values:
   -
     id: value
@@ -232,7 +259,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self: self.x)
@@ -252,7 +278,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
       >     def helper(self):
@@ -275,7 +300,6 @@ test_getter_iter_values:
     id: method
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self, y: self.x + y).partial(1)
@@ -295,7 +319,6 @@ test_getter_iter_values:
     id: method-dynamic
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = 1
       >
     getter: Method(lambda self: self.x, dynamic=False)
@@ -315,7 +338,7 @@ test_getter_iter_values:
     id: method-err
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
     getter: Method(lambda self: 1/0)
     error:
@@ -324,7 +347,7 @@ test_getter_iter_values:
     id: method-err-skip
     obj:
       > class DummyObj:
-      >     __config__ = []
+      >     pass
       >
     getter: Method(lambda self: 1/0, skip=ZeroDivisionError)
     expected:
@@ -339,7 +362,6 @@ test_getter_iter_values:
     id: method-err-skip-no-value
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.param()
       >
     getter: Method(lambda self: self.x)
@@ -798,7 +820,7 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(Config):
       >     def load(self):
-      >         self.load_status = lambda log: log.hint('config status')
+      >         self.load_status = lambda log: log.info('config status')
       >         yield DictLayer({'x': 1}, location='/path/to/file')
       >
       > class DummyObj:
@@ -825,7 +847,7 @@ test_getter_iter_values:
     obj:
       > class DummyConfig(Config):
       >     def load(self):
-      >         self.load_status = lambda log: log.hint('config status')
+      >         self.load_status = lambda log: log.info('config status')
       >         return
       >         yield
       >
@@ -914,6 +936,22 @@ test_getter_iter_values:
         -
           > /path/to/file:
           > found 'x': 1
+  -
+    id: key-no-configs
+    obj:
+      > class DummyConfig(Config):
+      >     pass
+      >
+      > class DummyObj:
+      >     pass
+    getter:
+      > Key(DummyConfig)
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        - no configs of class DummyConfig
   -
     id: key-no-layers
     obj:
@@ -1095,7 +1133,6 @@ test_getter_kwargs_err:
     id: kwargs-err
     obj:
       > class DummyObj:
-      >     __config__ = []
       >     x = byoc.toggle_param()
 
     getter: Value(1, cats=int, toggle=True)

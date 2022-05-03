@@ -21,20 +21,20 @@ class config_attr:
         getter = self.getter or attrgetter(self.name)
 
         log = Log()
-        log.info("getting '{attr}' config_attr for {obj!r}", obj=obj, attr=self.name)
+        log += f"getting '{self.name}' config_attr for {obj!r}"
 
         for config in configs:
             if not _is_selected_by_cls(config, self.config_cls):
-                log.info("skipped {config}: not derived from {config_cls.__name__}", config=config, config_cls=self.config_cls)
+                log += f"skipped {config}: not derived from {self.config_cls.__name__}"
                 continue
 
             try:
                 return getter(config)
             except AttributeError as err:
-                log.info(
-                        "skipped {config}: {getter} raised {err.__class__.__name__}: {err}"
-                            if self.getter else "skipped {config}: {err}",
-                        config=config, getter=getter, err=err,
+                log += (
+                        f"skipped {config}: {getter} raised {err.__class__.__name__}: {err}"
+                        if self.getter else
+                        f"skipped {config}: {err}"
                 )
                 continue
 
