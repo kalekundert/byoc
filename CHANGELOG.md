@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.30.1 (2022-05-10)
+### Fix
+* Make dict reprs more robust against unexpected input ([`fbe6b3d`](https://github.com/kalekundert/byoc/commit/fbe6b3d7086bc7cc0015d902f2a8fc8551a625fe))
+
 ## v0.30.0 (2022-05-10)
 ### Feature
 * Add list() and merge_dicts() pick functions ([`18bfc27`](https://github.com/kalekundert/byoc/commit/18bfc27f034ea38e601c028a7637a659b700e2d4))
