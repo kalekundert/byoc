@@ -16,5 +16,7 @@ button.copybtn {
   --tabs--label-border--active: #2980B9;  /*blue*/
   --tabs--label-border--active--hover: #2980B9;  /*blue*/
 
+  --tabs--label-background--hover: transparent;
+
   --tabs--border: none;
 }
