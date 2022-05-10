@@ -4,7 +4,7 @@
 An object-oriented framework for command-line apps.
 """
 
-__version__ = '0.29.0'
+__version__ = '0.30.0'
 
 # Define the public API
 _pre_import_keys = set()

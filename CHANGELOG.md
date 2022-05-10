@@ -2,6 +2,28 @@
 
 <!--next-version-placeholder-->
 
+## v0.30.0 (2022-05-10)
+### Feature
+* Add list() and merge_dicts() pick functions ([`18bfc27`](https://github.com/kalekundert/byoc/commit/18bfc27f034ea38e601c028a7637a659b700e2d4))
+* Add the relpath() cast function ([`e5c5981`](https://github.com/kalekundert/byoc/commit/e5c59810892e953d67043911c87fa93f31bd62c3))
+* Allow cast functions to access *self* and *meta* ([`17df65b`](https://github.com/kalekundert/byoc/commit/17df65bfd39d64ace1d79eb99658a5874b1a44f5))
+* Control verbosity via environment variables ([`4436f45`](https://github.com/kalekundert/byoc/commit/4436f4592a5c70ef555fc7bfc0d502e2ae8c1af2))
+* Add arithmetic evaluation functions ([`b75ebe2`](https://github.com/kalekundert/byoc/commit/b75ebe2cc3cac8a498e8b60ca755d85e22ef0ec4))
+* Don't require apps to define __config__ ([`b7a2907`](https://github.com/kalekundert/byoc/commit/b7a29079ef5a0a27054e2abdbe98e740a704bd2b))
+* Better log messages for file configs without paths ([`afb33f2`](https://github.com/kalekundert/byoc/commit/afb33f2de8b5c335f7aff4f60c1294dd2f2e6ce4))
+* Implement jmes() ([`90f1607`](https://github.com/kalekundert/byoc/commit/90f1607fb9a36d74b2262230cd2632173f401ebb))
+
+### Fix
+* Avoid infinite recursion when params are used in repr() ([`9cb9ba3`](https://github.com/kalekundert/byoc/commit/9cb9ba35cadf0437b16cc58993a3987b5a613f45))
+* Handle different AST nodes in python<3.8 ([`640ede1`](https://github.com/kalekundert/byoc/commit/640ede10e423c8a79b686ecaea03fa5f91e43888))
+
+### Documentation
+* Rewrite intro to params tutorial ([`3f20582`](https://github.com/kalekundert/byoc/commit/3f20582d3fd0b93186482a525614aed2b1f8ec13))
+* Remove background hover color from inline tabs ([`e8ec82f`](https://github.com/kalekundert/byoc/commit/e8ec82f5b413d237ddb594f621159c4de4fbee39))
+* Write the parameters tutorial ([`69044e5`](https://github.com/kalekundert/byoc/commit/69044e5a548e8247844dd97789fc05fc44a3ee83))
+* Describe how to find config values ([`658f3eb`](https://github.com/kalekundert/byoc/commit/658f3eb5786651da988a2795cc46d9e97d467a83))
+* Add API documentation ([`22c9edb`](https://github.com/kalekundert/byoc/commit/22c9edbededdbe6d53337e558da494e7d37aac6a))
+
 ## v0.29.0 (2022-01-19)
 ### Feature
 * Add a JSON config ([`c8e461c`](https://github.com/kalekundert/byoc/commit/c8e461c22aff73f868322a37993ca3a038d24c60))
