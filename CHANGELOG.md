@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.30.2 (2022-05-10)
+### Fix
+* Avoid triggering infinite recursion in log messages ([`da15053`](https://github.com/kalekundert/byoc/commit/da150539ff05cffa7452ca661f314ba75d040be7))
+
 ## v0.30.1 (2022-05-10)
 ### Fix
 * Make dict reprs more robust against unexpected input ([`fbe6b3d`](https://github.com/kalekundert/byoc/commit/fbe6b3d7086bc7cc0015d902f2a8fc8551a625fe))
