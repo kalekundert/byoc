@@ -142,10 +142,15 @@ def format_loc(message, loc):
 
 def repr_dict_short(d):
     import sys
+    from collections.abc import Mapping
     from textwrap import shorten
     from pprint import pformat
 
-    if os.environ.get('BYOC_VERBOSE'):
+    # Since this function is used for logging, we don't want to crash on 
+    # unexpected input.  So we check if the given object is actually a mapping, 
+    # and if it's not, we pass it to `pformat()`, which will just use its repr.
+
+    if os.environ.get('BYOC_VERBOSE') or not isinstance(d, Mapping):
         return pformat(d, depth=1, compact=True, width=sys.maxsize)
 
     try:

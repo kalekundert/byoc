@@ -216,6 +216,9 @@ test_layer_iter_values:
 
 test_repr_dict_short:
   -
+    dict: None
+    expected: None
+  -
     dict: {'a': 1}
     env:
       BYOC_VERBOSE: 1

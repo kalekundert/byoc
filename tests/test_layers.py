@@ -58,7 +58,7 @@ def test_layer_iter_values(layer, key, expected, log, monkeypatch):
         schema=Schema({
             'dict': with_py.eval,
             'n_max': Coerce(int),
-            'env': {str: str},
+            Optional('env', default={}): {str: str},
             'expected': str,
         }),
 )
