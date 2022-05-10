@@ -152,16 +152,15 @@ class param:
     def _calc_value(self, obj):
         log = Log()
 
-        def format_obj(obj):
-            try:
-                return repr(obj)
-            except Exception:
-                return f'{obj.__class__.__name__}()'
-
-        # Defer calculating this log message to avoid triggering infinite 
-        # recursion if the attribute we're currently calculating is part of the 
-        # repr-string.
-        log += lambda: f"getting {self._name!r} parameter for {format_obj(obj)}"
+        # Previously, I used the object's normal repr in this message instead 
+        # of explicitly deferring to a generic repr.  However, this led to 
+        # infinite recursion in cases where a parameter didn't exist but the 
+        # repr function tried to access it.  I tried to fix this by adding a 
+        # try/except block, but that ended up triggering a core dump in 
+        # python==3.8, see #41.  This was very likely due to a bug in python, 
+        # but on the principle that logging code should "do no harm" above 
+        # anything else, so I decided to just avoid the problem altogether.
+        log += f"getting {self._name!r} parameter for {object.__repr__(obj)}"
 
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)

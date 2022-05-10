@@ -14,7 +14,7 @@ class DummyValueIter(byoc.pick.ValuesIter):
 
     def __init__(self, values):
         self._with_meta = values
-        self.log = None
+        self.log = Log()
 
     @property
     def with_meta(self):

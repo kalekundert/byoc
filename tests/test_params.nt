@@ -763,7 +763,7 @@ test_param:
       > obj.x
     error:
       type: NoValueFound
-      message: getting 'x' parameter for DummyObj()
+      pattern: getting 'x' parameter for <DummyObj object at .*>
 
   -
     id: inherited-param-key
