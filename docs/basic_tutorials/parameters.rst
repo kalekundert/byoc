@@ -1,9 +1,11 @@
 **********
 Parameters
 **********
-Parameters are the focal point of everything in BYOC.  They are created by 
-defining `param` objects within the body of a class.  The snippet below shows 
-the simplest possible example of this.  It creates a parameter named ``x``:
+Parameters are the means by which you specify which values are loaded from 
+which configuration sources, and are probably the most important part of BYOC 
+to understand.  They are created by defining `param` objects within the body of 
+a class.  The snippet below shows the simplest possible example of this.  It 
+creates a parameter named ``x``:
 
 .. code-block::
 
