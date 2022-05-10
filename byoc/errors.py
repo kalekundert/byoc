@@ -31,8 +31,8 @@ class NoValueFound(AttributeError):
     they're useful defaults.
     """
 
-    def __init__(self, *args):
-        super().__init__('\n'.join(str(x).strip() for x in args))
+    def __init__(self, message, log):
+        super().__init__(message + '\n' + log.format())
 
 class Log:
     """
@@ -92,5 +92,5 @@ class Log:
             msg = bullet + msg[len(bullet):]
             out += msg + '\n'
 
-        return out
+        return out[:-1]
 
