@@ -8,15 +8,20 @@ from param_helpers import *
 
 @parametrize_from_file(
         schema=Schema({
-            'obj': with_byoc.exec(get=get_obj, defer=True),
+            'obj': str,
             **with_byoc.error_or({
                 'expected': {str: with_py.eval},
             }),
         }),
 )
 def test_param(obj, expected, error):
+    # Don't use voluptuous, because we want errors to be able to propagate 
+    # unperturbed.
+    with_byoc = parametrize_from_file.Namespace(
+            byoc, 'from byoc import *', list=list)
+
     with error:
-        obj = obj.exec()
+        obj = with_byoc.exec(obj, get=get_obj)
         for param, value in expected.items():
             assert getattr(obj, param) == value
 

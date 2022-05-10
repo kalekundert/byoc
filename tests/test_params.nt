@@ -263,7 +263,6 @@ test_param:
       >     x = byoc.param(default=1, default_factory=list)
     error:
       type: byoc.ApiError
-      cause: 1
       message:
         - can't specify 'default' and 'default_factory'
         - default: 1
@@ -739,6 +738,34 @@ test_param:
       x: 1
 
   -
+    id: repr-uses-param
+    # This shouldn't trigger infinite recursion.
+    obj:
+      > class DummyObj:
+      >     x = byoc.param(default=1)
+      >
+      >     def __repr__(self):
+      >         return f'DummyObj(x={self.x})'
+    expected:
+      x: 1
+  -
+    id: repr-uses-missing-param
+    # The error message should use a generic representation of the object, 
+    # because `DummyObj.__repr__()` will raise.
+    obj:
+      > class DummyObj:
+      >     x = byoc.param()
+      >
+      >     def __repr__(self):
+      >         return f'DummyObj(x={self.x})'
+      >
+      > obj = DummyObj()
+      > obj.x
+    error:
+      type: NoValueFound
+      message: getting 'x' parameter for DummyObj()
+
+  -
     id: inherited-param-key
     obj:
       > class DummyConfig(Config):
@@ -842,7 +869,7 @@ test_param:
       >     y = byoc.inherited_param()
     error:
       type: byoc.ApiError
-      cause: 2
+      cause: 1
       message:
         - no superclass parameter to inherit from
         - attempting to create `inherited_param`: DummyObj.y

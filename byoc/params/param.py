@@ -151,7 +151,17 @@ class param:
 
     def _calc_value(self, obj):
         log = Log()
-        log += f"getting {self._name!r} parameter for {obj!r}"
+
+        def format_obj(obj):
+            try:
+                return repr(obj)
+            except Exception:
+                return f'{obj.__class__.__name__}()'
+
+        # Defer calculating this log message to avoid triggering infinite 
+        # recursion if the attribute we're currently calculating is part of the 
+        # repr-string.
+        log += lambda: f"getting {self._name!r} parameter for {format_obj(obj)}"
 
         bound_getters = self._load_bound_getters(obj)
         default = self._load_default(obj)

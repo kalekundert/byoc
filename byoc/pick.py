@@ -51,7 +51,7 @@ def first(it: Iterable):
         it.meta = meta
         return value
     except StopIteration as err:
-        raise NoValueFound("can't find value for parameter", it.log)
+        raise NoValueFound("can't find value for parameter", it.log) from None
 
 def list(it: Iterable):
     from builtins import list
