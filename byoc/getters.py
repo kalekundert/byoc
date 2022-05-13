@@ -5,6 +5,7 @@ from .model import UNSPECIFIED
 from .cast import Context, call_with_context
 from .meta import GetterMeta, LayerMeta
 from .errors import ApiError, NoValueFound
+from operator import attrgetter
 from more_itertools import value_chain, always_iterable
 
 class Getter:
@@ -102,6 +103,24 @@ class Method(Func):
         bc.partial_args = (obj, *bc.partial_args)
         bc.exceptions = bc.exceptions or (NoValueFound,)
         return bc
+
+class Attr(Getter):
+
+    def __init__(self, attr, *, skip=(), dynamic=False, **kwargs):
+        super().__init__(**kwargs)
+        self.attr = attr
+        self.skip = skip
+        self.dynamic = dynamic
+
+    def __reprargs__(self):
+        return [repr(self.attr)]
+
+    def bind(self, obj, param):
+        return BoundAttr(
+                self, obj, param, self.attr,
+                exc=self.skip or (NoValueFound,),
+                dynamic=self.dynamic,
+        )
 
 class Value(Getter):
 
@@ -244,6 +263,23 @@ class BoundCallable(BoundGetter):
             log += lambda: f"called: {self.callable}\nreturned: {value!r}"
             yield value, GetterMeta(self.parent), self.dynamic
 
+class BoundAttr(BoundGetter):
+
+    def __init__(self, parent, obj, param, attr, dynamic, exc=()):
+        super().__init__(parent, obj, param)
+        self.attr = attr
+        self.dynamic = dynamic
+        self.exceptions = exc
+
+    def iter_values(self, log):
+        qualattr = f'{self.obj.__class__.__name__}.{self.attr}'
+        try:
+            value = getattr(self.obj, self.attr)
+        except self.exceptions as err:
+            log += f"looked up: {qualattr}\nraised {err.__class__.__name__}: {err}"
+        else:
+            log += f"looked up: {qualattr}\nreturned: {value!r}"
+            yield value, GetterMeta(self.parent), self.dynamic
 
 class BoundValue(BoundGetter):
 

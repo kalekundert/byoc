@@ -378,6 +378,69 @@ test_getter_iter_values:
           > . did you mean to provide a default\?
 
   -
+    id: attr
+    obj:
+      > class DummyObj:
+      >     x = 1
+      >
+    getter: Attr('x')
+    expected:
+      values: [1]
+      meta:
+        -
+          type: GetterMeta
+          getter: Attr
+      dynamic:
+        - False
+      log:
+        -
+          > looked up: DummyObj.x
+          > returned: 1
+  -
+    id: attr-missing
+    obj:
+      > class DummyObj:
+      >     x = byoc.param()
+      >
+    getter: Attr('x')
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        -
+          > looked up: DummyObj.x
+          > raised NoValueFound: can't find value for parameter
+          > . getting 'x' parameter for <DummyObj object at .*>
+          > . nowhere to look for values
+          > . did you mean to provide a default\?
+  -
+    id: attr-skip
+    obj:
+      > class DummyObj:
+      >     @property
+      >     def x(self):
+      >         return 1/0
+      >
+    getter: Attr('x', skip=(ZeroDivisionError,))
+    expected:
+      values: []
+      meta:
+      dynamic:
+      log:
+        -
+          > looked up: DummyObj.x
+          > raised ZeroDivisionError: division by zero
+  -
+    id: attr-err
+    obj:
+      > class DummyObj:
+      >     pass
+      >
+    getter: Attr('x')
+    error: AttributeError
+
+  -
     id: key-implicit
     obj:
       > class DummyConfig(Config):
