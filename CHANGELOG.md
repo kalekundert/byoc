@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.31.0 (2022-05-13)
+### Feature
+* Add a getter for app attributes ([`e90698a`](https://github.com/kalekundert/byoc/commit/e90698a70c385192c9c3b6d7dffa56f5b143b857))
+
 ## v0.30.2 (2022-05-10)
 ### Fix
 * Avoid triggering infinite recursion in log messages ([`da15053`](https://github.com/kalekundert/byoc/commit/da150539ff05cffa7452ca661f314ba75d040be7))
