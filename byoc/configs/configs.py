@@ -83,7 +83,8 @@ class ArgparseConfig(CliConfig):
 class DocoptConfig(CliConfig):
     usage_getter = lambda obj: obj.__doc__
     version_getter = lambda obj: getattr(obj, '__version__')
-    usage_io_getter = lambda obj: sys.stdout
+    usage_io_getter = lambda obj: obj.usage_io
+    usage_vars_getter = lambda obj: obj.usage_vars
     include_help = True
     include_version = None
     options_first = False
@@ -96,6 +97,8 @@ class DocoptConfig(CliConfig):
                 'version_getter', unbind_method(self.version_getter))
         self.usage_io_getter = kwargs.pop(
                 'usage_io_getter', unbind_method(self.usage_io_getter))
+        self.usage_vars_getter = kwargs.pop(
+                'usage_vars_getter', unbind_method(self.usage_vars_getter))
         self.include_help = kwargs.pop(
                 'include_help', self.include_help)
         self.include_version = kwargs.pop(
@@ -136,7 +139,10 @@ class DocoptConfig(CliConfig):
 
         usage = self.usage_getter(self.obj)
         usage = dedent(usage)
-        usage = Template(usage, strict_undefined=True).render(app=self.obj)
+        usage = Template(usage, strict_undefined=True).render(
+                app=self.obj,
+                **self.usage_vars,
+        )
 
         # Trailing whitespace can cause unnecessary line wrapping.
         usage = re.sub(r' *$', '', usage, flags=re.MULTILINE)
@@ -144,7 +150,16 @@ class DocoptConfig(CliConfig):
         return usage
 
     def get_usage_io(self):
-        return self.usage_io_getter(self.obj)
+        try:
+            return self.usage_io_getter(self.obj)
+        except AttributeError:
+            return sys.stdout
+
+    def get_usage_vars(self):
+        try:
+            return self.usage_vars_getter(self.obj)
+        except AttributeError:
+            return {}
 
     def get_brief(self):
         import re

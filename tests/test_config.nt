@@ -293,10 +293,13 @@ test_argparse_docopt_config:
       >
       > Options:
       >     -y Y  [default: ${app.y.upper()}]
+      >
+      > ${details}
       > """
       >     __config__ = [DocoptConfig]
-      >     usage = byoc.config_attr()
       >     brief = byoc.config_attr()
+      >     usage = byoc.config_attr()
+      >     usage_vars = {'details': 'Lorem ipsum...'}
       >
       >     x = byoc.param('<x>')
       >     y = byoc.param('-y', default='a')
@@ -306,6 +309,8 @@ test_argparse_docopt_config:
       >
       > Options:
       >     -y Y  [default: A]
+      >
+      > Lorem ipsum...
       >
     brief:
     invocations:
