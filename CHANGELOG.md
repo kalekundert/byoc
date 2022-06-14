@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.32.0 (2022-06-14)
+### Feature
+* Allow apps to provide custom Mako parameters for docopt ([`9d269fe`](https://github.com/kalekundert/byoc/commit/9d269fe9e482b4d6b9d4156fdc3911a9a03258de))
+
 ## v0.31.0 (2022-05-13)
 ### Feature
 * Add a getter for app attributes ([`e90698a`](https://github.com/kalekundert/byoc/commit/e90698a70c385192c9c3b6d7dffa56f5b143b857))
