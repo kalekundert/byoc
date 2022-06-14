@@ -4,7 +4,7 @@ import byoc
 import pytest
 import sys
 
-from parametrize_from_file.voluptuous import Namespace, empty_ok
+from parametrize_from_file import Namespace, cast, defaults, error_or
 from voluptuous import Schema, And, Or, Optional, Invalid, Coerce
 from unittest.mock import Mock
 from re_assert import Matches
@@ -165,7 +165,7 @@ def eval_meta(meta):
     dict_schema = {
             'type': with_meta.eval,
             Optional('location', default=None): Or(None, str),
-            str: with_py.eval,
+            str: with_byoc.eval,
     }
     schema = Schema(Or(dict_schema, with_meta.eval))
     meta = schema(meta)
@@ -214,6 +214,9 @@ def get_obj_or_cls(obj_name, cls_name=None):
             return ns[cls_name]()
 
     return get
+
+def empty_ok(container):
+    return Or(container, And('', lambda y: type(container)()))
 
 get_obj = get_obj_or_cls('obj')
 get_config = get_obj_or_cls('config')

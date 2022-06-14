@@ -23,12 +23,13 @@ def tmp_chdir(tmp_path):
 
 
 @parametrize_from_file(
-        schema=Schema({
-            'factory': with_byoc.exec(get='DummyConfig', defer=True),
-            **with_byoc.error_or({
-                'expected': {str: with_py.eval},
-            }),
-        }),
+        schema=[
+            cast(
+                factory=with_byoc.exec(get='DummyConfig', defer=True),
+                expected=with_py.eval,
+            ),
+            with_byoc.error_or('expected')
+        ],
 )
 def test_config_init(factory, expected, error):
     class DummyObj:
@@ -44,15 +45,13 @@ def test_config_init(factory, expected, error):
             assert getattr(config, attr) == value
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj),
-            'usage': str,
-            'brief': str,
-            'invocations': [{
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj),
+            invocations=Schema([{
                 'argv': shlex.split,
                 'expected': {str: with_py.eval},
-            }],
-        })
+            }]),
+        ),
 )
 def test_argparse_docopt_config(monkeypatch, obj, usage, brief, invocations):
     from copy import copy
@@ -100,14 +99,14 @@ def test_environment_config():
     assert obj.x == "1"
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj),
-            'slug': with_py.eval,
-            'author': with_py.eval,
-            'version': with_py.eval,
-            'files': files.schema,
-            'layers': eval_config_layers,
-        }),
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj),
+            slug=with_py.eval,
+            author=with_py.eval,
+            version=with_py.eval,
+            files=Schema(files.schema),
+            layers=eval_config_layers,
+        ),
         indirect=['files'],
 )
 def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, files, layers):
@@ -137,13 +136,13 @@ def test_appdirs_config(tmp_chdir, monkeypatch, obj, slug, author, version, file
     assert collect_layers(obj)[0] == layers
 
 @parametrize_from_file(
-        schema=Schema({
-            'config': with_byoc.eval(defer=True),
-            **with_byoc.error_or({
-                'name': str,
-                'config_cls': with_byoc.eval,
-            }),
-        }),
+        schema=[
+            cast(
+                config=with_byoc.eval(defer=True),
+                config_cls=with_byoc.eval
+            ),
+            with_byoc.error_or('name', 'config_cls'),
+        ],
 )
 def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error):
     config = config()(Mock())
@@ -154,12 +153,14 @@ def test_appdirs_config_get_name_and_config_cls(config, name, config_cls, error)
         assert actual_config_cls == config_cls
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj),
-            'files': empty_ok({str: str}),
-            'layers': eval_config_layers,
-            Optional('load_status', default=[]): [str],
-        }),
+        schema=[
+            cast(
+                obj=with_byoc.exec(get=get_obj),
+                files=Schema(files.schema),
+                layers=eval_config_layers,
+            ),
+            defaults(load_status=[]),
+        ],
         indirect=['files'],
 )
 def test_file_config(tmp_chdir, obj, files, layers, load_status):
@@ -309,14 +310,16 @@ def test_on_load_inheritance():
     assert f2.calls == {'F2/a', 'F1/b', 'P/c'}
 
 @parametrize_from_file(
-        schema=Schema({
-            'f': with_byoc.exec(get='f'),
-            Optional('raises', default=[]): [with_py.eval],
-            **with_py.error_or({
-                'x': with_py.eval,
-                'expected': with_py.eval,
-            }),
-        })
+        schema=[
+            cast(
+                f=with_byoc.exec(get='f'),
+                raises=with_py.eval,
+                x=with_py.eval,
+                expected=with_py.eval,
+            ),
+            defaults(raises=[]),
+            error_or('x', 'expected'),
+        ],
 )
 @pytest.mark.parametrize(
         'factory', [

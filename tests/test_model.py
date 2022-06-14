@@ -4,8 +4,6 @@ import byoc
 import pytest
 import parametrize_from_file
 
-from voluptuous import Schema, Or, Optional, Coerce
-from more_itertools import zip_equal
 from param_helpers import *
 
 class DummyObj:
@@ -20,12 +18,15 @@ class DummyConfig(byoc.Config):
         return layers
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj),
-            'init_layers': eval_obj_layers,
-            'load_layers': eval_obj_layers,
-            Optional('reload_layers', default={}): eval_obj_layers,
-        })
+        schema=[
+            cast(
+                obj=with_byoc.exec(get=get_obj),
+                init_layers=eval_obj_layers,
+                load_layers=eval_obj_layers,
+                reload_layers=eval_obj_layers,
+            ),
+            defaults(reload_layers={}),
+        ],
 )
 def test_init_load_reload(obj, init_layers, load_layers, reload_layers):
     if not reload_layers:
@@ -70,10 +71,10 @@ def test_reload_instead_of_init():
     assert obj.x == 2
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj),
-            'layers': eval_obj_layers,
-        }),
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj),
+            layers=eval_obj_layers,
+        ),
 )
 def test_collect_layers(obj, layers):
     assert collect_layers(obj) == layers
@@ -162,11 +163,10 @@ def test_get_config_factories():
     assert byoc.model.get_config_factories(obj) is sentinel
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj, defer=True),
-            'param': str,
-            'expected': eval_meta,
-        }),
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj, defer=True),
+            expected=eval_meta,
+        ),
 )
 def test_get_meta(obj, param, expected):
     obj = obj()

@@ -8,28 +8,31 @@ from byoc.cast import call_with_context
 from param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'func': with_byoc.exec(get='f'),
-            'value': with_py.eval,
-            Optional('meta', default='class DummyMeta: pass'): with_py.exec(get=get_meta),
-            Optional('obj', default='class DummyObj: pass'): with_py.exec(get=get_obj),
-            **with_py.error_or({
-                'expected': with_py.eval,
-            }),
-        }),
+        schema=[
+            defaults(
+                meta='class DummyMeta: pass',
+                obj='class DummyObj: pass',
+            ),
+            cast(
+                func=with_byoc.exec(get='f'),
+                value=with_py.eval,
+                meta=with_py.exec(get=get_meta),
+                obj=with_py.exec(get=get_obj),
+                expected=with_py.eval,
+            ),
+            error_or('expected'),
+        ],
 )
 def test_call_with_context(func, value, meta, obj, expected, error):
     context = byoc.Context(value, meta, obj)
     with error:
         assert call_with_context(func, context) == expected
 
-
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj, defer=True),
-            'expected': {str: str},
-            'files': files.schema
-        }),
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj, defer=True),
+            files=Schema(files.schema)
+        ),
         indirect=['files'],
 )
 def test_relpath(obj, expected, files, monkeypatch):
@@ -40,12 +43,10 @@ def test_relpath(obj, expected, files, monkeypatch):
         assert getattr(obj, param) == files / relpath
 
 @parametrize_from_file(
-        schema=Schema({
-            'expr': str,
-            **with_py.error_or({
-                'expected': with_py.eval,
-            }),
-        }),
+        schema=[
+            cast(expected=with_py.eval),
+            error_or('expected'),
+        ],
 )
 def test_arithmetic_eval(expr, expected, error):
     with error:

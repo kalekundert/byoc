@@ -39,12 +39,11 @@ def test_dict_layer_setters(values, location):
     assert layer.location == 'a'
 
 @parametrize_from_file(
-        schema=Schema({
-            'layer': with_byoc.eval(defer=True),
-            'key': with_py.eval,
-            'expected': [with_py.eval],
-            'log': [str],
-        }),
+        schema=cast(
+            layer=with_byoc.eval(defer=True),
+            key=with_py.eval,
+            expected=with_py.eval,
+        ),
 )
 def test_layer_iter_values(layer, key, expected, log, monkeypatch):
     monkeypatch.setenv('BYOC_VERBOSE', '1')
@@ -55,12 +54,10 @@ def test_layer_iter_values(layer, key, expected, log, monkeypatch):
     assert actual_log.message_strs == log
 
 @parametrize_from_file(
-        schema=Schema({
-            'dict': with_py.eval,
-            'n_max': Coerce(int),
-            Optional('env', default={}): {str: str},
-            'expected': str,
-        }),
+        schema=[
+            cast(dict=with_py.eval, n_max=int),
+            defaults(env={}),
+        ],
 )
 def test_repr_dict_short(dict, env, expected, monkeypatch):
     for k, v in env.items():

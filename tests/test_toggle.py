@@ -2,19 +2,13 @@
 
 import byoc
 import parametrize_from_file
-from voluptuous import Schema
 from param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'layers': [{
-                'value': with_py.eval,
-                'toggle': with_py.eval,
-            }],
-            **with_byoc.error_or({
-                'expected': with_py.eval,
-            })
-        }),
+        schema=[
+            with_byoc.error_or('expected'),
+            with_py.eval,
+        ],
 )
 def test_toggle(layers, expected, error):
 

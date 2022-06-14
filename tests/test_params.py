@@ -3,23 +3,15 @@
 import byoc
 import pytest
 import parametrize_from_file
-from voluptuous import Schema, Optional, Or
 from param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': str,
-            **with_byoc.error_or({
-                'expected': {str: with_py.eval},
-            }),
-        }),
+        schema=[
+            defaults(error='none', expected={}),
+            cast(expected=with_py.eval, error=with_byoc.error),
+        ],
 )
 def test_param(obj, expected, error):
-    # Don't use voluptuous, because we want errors to be able to propagate 
-    # unperturbed.
-    with_byoc = parametrize_from_file.Namespace(
-            byoc, 'from byoc import *', list=list)
-
     with error:
         obj = with_byoc.exec(obj, get=get_obj)
         for param, value in expected.items():

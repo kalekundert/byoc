@@ -21,14 +21,18 @@ class DummyValueIter(byoc.pick.ValuesIter):
         return self._with_meta
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('obj', default='class DummyObj: pass'): str,
-            Optional('param', default=''): str,
-            'getters': empty_ok([str]),
-            Optional('default', default=''): str,
-            'expected': empty_ok([with_py.eval]),
-            'log': empty_ok([str]),
-        })
+        schema=[
+            defaults(
+                obj='class DummyObj: pass',
+                param='',
+                default='',
+            ),
+            cast(
+                getters=Schema(empty_ok([str])),
+                expected=Schema(empty_ok([with_py.eval])),
+                log=Schema(empty_ok([str])),
+            ),
+        ],
 )
 def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
     monkeypatch.setenv('BYOC_VERBOSE', '1')
@@ -51,16 +55,14 @@ def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
     assert values.log.message_strs == log
 
 @parametrize_from_file(
-        schema=Schema({
-            'pick_func': with_byoc.eval,
-            'values_iter': lambda x: DummyValueIter(with_py.eval(x)),
-            **with_byoc.error_or({
-                'expected': {
-                    'value': with_py.eval,
-                    'meta': with_py.eval,
-                },
-            }),
-        }),
+        schema=[
+            cast(
+                pick_func=with_byoc.eval,
+                values_iter=lambda x: DummyValueIter(with_py.eval(x)),
+                expected=with_py.eval,
+            ),
+            with_byoc.error_or('expected'),
+        ],
 )
 def test_pick_functions(pick_func, values_iter, expected, error):
     with error:

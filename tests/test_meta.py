@@ -5,10 +5,10 @@ import parametrize_from_file
 from param_helpers import *
 
 @parametrize_from_file(
-        schema=Schema({
-            'obj': with_byoc.exec(get=get_obj, defer=True),
-            'expected': {str: eval_meta},
-        }),
+        schema=cast(
+            obj=with_byoc.exec(get=get_obj, defer=True),
+            expected=Schema({str: eval_meta}),
+        ),
 )
 def test_meta_view(obj, expected):
     obj = obj()

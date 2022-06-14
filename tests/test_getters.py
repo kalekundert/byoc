@@ -15,10 +15,7 @@ with_getters = Namespace(
 )
 
 @parametrize_from_file(
-        schema=Schema({
-            'getter': with_getters.eval,
-            'expected': str,
-        }),
+        schema=cast(getter=with_getters.eval),
 )
 def test_getter_repr(getter, expected):
     print(repr(getter))
@@ -26,16 +23,19 @@ def test_getter_repr(getter, expected):
     assert re.fullmatch(expected, repr(getter))
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('obj', default='class DummyObj: pass'): str,
-            Optional('param', default='byoc.param()'): str,
-            Optional('meta', default='class DummyMeta: pass'): with_py.exec(get=get_meta),
-            'getter': str,
-            'given': with_py.eval,
-            **with_byoc.error_or({
-                'expected': with_py.eval,
-            }),
-        }),
+        schema=[
+            defaults(
+                obj='class DummyObj: pass',
+                param='byoc.param()',
+                meta='class DummyMeta: pass',
+            ),
+            cast(
+                meta=with_py.exec(get=get_meta),
+                given=with_py.eval,
+                expected=with_py.eval,
+            ),
+            with_byoc.error_or('expected'),
+        ],
 )
 def test_getter_cast_value(obj, param, meta, getter, given, expected, error):
     with_obj = with_byoc.exec(obj)
@@ -54,19 +54,21 @@ def test_getter_cast_value(obj, param, meta, getter, given, expected, error):
         assert bound_getter.cast_value(given, meta) == expected
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('obj', default='class DummyObj: pass'): str,
-            Optional('param', default=''): str,
-            'getter': str,
-            **with_byoc.error_or({
-                'expected': {
+        schema=[
+            defaults(
+                obj='class DummyObj: pass',
+                param='',
+            ),
+            cast(
+                expected=Schema({
                     'values': with_py.eval,
                     'meta': empty_ok([eval_meta]),
                     'dynamic': empty_ok([with_py.eval]),
                     'log': [str],
-                },
-            }),
-        }),
+                }),
+            ),
+            error_or('expected'),
+        ],
 )
 def test_getter_iter_values(getter, obj, param, expected, error, monkeypatch):
     monkeypatch.setenv('BYOC_VERBOSE', '1')
@@ -96,12 +98,13 @@ def test_getter_iter_values(getter, obj, param, expected, error, monkeypatch):
         assert_log_matches(log, expected['log'])
 
 @parametrize_from_file(
-        schema=Schema({
-            Optional('obj', default='class DummyObj: pass'): str,
-            Optional('param', default=''): str,
-            'getter': str,
-            'error': with_byoc.error,
-        }),
+        schema=[
+            defaults(
+                obj='class DummyObj: pass',
+                param='',
+            ),
+            cast(error=with_byoc.error),
+        ],
 )
 def test_getter_kwargs_err(obj, param, getter, error):
     with_obj = with_byoc.exec(obj)
