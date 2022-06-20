@@ -44,7 +44,7 @@ def test_relpath(obj, expected, files, monkeypatch):
 
 @parametrize_from_file(
         schema=[
-            cast(expected=with_py.eval),
+            cast(expr=with_py.eval, expected=with_py.eval),
             error_or('expected'),
         ],
 )

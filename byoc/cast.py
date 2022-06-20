@@ -7,6 +7,7 @@ from .errors import Error
 from more_itertools import first
 from pathlib import Path
 from typing import Union, Callable, Any
+from numbers import Real
 
 class Context:
     """
@@ -88,20 +89,26 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
             The expression to evaluate.  The syntax is identical to python, but 
             only `int` literals, `float` literals, binary operators (except 
             left/right shift, bitwise and/or/xor, and matrix multiplication),
-            and unary operators are allowed.
+            and unary operators are allowed.  If this argument is already a 
+            numeric type, it will be returned unchanged.
 
     Returns:
         The value of the given expression.
 
     Raises:
         SyntaxError: If *expr* cannot be parsed for any reason.
-        TypeError: If the *expr* argument is not a string.
+        TypeError: If the *expr* argument is not a string or a number.
         ZeroDivisionError: If *expr* divides by zero.
 
     It is safe to call this function on untrusted input, as there is no way to 
     construct an expression that will execute arbitrary code.
     """
     import ast, operator
+
+    if isinstance(expr, Real):
+        return expr
+    if not isinstance(expr, str):
+        raise TypeError(f"expected str, not: {type(expr)}")
 
     operators = {
             ast.Add: operator.add,
