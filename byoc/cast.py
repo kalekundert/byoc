@@ -6,7 +6,7 @@ import inspect
 from .errors import Error
 from more_itertools import first
 from pathlib import Path
-from typing import Union, Callable, Any
+from typing import Union, Callable, Any, Optional
 from numbers import Real
 
 class Context:
@@ -80,7 +80,7 @@ def relpath(
     root = root_from_meta(context.meta)
     return root.resolve() / path
 
-def arithmetic_eval(expr: str) -> Union[int, float]:
+def arithmetic_eval(expr: str, vars: Optional[dict]=None) -> Union[int, float]:
     """\
     Evaluate the given arithmetic expression.
 
@@ -89,8 +89,14 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
             The expression to evaluate.  The syntax is identical to python, but 
             only `int` literals, `float` literals, binary operators (except 
             left/right shift, bitwise and/or/xor, and matrix multiplication),
-            and unary operators are allowed.  If this argument is already a 
-            numeric type, it will be returned unchanged.
+            unary operators, and names provided by the *vars* dictionary are 
+            allowed.  If this argument is already a numeric type, it will be 
+            returned unchanged.
+
+        vars:
+            The variables to allow in the given expression.  The keys of this 
+            dictionary give the names of the variables.  The values must be 
+            integers or floats.
 
     Returns:
         The value of the given expression.
@@ -104,6 +110,12 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
     construct an expression that will execute arbitrary code.
     """
     import ast, operator
+
+    if vars is None:
+        vars = {}
+    for k, v in vars.items():
+        if not isinstance(v, (int, float)):
+            raise TypeError(f"variables must be int or float, but {k}={v!r}")
 
     if isinstance(expr, Real):
         return expr
@@ -138,13 +150,21 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
                     err.blame += "{non_number!r} is not a number"
                     raise err
 
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+            try:
+                return vars[node.id]
+            except KeyError:
+                err = ArithmeticError(expr, var=node.id)
+                err.blame += "name '{var}' is not defined"
+                raise err from None
+
         if isinstance(node, ast.BinOp):
             try:
                 op = operators[type(node.op)]
             except KeyError:
                 err = ArithmeticError(expr, op=node.op)
                 err.blame += "the {op.__class__.__name__} operator is not supported"
-                raise err
+                raise err from None
 
             left = eval_node(node.left)
             right = eval_node(node.right)
@@ -161,17 +181,17 @@ def arithmetic_eval(expr: str) -> Union[int, float]:
     root = ast.parse(expr.lstrip(" \t"), mode='eval')
     return eval_node(root.body)
 
-def int_eval(expr: str) -> int:
+def int_eval(expr: str, vars: Optional[dict]=None) -> int:
     """\
     Same as `arithmetic_eval()`, but convert the result to `int`.
     """
-    return int(arithmetic_eval(expr))
+    return int(arithmetic_eval(expr, vars))
 
-def float_eval(expr: str) -> float:
+def float_eval(expr: str, vars: Optional[dict]=None) -> float:
     """\
     Same as `arithmetic_eval()`, but convert the result to `float`.
     """
-    return float(arithmetic_eval(expr))
+    return float(arithmetic_eval(expr, vars))
 
 class ArithmeticError(Error, SyntaxError):
 

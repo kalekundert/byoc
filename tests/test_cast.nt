@@ -95,7 +95,6 @@ test_relpath:
       x: /b
 
 test_arithmetic_eval:
-  # Literals
   -
     id: literal-int
     expr: 1
@@ -205,6 +204,53 @@ test_arithmetic_eval:
     id: err-op-mat-mul
     expr: '3 @ 2'
     error: SyntaxError
+
+  -
+    id: vars
+    expr: 'a'
+    vars:
+      a: 1
+    expected: 1
+  -
+    id: vars-expr-1
+    expr: 'a + 2'
+    vars:
+      a: 1
+    expected: 3
+  -
+    id: vars-expr-2
+    expr: 'a + b'
+    vars:
+      a: 1
+      b: 2
+    expected: 3
+  -
+    id: err-vars-undef
+    expr: 'a'
+    error:
+      type: SyntaxError
+      message: name 'a' is not defined
+  -
+    id: err-vars-not-numeric
+    expr: 1
+    vars:
+      a: 'a'
+    error:
+      type: TypeError
+      message: variables must be int or float, but a='a'
+  -
+    id: err-vars-assign
+    expr: 'a = 1'
+    vars:
+      a: 1
+    error: SyntaxError
+  -
+    id: err-vars-del
+    expr: 'del a'
+    vars:
+      a: 1
+    error: SyntaxError
+
 
   -
     id: expr
