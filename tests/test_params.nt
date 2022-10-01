@@ -308,7 +308,7 @@ test_param:
       x: 1
 
   -
-    id: cast
+    id: cast-implicit
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -320,7 +320,75 @@ test_param:
     expected:
       x: 2
   -
-    id: cast
+    id: cast-param
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(
+      >             Key(DummyConfig, 'x'),
+      >             cast=lambda x: x+1,
+      >     )
+    expected:
+      x: 2
+  -
+    id: cast-param-err
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a'})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(
+      >             Key(DummyConfig, 'x'),
+      >             cast=int
+      >     )
+      >
+      > obj = DummyObj()
+      > obj.x
+    error:
+      type: ValueError
+      message:
+        - invalid literal for int() with base 10: 'a'
+  -
+    id: cast-getter
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 1})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(
+      >             Key(DummyConfig, 'x', cast=lambda x: x+1),
+      >     )
+    expected:
+      x: 2
+  -
+    id: cast-getter-err
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a'})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(
+      >             Key(DummyConfig, 'x', cast=int),
+      >     )
+      >
+      > obj = DummyObj()
+      > obj.x
+    error:
+      type: ValueError
+      message:
+        - invalid literal for int() with base 10: 'a'
+  -
+    id: cast-both
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -335,7 +403,7 @@ test_param:
     expected:
       x: 6
   -
-    id: cast
+    id: cast-compose
     obj:
       > class DummyConfig(Config):
       >     def load(self):
@@ -343,12 +411,65 @@ test_param:
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.param(
-      >             Key(DummyConfig, 'x'),
-      >             cast=lambda x: x+1,
-      >     )
+      >     x = byoc.param(cast=[lambda x: x*3, lambda x: x+1])
     expected:
-      x: 2
+      x: 4
+  -
+    id: cast-compose-err
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a'})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(cast=[int, lambda x: x+1])
+      >
+      > obj = DummyObj()
+      > obj.x
+    error:
+      type: ValueError
+      message:
+        - invalid literal for int() with base 10: 'a'
+  -
+    id: cast-context-obj
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer(values={'x': 1})
+      >
+      > def f(context: Context):
+      >     return context.value, context.obj.y
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(cast=f)
+      >     y = 2
+      >
+    expected:
+      x: (1, 2)
+  -
+    id: cast-context-meta
+    obj:
+      > class DummyLayer:
+      >     def __init__(self):
+      >         self.y = 2
+      >     def iter_values(self, key, log):
+      >         yield 1
+      >
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DummyLayer()
+      >
+      > def f(context: Context):
+      >     return context.value, context.meta.layer.y
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = param(cast=f)
+      >
+    expected:
+      x: (1, 2)
   -
     id: cast-default
     obj:

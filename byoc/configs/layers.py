@@ -44,9 +44,8 @@ class DictLayer(Layer):
             try:
                 values = lookup(values, self.root_key)
             except KeyError as err:
-                err = err
                 log += lambda err=err: format_loc(
-                        f"called: {key!r}\nraised: KeyError: {err}\ngiven: {repr_dict_short(values)}" if callable(key) else
+                        f"called: {self.root_key!r}\nraised: KeyError: {err}\ngiven: {repr_dict_short(values)}" if callable(key) else
                         f"did not find {self.root_key!r} in {repr_dict_short(values)}",
                         self.location,
                 )

@@ -24,159 +24,6 @@ test_getter_repr:
     getter: Value(1)
     expected: byoc.Value\(1\)
 
-test_getter_cast_value:
-  -
-    id: value
-    getter: Value(None)
-    given: 1
-    expected: 1
-  -
-    id: value
-    getter: Value(None)
-    param: byoc.param(cast=int)
-    given: '1'
-    expected: 1
-  -
-    id: value-err
-    getter: Value(None)
-    param: byoc.param(cast=int)
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-
-  -
-    id: func
-    getter: Func(lambda: None)
-    given: 1
-    expected: 1
-  -
-    id: func
-    getter: Func(lambda: None)
-    param: byoc.param(cast=int)
-    given: '1'
-    expected: 1
-  -
-    id: func-err
-    getter: Func(lambda: None)
-    param: byoc.param(cast=int)
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-
-  -
-    id: method
-    getter: Method(lambda self: None)
-    given: 1
-    expected: 1
-  -
-    id: method
-    getter: Method(lambda self: None)
-    param: byoc.param(cast=int)
-    given: '1'
-    expected: 1
-  -
-    id: method-err
-    getter: Method(lambda self: None)
-    param: byoc.param(cast=int)
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-
-  -
-    id: key
-    getter: Key(Config)
-    given: 1
-    expected: 1
-  -
-    id: key
-    getter: Key(Config, cast=int)
-    given: '1'
-    expected: 1
-  -
-    id: key
-    getter: Key(Config)
-    param: byoc.param(cast=int)
-    given: '1'
-    expected: 1
-  -
-    id: key
-    getter: Key(Config, cast=int)
-    param: byoc.param(cast=lambda x: x+1)
-    given: '1'
-    expected: 2
-  -
-    id: key-err
-    getter: Key(Config, cast=int)
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-  -
-    id: key-err
-    getter: Key(Config)
-    param: byoc.param(cast=int)
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-
-  -
-    id: compose
-    getter: Key(Config, cast=[int, lambda x: x+1])
-    given: '1'
-    expected: 2
-  -
-    id: compose-err
-    getter: Key(Config, cast=[int, lambda x: x])
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-  -
-    id: compose-err
-    getter: Key(Config, cast=[lambda x: x, int])
-    given: 'a'
-    error:
-      type: ValueError
-      message:
-        - invalid literal for int() with base 10: 'a'
-
-  -
-    id: context-obj
-    obj:
-      > class DummyObj:
-      >     y = 2
-      >
-      > def f(context: Context):
-      >     return context.value, context.obj.y
-      >
-    getter: Key(Config, cast=f)
-    given: 1
-    expected: 1, 2
-  -
-    id: context-meta
-    obj:
-      > class DummyObj:
-      >     pass
-      >
-      > def f(context: Context):
-      >     return context.value, context.meta.y
-    meta:
-      > class DummyMeta:
-      >     y = 2
-    getter: Key(Config, cast=f)
-    given: 1
-    expected: 1, 2
-
 test_getter_iter_values:
   -
     id: value
@@ -1168,6 +1015,47 @@ test_getter_iter_values:
           > /path/to/b:
           > found 'y': 2
 
+  -
+    id: shared-key
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a,b'})
+      >
+      > def comma_split(x):
+      >     return x.split(',')
+      > 
+      > shared_keys = [
+      >         SharedKey(
+      >             DummyConfig, 'x',
+      >             cast=comma_split,
+      >             index=i,
+      >         )
+      >         for i in range(2)
+      > ]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(shared_keys[0])
+      >     x2 = byoc.param(shared_keys[1])
+    param: x1
+    getter:
+      > shared_keys[0]
+    expected:
+      values: ['a']
+      meta:
+        -
+          type: LayerMeta
+          layer.values: {'x': 'a,b'}
+      dynamic:
+        - False
+      log:
+        - queried DummyConfig\(\):
+        - found 'x': 'a,b'
+
+        - getting 'x2' parameter for <DummyObj object at .*>
+        - reusing value from parameter 'x1': \['a', 'b'\]
+
 test_getter_kwargs_err:
   -
     id: kwargs-err
@@ -1208,3 +1096,306 @@ test_getter_kwargs_err:
         - toggle
         - Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats
+
+test_shared_key:
+  -
+    id: 1-param
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x = byoc.param(SharedKey(DummyConfig, cast=f, index=0))
+    expected:
+      x: 'a'
+    n_calls:
+      f: 1
+  -
+    id: 2-param
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f: 1
+  -
+    id: 3-param
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b,c'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
+      >     x3 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=2))
+    expected:
+      x1: 'a'
+      x2: 'b'
+      x3: 'c'
+    n_calls:
+      f: 1
+  -
+    id: cycle
+    funcs:
+      f1: lambda x: x.split(',')
+      f2: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
+      >             SharedKey(DummyConfig, 'x', cast=f2, index=0),
+      >     )
+      >     x2 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f2, index=1),
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >     )
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f1:
+        x1: 1
+        x2: 1
+      f2:
+        x1: 1
+        x2: 1
+  -
+    id: cycle-dynamic
+    funcs:
+      f1: lambda x: x.split(',')
+      f2: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
+      >             SharedKey(DummyConfig, 'x', cast=f2, index=0),
+      >             dynamic=True,
+      >     )
+      >     x2 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f2, index=1),
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >             dynamic=True,
+      >     )
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f1:
+        x1: 1
+        x2: 2
+      f2:
+        x1: 1
+        x2: 2
+  -
+    id: chain
+    funcs:
+      f1: lambda x: x.split(',')
+      f2: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,_', 'y': 'b,c'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
+      >     )
+      >     x2 = byoc.param(
+      >             SharedKey(DummyConfig, 'y', cast=f2, index=0),
+      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >     )
+      >     x3 = byoc.param(
+      >             SharedKey(DummyConfig, 'y', cast=f2, index=1),
+      >     )
+    expected:
+      x1: 'a'
+      x2: 'b'
+      x3: 'c'
+    n_calls:
+      f1: 1
+      f2: 1
+  -
+    id: unused-upstream
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Value(None),
+      >             SharedKey(DummyConfig, 'x', cast=f, index=0),
+      >     )
+      >     x2 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f, index=1),
+      >     )
+    expected:
+      x1: None
+      x2: 'b'
+    n_calls:
+      f: 
+        x1: 0
+        x2: 1
+  -
+    id: unused-downstream
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             SharedKey(DummyConfig, 'x', cast=f, index=0),
+      >     )
+      >     x2 = byoc.param(
+      >             Value(None),
+      >             SharedKey(DummyConfig, 'x', cast=f, index=1),
+      >     )
+    expected:
+      x1: 'a'
+      x2: None
+    n_calls:
+      f: 1
+  -
+    id: no-cast
+    funcs:
+      f: lambda d: d['x'].split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, f, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig, f, index=1))
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f: 1
+  -
+    id: diff-config
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig1(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      >
+      > class DummyConfig2(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'c,d'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig1, DummyConfig2]
+      >     x1 = byoc.param(SharedKey(DummyConfig1, 'x', cast=f, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig2, 'x', cast=f, index=1))
+    expected:
+      x1: 'a'
+      x2: 'd'
+    n_calls:
+      f:
+        x1: 1
+        x2: 2
+  -
+    id: diff-key
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b', 'y': 'c,d'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig, 'y', cast=f, index=1))
+    expected:
+      x1: 'a'
+      x2: 'd'
+    n_calls:
+      f:
+        x1: 1
+        x2: 2
+  -
+    id: diff-cast
+    funcs:
+      f1: lambda x: x.split(',')
+      f2: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f1, index=0))
+      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f2, index=1))
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f1:
+        x1: 1
+        x2: 1
+      f2:
+        x1: 0
+        x2: 1
+  -
+    id: inheritance
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyParent:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
+      >
+      > class DummyObj(DummyParent):
+      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
+    expected:
+      x1: 'a'
+      x2: 'b'
+    n_calls:
+      f: 1
+
+

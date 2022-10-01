@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+import inspect
+import functools
+
 from .. import model
 from ..model import UNSPECIFIED
-from ..getters import Getter, Key, ImplicitKey
+from ..getters import Getter, Key, ImplicitKey, SharedKey
 from ..pick import ValuesIter, first
 from ..meta import NeverAccessedMeta, ExceptionMeta, SetAttrMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
+from contextlib import contextmanager
 from math import inf
 
 class param:
@@ -14,7 +18,6 @@ class param:
     class _State:
 
         def __init__(self, default):
-            self.bound_getters = []
             self.default = default
             self.reset()
 
@@ -47,6 +50,11 @@ class param:
     def __set_name__(self, cls, name):
         self._name = name
 
+        for key in self._keys:
+            if isinstance(key, SharedKey):
+                state = model.init_cls(cls)
+                state.shared_keys.setdefault(key.inputs, []).append(self)
+
     def __get__(self, obj, cls=None):
         return self._load_value(obj)
 
@@ -72,7 +80,6 @@ class param:
 
     def _override(self, args, kwargs, skip=frozenset()):
         # Make sure the override arguments match the constructor:
-        import inspect
         sig = inspect.signature(self.__init__)
         sig.bind(*args, **kwargs)
 
@@ -100,8 +107,18 @@ class param:
 
         return states[self._name]
 
-    def _load_value(self, obj):
-        state = self._load_state(obj)
+    def _load_value(self, obj, state=None):
+        state = state or self._load_state(obj)
+
+        self._update_value(obj, state)
+
+        if state.exception is not UNSPECIFIED:
+            raise state.exception
+
+        return self._get(obj, state.value)
+
+    def _update_value(self, obj, state=None, log=None):
+        state = state or self._load_state(obj)
 
         model_version = model.get_cache_version(obj)
         is_cache_stale = (
@@ -109,12 +126,26 @@ class param:
                 state.dynamic or
                 self._dynamic
         )
-        if is_cache_stale:
+        if not is_cache_stale:
+            return
+
+        log = log or Log()
+
+        # Previously, I used the object's normal repr in this message instead 
+        # of explicitly deferring to a generic repr.  However, this led to 
+        # infinite recursion in cases where a parameter didn't exist but the 
+        # repr function tried to access it.  I tried to fix this by adding a 
+        # try/except block, but that ended up triggering a core dump in 
+        # python==3.8, see #41.  This was very likely due to a bug in python, 
+        # but on the principle that logging code should "do no harm" above 
+        # anything else, so I decided to just avoid the problem altogether.
+        log += f"getting {self._name!r} parameter for {object.__repr__(obj)}"
+
+        with self._checkout_bound_getters(obj, state, log) as bound_getters:
+            values_iter = ValuesIter(bound_getters, state.default, log)
+
             try:
-                state.value, values_iter = self._calc_value(obj)
-                state.exception = UNSPECIFIED
-                state.meta = values_iter.meta
-                state.dynamic = values_iter.dynamic
+                state.value = self._pick(values_iter)
 
             # Cache the exception indicating that this parameter is missing, 
             # since that is likely to be raised several times (and unlikely to 
@@ -132,40 +163,44 @@ class param:
                 state.exception = err
                 state.meta = ExceptionMeta(err)
 
+            else:
+                state.exception = UNSPECIFIED
+                state.meta = values_iter.meta
+                state.dynamic = values_iter.dynamic
+
             state.cache_version = model_version
 
-        if state.exception is not UNSPECIFIED:
-            raise state.exception
+    @contextmanager
+    def _checkout_bound_getters(self, obj, state=None, log=None):
+        """
+        Provide access to the bound getters, while guaranteeing that they will 
+        be cleaned up when no longer needed.
 
-        return self._get(obj, state.value)
+        Bound getters are only meant to last for a single update.  However, its 
+        possible that multiple callers will need access to the bound getters 
+        over the course of a single lookup (particularly when shared keys are 
+        involved).  This function ensures that the bound getters are available 
+        to any caller that needs them, but that they are always properly 
+        cleaned up.
+        """
+        state = state or self._load_state(obj)
 
-    def _load_bound_getters(self, obj):
-        state = self._load_state(obj)
-        model_version = model.get_cache_version(obj)
-        if state.cache_version < model_version:
-            state.bound_getters = self._calc_bound_getters(obj)
-        return state.bound_getters
+        try:
+            yield state.bound_getters
 
-    def _load_default(self, obj):
-        return self._load_state(obj).default
+        except AttributeError:
+            state.bound_getters = bg = self._calc_bound_getters(obj)
 
-    def _calc_value(self, obj):
-        log = Log()
+            try:
+                yield bg
 
-        # Previously, I used the object's normal repr in this message instead 
-        # of explicitly deferring to a generic repr.  However, this led to 
-        # infinite recursion in cases where a parameter didn't exist but the 
-        # repr function tried to access it.  I tried to fix this by adding a 
-        # try/except block, but that ended up triggering a core dump in 
-        # python==3.8, see #41.  This was very likely due to a bug in python, 
-        # but on the principle that logging code should "do no harm" above 
-        # anything else, so I decided to just avoid the problem altogether.
-        log += f"getting {self._name!r} parameter for {object.__repr__(obj)}"
+            finally:
+                log = log or Log()
 
-        bound_getters = self._load_bound_getters(obj)
-        default = self._load_default(obj)
-        values = ValuesIter(bound_getters, default, log)
-        return self._pick(values), values
+                for getter in state.bound_getters:
+                    getter.cleanup(log)
+
+                del state.bound_getters
 
     def _calc_bound_getters(self, obj):
         from ..configs.configs import Config
@@ -220,11 +255,7 @@ class param:
                     for key, wrapped_config in zip(keys, wrapped_configs)
             ]
 
-        bound_getters = [
-                getter.bind(obj, self)
-                for getter in getters
-        ]
-        return bound_getters
+        return [getter.bind(obj, self) for getter in getters]
 
     def _get_default_key(self):
         return self._name

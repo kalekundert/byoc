@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 from . import model
-from .model import UNSPECIFIED
+from .model import UNSPECIFIED, get_shared_key_params
 from .cast import Context, call_with_context
 from .meta import GetterMeta, LayerMeta
+from .utils import replay, lookup, noop
 from .errors import ApiError, NoValueFound
 from operator import attrgetter
 from more_itertools import value_chain, always_iterable
+from contextlib import ExitStack
+from enum import Enum, auto
 
 class Getter:
 
@@ -43,7 +46,23 @@ class Key(Getter):
                 wc for wc in model.get_wrapped_configs(obj)
                 if isinstance(wc.config, self.config_cls)
         ]
+        return self._make_bound_key(obj, param, wrapped_configs)
+
+    def _make_bound_key(self, obj, param, wrapped_configs):
         return BoundKey(self, obj, param, wrapped_configs)
+
+class SharedKey(Key):
+
+    def __init__(self, config_cls, key=UNSPECIFIED, index=noop, **kwargs):
+        super().__init__(config_cls, key, **kwargs)
+        self.index = index
+
+    @property
+    def inputs(self):
+        return self.config_cls, self.key, self.kwargs.get('cast')
+
+    def _make_bound_key(self, obj, param, wrapped_configs):
+        return BoundSharedKey(self, obj, param, wrapped_configs, self.index)
 
 class ImplicitKey(Getter):
 
@@ -137,6 +156,10 @@ class Value(Getter):
 
 
 class BoundGetter:
+    # A bound getter only lasts for as long as it takes to calculate a new 
+    # value for a parameter.  Note that the bound getter is cached during this 
+    # process, because it might be looked up and modified several times, e.g. 
+    # by `BoundSharedKey`.
 
     def __init__(self, parent, obj, param):
         self.parent = parent
@@ -155,6 +178,13 @@ class BoundGetter:
         ))
 
         self._check_kwargs()
+
+    def iter_values(self, log):
+        for value, meta, dynamic in self._iter_values(log):
+            yield self._cast_value(value, meta), meta, dynamic
+
+    def cleanup(self, log):
+        pass
 
     def _check_kwargs(self):
         given_kwargs = set(self.kwargs.keys())
@@ -181,10 +211,10 @@ class BoundGetter:
             ])
             raise err
 
-    def iter_values(self, log):
+    def _iter_values(self, log):
         raise NotImplementedError
 
-    def cast_value(self, value, meta):
+    def _cast_value(self, value, meta):
         for f in self.cast_funcs:
             context = Context(value, meta, self.obj)
             value = call_with_context(f, context)
@@ -200,7 +230,7 @@ class BoundKey(BoundGetter):
         if self.key is UNSPECIFIED:
             self.key = param._get_default_key()
 
-    def iter_values(self, log):
+    def _iter_values(self, log):
         assert self.key is not UNSPECIFIED
         assert self.wrapped_configs is not None
 
@@ -244,6 +274,61 @@ class BoundKey(BoundGetter):
                             config.dynamic,
                     )
 
+class BoundSharedKey(BoundKey):
+
+    def __init__(self, parent, obj, param, wrapped_configs, index):
+        super().__init__(parent, obj, param, wrapped_configs)
+        self.param = param
+        self.index = index
+        self.iter_values_replay = None
+        self.update_peers = False
+
+    def __repr__(self):
+        return f'BoundSharedKey(param={self.param._name}, index={self.index!r}, iter_values_replay={self.iter_values_replay!r}, update_peers={self.update_peers!r})'
+
+    def iter_values(self, log):
+        if not self.iter_values_replay:
+            it = super().iter_values(log)
+            self.iter_values_replay = replay(it)
+            self.iter_values_replay.name = self.param._name
+            self.update_peers = True
+
+        for (values, meta, dynamic), original in self.iter_values_replay:
+            if not original:
+                log += lambda name=self.iter_values_replay.name: (
+                        f"reusing value from parameter {name!r}: {values!r}"
+                )
+
+            value = lookup(values, self.index)
+            yield value, meta, dynamic
+
+    def cleanup(self, log):
+        if not self.update_peers:
+            return
+
+        self.update_peers = False
+
+        with ExitStack() as stack:
+            inputs = self.parent.inputs
+            peers = [
+                    getter
+
+                    for param in get_shared_key_params(self.obj, inputs)
+                    if param is not self.param
+
+                    for getter in stack.enter_context(
+                        param._checkout_bound_getters(self.obj, log=log)
+                    )
+                    if isinstance(getter, BoundSharedKey)
+                    if inputs == getter.parent.inputs
+            ]
+
+            for peer in peers:
+                peer.iter_values_replay = self.iter_values_replay
+
+            for peer in peers:
+                peer.param._update_value(self.obj, log=log)
+
 class BoundCallable(BoundGetter):
 
     def __init__(self, parent, obj, param, callable, args, kwargs, dynamic, exc=()):
@@ -254,7 +339,7 @@ class BoundCallable(BoundGetter):
         self.dynamic = dynamic
         self.exceptions = exc
 
-    def iter_values(self, log):
+    def _iter_values(self, log):
         try:
             value = self.callable(*self.partial_args, **self.partial_kwargs)
         except self.exceptions as err:
@@ -271,7 +356,7 @@ class BoundAttr(BoundGetter):
         self.dynamic = dynamic
         self.exceptions = exc
 
-    def iter_values(self, log):
+    def _iter_values(self, log):
         qualattr = f'{self.obj.__class__.__name__}.{self.attr}'
         try:
             value = getattr(self.obj, self.attr)
@@ -287,7 +372,7 @@ class BoundValue(BoundGetter):
         super().__init__(parent, obj, param)
         self.value = value
 
-    def iter_values(self, log):
+    def _iter_values(self, log):
         log += lambda: f"got hard-coded value: {self.value!r}"
         yield self.value, GetterMeta(self.parent), False
 

@@ -35,7 +35,7 @@ class ValuesIter:
             for value, meta, dynamic in getter.iter_values(self.log):
                 have_value = True
                 self.dynamic = self.dynamic or dynamic
-                yield getter.cast_value(value, meta), meta
+                yield value, meta
 
         if self.default is not UNSPECIFIED:
             have_value = True
