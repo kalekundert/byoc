@@ -4,6 +4,7 @@ import byoc
 import parametrize_from_file
 
 from byoc.model import UNSPECIFIED
+from byoc.cast import CastFuncs
 from byoc.errors import Log
 from param_helpers import *
 
@@ -25,22 +26,25 @@ class DummyValueIter(byoc.pick.ValuesIter):
             defaults(
                 obj='class DummyObj: pass',
                 param='',
+                cast='lambda x: x',
                 default='',
             ),
             cast(
                 getters=Schema(empty_ok([str])),
+                cast=with_py.eval,
                 expected=Schema(empty_ok([with_py.eval])),
                 log=Schema(empty_ok([str])),
             ),
         ],
 )
-def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
+def test_values_iter(obj, param, getters, cast, default, expected, log, monkeypatch):
     monkeypatch.setenv('BYOC_VERBOSE', '1')
 
     with_obj = with_byoc.exec(obj)
     obj = get_obj(with_obj)
     param = find_param(obj, param)
     getters = [with_obj.eval(x) for x in getters]
+    cast = CastFuncs(cast)
     default = with_py.eval(default) if default else UNSPECIFIED
 
     byoc.init(obj)
@@ -50,7 +54,7 @@ def test_values_iter(obj, param, getters, default, expected, log, monkeypatch):
             for x in getters
     ]
 
-    values = byoc.pick.ValuesIter(bound_getters, default, Log())
+    values = byoc.pick.ValuesIter(bound_getters, cast, default, Log())
     assert list(values) == expected
     assert values.log.message_strs == log
 

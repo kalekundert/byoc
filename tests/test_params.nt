@@ -190,6 +190,43 @@ test_param:
       x: 1
 
   -
+    id: part-no-peers
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 1, 'y': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param('x')
+      >     x2 = byoc.param(Part(x1))
+    error:
+      type: byoc.ApiError
+      message:
+        - can't infer part from parameter
+        - no parts found
+  -
+    id: part-ambiguous-peers
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 1, 'y': 2})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Part(Key(DummyConfig, 'x')),
+      >             Part(Key(DummyConfig, 'y')),
+      >     )
+      >     x2 = byoc.param(Part(x1))
+    error:
+      type: byoc.ApiError
+      message:
+        - can't infer part from parameter
+        - multiple parts found:
+        - byoc.Part(byoc.Key(DummyConfig, 'x'))
+        - byoc.Part(byoc.Key(DummyConfig, 'y'))
+  -
     id: pick
     obj:
       > class DummyConfig(Config):
@@ -1019,6 +1056,75 @@ test_param:
       > class DummyObj:
       >     x = byoc.toggle_param(
       >             byoc.Value(True, toggle=True),
+      >             default=True,
+      >     )
+    expected:
+      x: False
+  -
+    id: toggle-part
+    obj:
+      > def parse_x(x):
+      >     x1, x2 = x.split(',')
+      >     return x1, {'+': True, '-': False}[x2]
+      >     
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a,+'})
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Part(
+      >                 Key(DummyConfig, 'x', cast=parse_x),
+      >                 index=0,
+      >             ),
+      >     )
+      >     x2 = byoc.toggle_param(
+      >             Part(x1, index=1, toggle=True),
+      >             default=True,
+      >     )
+    expected:
+      x1: 'a'
+      x2: False
+  -
+    id: toggle-cast
+    obj:
+      > def parse_bool(x):
+      >     return {'+': True, '-': False}[x]
+      >
+      > class DummyObj:
+      >     x = byoc.toggle_param(
+      >             byoc.Value('+', cast=parse_bool, toggle=True),
+      >             default=True,
+      >     )
+    expected:
+      x: False
+  -
+    id: toggle-cast
+    # The param-level cast functions have to be applied in a way that doesn't 
+    # overwrite the toggle marker applied by the parameter.
+    obj:
+      > def parse_bool(x):
+      >     return {'+': True, '-': False}[x]
+      >
+      > class DummyObj:
+      >     x = byoc.toggle_param(
+      >             byoc.Value('+', toggle=True),
+      >             cast=parse_bool,
+      >             default=True,
+      >     )
+    expected:
+      x: False
+  -
+    id: toggle-cast-context
+    obj:
+      > def parse_bool(x: Context):
+      >     return {'+': True, '-': False}[x.value]
+      >
+      > class DummyObj:
+      >     x = byoc.toggle_param(
+      >             byoc.Value('+', toggle=True),
+      >             cast=parse_bool,
       >             default=True,
       >     )
     expected:

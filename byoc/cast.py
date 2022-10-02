@@ -4,10 +4,37 @@ import sys
 import inspect
 
 from .errors import Error
-from more_itertools import first
+from more_itertools import first, value_chain
 from pathlib import Path
 from typing import Union, Callable, Any, Optional
 from numbers import Real
+
+class CastFuncs:
+    """
+    A collection of user-specified cast functions.
+
+    This class abstracts two aspects of handling the *cast* functions that 
+    users can provide to both getters and parameters:
+
+    1. The user can provide either a single callable or an iterable of 
+       callables.  This class converts either input into a list.  This list can 
+       also be modified after the fact (e.g. by `toggle_param`).
+
+    2. Cast functions must accept a single argument, which can either be a 
+       regular values or a `Context` object.  This class can determine and 
+       provide the input that each function expects.
+    """
+
+    def __init__(self, func_or_funcs):
+        self.funcs = [
+                x for x in value_chain(func_or_funcs)
+                if x is not None
+        ]
+
+    def __call__(self, context):
+        for f in self.funcs:
+            context.value = call_with_context(f, context)
+        return context.value
 
 class Context:
     """

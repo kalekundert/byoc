@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from .model import UNSPECIFIED
+from .cast import Context
 from .meta import UnknownMeta, DefaultMeta
 from .errors import NoValueFound
 from typing import Iterable
@@ -11,8 +12,9 @@ class ValuesIter:
     # In the future, I might also teach this class to somehow indicate where 
     # each value was loaded from.
 
-    def __init__(self, getters, default, log):
+    def __init__(self, getters, cast, default, log):
         self.getters = getters
+        self.cast = cast
         self.default = default
         self.log = log
 
@@ -35,7 +37,8 @@ class ValuesIter:
             for value, meta, dynamic in getter.iter_values(self.log):
                 have_value = True
                 self.dynamic = self.dynamic or dynamic
-                yield value, meta
+                context = Context(value, meta, getter.obj)
+                yield self.cast(context), meta
 
         if self.default is not UNSPECIFIED:
             have_value = True

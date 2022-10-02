@@ -64,6 +64,7 @@ Getters
    byoc.Method
    byoc.Func
    byoc.Value
+   byoc.Part
 
 Key functions
 =============

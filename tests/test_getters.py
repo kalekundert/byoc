@@ -94,7 +94,7 @@ def test_getter_kwargs_err(obj, param, getter, error):
         getter.bind(obj, param)
 
 @parametrize_from_file(schema=cast(expected=with_py.eval))
-def test_shared_key(funcs, obj, expected, n_calls):
+def test_part(funcs, obj, expected, n_calls):
 
     # Wrap all the probe function in mock objects, so that we can keep track of 
     # how many times they're called:

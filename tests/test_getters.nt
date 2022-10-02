@@ -23,6 +23,9 @@ test_getter_repr:
   -
     getter: Value(1)
     expected: byoc.Value\(1\)
+  -
+    getter: Part(Key(Config, 'x'), index=0)
+    expected: byoc.Part\(byoc.Key\(Config, 'x'\), 0\)
 
 test_getter_iter_values:
   -
@@ -1016,31 +1019,25 @@ test_getter_iter_values:
           > found 'y': 2
 
   -
-    id: shared-key
+    id: part
     obj:
       > class DummyConfig(Config):
       >     def load(self):
       >         yield DictLayer({'x': 'a,b'})
       >
-      > def comma_split(x):
-      >     return x.split(',')
-      > 
-      > shared_keys = [
-      >         SharedKey(
-      >             DummyConfig, 'x',
-      >             cast=comma_split,
-      >             index=i,
-      >         )
-      >         for i in range(2)
+      > key = Key(DummyConfig, 'x', cast=lambda x: x.split(','))
+      > parts = [
+      >       Part(key, index=i)
+      >       for i in range(2)
       > ]
       >
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(shared_keys[0])
-      >     x2 = byoc.param(shared_keys[1])
+      >     x1 = byoc.param(parts[0])
+      >     x2 = byoc.param(parts[1])
     param: x1
     getter:
-      > shared_keys[0]
+      > parts[0]
     expected:
       values: ['a']
       meta:
@@ -1064,8 +1061,7 @@ test_getter_kwargs_err:
       type: byoc.ApiError
       message:
         - unexpected keyword argument
-        - param() allows the following kwargs:
-        - cast
+        - param() doesn't allow any special kwargs
         - Value(1, toggle=True) has the following unexpected kwargs:
         - toggle
   -
@@ -1075,8 +1071,7 @@ test_getter_kwargs_err:
       type: byoc.ApiError
       message:
         - unexpected keyword argument
-        - param() allows the following kwargs:
-        - cast
+        - param() doesn't allow any special kwargs
         - Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats
         - toggle
@@ -1092,12 +1087,11 @@ test_getter_kwargs_err:
       message:
         - unexpected keyword argument
         - param() allows the following kwargs:
-        - cast
         - toggle
         - Value(1, cats=<class 'int'>, toggle=True) has the following
         - cats
 
-test_shared_key:
+test_part:
   -
     id: 1-param
     funcs:
@@ -1109,7 +1103,7 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x = byoc.param(SharedKey(DummyConfig, cast=f, index=0))
+      >     x = byoc.param(Part(Key(DummyConfig, cast=f), index=0))
     expected:
       x: 'a'
     n_calls:
@@ -1125,8 +1119,8 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
+      >     x1 = byoc.param(Part(Key(DummyConfig, 'x', cast=f), index=0))
+      >     x2 = byoc.param(Part(x1, index=1))
     expected:
       x1: 'a'
       x2: 'b'
@@ -1143,9 +1137,9 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
-      >     x3 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=2))
+      >     x1 = byoc.param(Part(Key(DummyConfig, 'x', cast=f), index=0))
+      >     x2 = byoc.param(Part(x1, index=1))
+      >     x3 = byoc.param(Part(x1, index=2))
     expected:
       x1: 'a'
       x2: 'b'
@@ -1164,13 +1158,17 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
+      >
+      >     _k1 = Key(DummyConfig, 'x', cast=f1)
+      >     _k2 = Key(DummyConfig, 'x', cast=f2)
+      >
       >     x1 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
-      >             SharedKey(DummyConfig, 'x', cast=f2, index=0),
+      >             Part(_k1, index=0),
+      >             Part(_k2, index=0),
       >     )
       >     x2 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f2, index=1),
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >             Part(_k2, index=1),
+      >             Part(_k1, index=1),
       >     )
     expected:
       x1: 'a'
@@ -1184,6 +1182,11 @@ test_shared_key:
         x2: 1
   -
     id: cycle-dynamic
+    # It doesn't really make sense to use `dynamic` with `Part`, since the 
+    # whole purpose of `Part` is to avoid calculating the same thing twice, 
+    # while `dynamic` causes exactly that to happen.  But this is still a good 
+    # test case because using these two features together could cause an 
+    # infinite loop if the code isn't written carefully.
     funcs:
       f1: lambda x: x.split(',')
       f2: lambda x: x.split(',')
@@ -1194,14 +1197,18 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
+      >
+      >     _k1 = Key(DummyConfig, 'x', cast=f1)
+      >     _k2 = Key(DummyConfig, 'x', cast=f2)
+      >
       >     x1 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
-      >             SharedKey(DummyConfig, 'x', cast=f2, index=0),
+      >             Part(_k1, index=0),
+      >             Part(_k2, index=0),
       >             dynamic=True,
       >     )
       >     x2 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f2, index=1),
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >             Part(_k2, index=1),
+      >             Part(_k1, index=1),
       >             dynamic=True,
       >     )
     expected:
@@ -1226,15 +1233,19 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
+      >
+      >     _k1 = Key(DummyConfig, 'x', cast=f1)
+      >     _k2 = Key(DummyConfig, 'y', cast=f2)
+      >
       >     x1 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=0),
+      >             Part(_k1, index=0),
       >     )
       >     x2 = byoc.param(
-      >             SharedKey(DummyConfig, 'y', cast=f2, index=0),
-      >             SharedKey(DummyConfig, 'x', cast=f1, index=1),
+      >             Part(_k2, index=0),
+      >             Part(_k1, index=1),
       >     )
       >     x3 = byoc.param(
-      >             SharedKey(DummyConfig, 'y', cast=f2, index=1),
+      >             Part(_k2, index=1),
       >     )
     expected:
       x1: 'a'
@@ -1256,10 +1267,10 @@ test_shared_key:
       >     __config__ = [DummyConfig]
       >     x1 = byoc.param(
       >             Value(None),
-      >             SharedKey(DummyConfig, 'x', cast=f, index=0),
+      >             Part(Key(DummyConfig, 'x', cast=f), index=0),
       >     )
       >     x2 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f, index=1),
+      >             Part(x1, index=1),
       >     )
     expected:
       x1: None
@@ -1280,11 +1291,11 @@ test_shared_key:
       > class DummyObj:
       >     __config__ = [DummyConfig]
       >     x1 = byoc.param(
-      >             SharedKey(DummyConfig, 'x', cast=f, index=0),
+      >             Part(Key(DummyConfig, 'x', cast=f), index=0),
       >     )
       >     x2 = byoc.param(
       >             Value(None),
-      >             SharedKey(DummyConfig, 'x', cast=f, index=1),
+      >             Part(x1, index=1),
       >     )
     expected:
       x1: 'a'
@@ -1302,81 +1313,63 @@ test_shared_key:
       > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, f, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig, f, index=1))
+      >     x1 = byoc.param(Part(Key(DummyConfig, f), index=0))
+      >     x2 = byoc.param(Part(x1, index=1))
     expected:
       x1: 'a'
       x2: 'b'
     n_calls:
       f: 1
   -
-    id: diff-config
+    id: cast-param
+    # The param-level cast function should be applied after the part is chosen.
     funcs:
       f: lambda x: x.split(',')
     obj:
-      > class DummyConfig1(byoc.Config):
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Part(
+      >                 Key(DummyConfig, 'x', cast=f),
+      >                 index=0,
+      >             ),
+      >             cast=lambda x: x.upper(),
+      >     )
+      >     x2 = byoc.param(
+      >             Part(x1, index=1),
+      >             cast=lambda x: x.upper(),
+      >     )
+    expected:
+      x1: 'A'
+      x2: 'B'
+    n_calls:
+      f: 1
+  -
+    id: diff-keys
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
       >     def load(self):
       >         yield byoc.DictLayer({'x': 'a,b'})
       >
-      > class DummyConfig2(byoc.Config):
-      >     def load(self):
-      >         yield byoc.DictLayer({'x': 'c,d'})
-      > 
-      > class DummyObj:
-      >     __config__ = [DummyConfig1, DummyConfig2]
-      >     x1 = byoc.param(SharedKey(DummyConfig1, 'x', cast=f, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig2, 'x', cast=f, index=1))
-    expected:
-      x1: 'a'
-      x2: 'd'
-    n_calls:
-      f:
-        x1: 1
-        x2: 2
-  -
-    id: diff-key
-    funcs:
-      f: lambda x: x.split(',')
-    obj:
-      > class DummyConfig(byoc.Config):
-      >     def load(self):
-      >         yield byoc.DictLayer({'x': 'a,b', 'y': 'c,d'})
-      > 
       > class DummyObj:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig, 'y', cast=f, index=1))
-    expected:
-      x1: 'a'
-      x2: 'd'
-    n_calls:
-      f:
-        x1: 1
-        x2: 2
-  -
-    id: diff-cast
-    funcs:
-      f1: lambda x: x.split(',')
-      f2: lambda x: x.split(',')
-    obj:
-      > class DummyConfig(byoc.Config):
-      >     def load(self):
-      >         yield byoc.DictLayer({'x': 'a,b'})
-      > 
-      > class DummyObj:
-      >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f1, index=0))
-      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f2, index=1))
+      >     x1 = byoc.param(Part(Key(DummyConfig, 'x', cast=f), index=0))
+      >     x2 = byoc.param(Part(Key(DummyConfig, 'x', cast=f), index=1))
     expected:
       x1: 'a'
       x2: 'b'
     n_calls:
-      f1:
+      # These parts are unrelated, even though they end up referencing the same 
+      # value, so the cast function will be called twice.
+      f:
         x1: 1
-        x2: 1
-      f2:
-        x1: 0
-        x2: 1
+        x2: 2
   -
     id: inheritance
     funcs:
@@ -1388,10 +1381,10 @@ test_shared_key:
       > 
       > class DummyParent:
       >     __config__ = [DummyConfig]
-      >     x1 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=0))
+      >     x1 = byoc.param(Part(Key(DummyConfig, 'x', cast=f), index=0))
       >
       > class DummyObj(DummyParent):
-      >     x2 = byoc.param(SharedKey(DummyConfig, 'x', cast=f, index=1))
+      >     x2 = byoc.param(Part(DummyParent.x1, index=1))
     expected:
       x1: 'a'
       x2: 'b'

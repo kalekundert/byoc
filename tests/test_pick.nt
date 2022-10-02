@@ -1,7 +1,7 @@
 test_values_iter:
-  # `test_getters.py` thoroughly tests cases where there is only a single 
-  # getter.  The tests here therefore focus on cases where there are multiple 
-  # getters.
+  # `test_getters.py` and `test_param.py` thoroughly test cases where there is 
+  # only a single getter.  The tests here therefore focus on cases where there 
+  # are multiple getters.
 
   -
     id: layers-1x

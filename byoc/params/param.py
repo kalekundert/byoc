@@ -5,8 +5,9 @@ import functools
 
 from .. import model
 from ..model import UNSPECIFIED
-from ..getters import Getter, Key, ImplicitKey, SharedKey
+from ..getters import Getter, Key, ImplicitKey
 from ..pick import ValuesIter, first
+from ..cast import CastFuncs
 from ..meta import NeverAccessedMeta, ExceptionMeta, SetAttrMeta
 from ..utils import noop
 from ..errors import ApiError, NoValueFound, Log
@@ -40,23 +41,22 @@ class param:
             dynamic=False,
     ):
         self._keys = keys
-        self._cast = cast
+        self._cast = self._prepare_cast_funcs(cast)
         self._pick = pick
         self._default_factory = _merge_default_args(default, default_factory)
         self._ignore = ignore
         self._get = get
         self._dynamic = dynamic
 
+        for key in keys:
+            if isinstance(key, Getter):
+                key.register(self)
+
     def __set_name__(self, cls, name):
         self._name = name
 
-        for key in self._keys:
-            if isinstance(key, SharedKey):
-                state = model.init_cls(cls)
-                state.shared_keys.setdefault(key.inputs, []).append(self)
-
     def __get__(self, obj, cls=None):
-        return self._load_value(obj)
+        return self._load_value(obj) if obj is not None else self
 
     def __set__(self, obj, value):
         if value is self._ignore:
@@ -86,6 +86,9 @@ class param:
         # Override the attributes referenced by the arguments:
         if args:
             self._keys = args
+
+        if 'cast' in kwargs:
+            self._cast = self._prepare_cast_funcs(kwargs.pop('cast'))
 
         if 'default' in kwargs or 'default_factory' in kwargs:
             self._default_factory = _merge_default_args(
@@ -142,7 +145,12 @@ class param:
         log += f"getting {self._name!r} parameter for {object.__repr__(obj)}"
 
         with self._checkout_bound_getters(obj, state, log) as bound_getters:
-            values_iter = ValuesIter(bound_getters, state.default, log)
+            values_iter = ValuesIter(
+                    bound_getters,
+                    self._get_default_cast(),
+                    state.default,
+                    log,
+            )
 
             try:
                 state.value = self._pick(values_iter)
@@ -257,6 +265,9 @@ class param:
 
         return [getter.bind(obj, self) for getter in getters]
 
+    def _prepare_cast_funcs(self, cast):
+        return CastFuncs(cast)
+
     def _get_default_key(self):
         return self._name
 
@@ -264,7 +275,9 @@ class param:
         return self._cast
 
     def _get_known_getter_kwargs(self):
-        return {'cast'}
+        return set()
+
+
 
 def _merge_default_args(instance, factory):
     have_instance = instance is not UNSPECIFIED

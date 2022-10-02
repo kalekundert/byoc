@@ -4,16 +4,10 @@ from .errors import ApiError
 
 CONFIG_ATTR = '__config__'
 STATE_ATTR = '__byoc__'
-CLS_STATE_ATTR = '__byoc_cls__'
 
 UNSPECIFIED = object()
 
-class ClassState:
-
-    def __init__(self):
-        self.shared_keys = {}
-
-class InstanceState:
+class State:
 
     def __init__(self, obj):
         self.wrapped_configs = [
@@ -55,19 +49,11 @@ class WrappedConfig:
         self.layers = list(self.config.load())
         self.is_loaded = True
 
-def init_cls(cls):
-    try:
-        return getattr(cls, CLS_STATE_ATTR)
-    except AttributeError:
-        state = ClassState()
-        setattr(cls, CLS_STATE_ATTR, state)
-        return state
-
 def init(obj):
     if hasattr(obj, STATE_ATTR):
         return False
 
-    setattr(obj, STATE_ATTR, InstanceState(obj))
+    setattr(obj, STATE_ATTR, State(obj))
 
     _load_configs(
             obj,
@@ -145,9 +131,6 @@ def share_configs(donor, acceptor):
     acceptor_state.wrapped_configs.extend(donor_state.wrapped_configs)
     acceptor_state.cache_version += 1
 
-def get_cls_state(cls):
-    return getattr(cls, CLS_STATE_ATTR)
-
 def get_state(obj):
     return getattr(obj, STATE_ATTR)
 
@@ -174,16 +157,6 @@ def get_load_callbacks(obj):
                 hits[k] = v
 
     return hits
-
-def get_shared_key_params(obj, inputs):
-    hits = {}
-
-    for cls in reversed(obj.__class__.__mro__):
-        try: state = get_cls_state(cls)
-        except AttributeError: continue
-        hits.update({x._name: x for x in state.shared_keys[inputs]})
-
-    return hits.values()
 
 def get_param_states(obj):
     return get_state(obj).param_states
