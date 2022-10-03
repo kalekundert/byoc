@@ -145,7 +145,7 @@ class Value(Getter):
 
 class Part(Getter):
 
-    def __init__(self, whole, index=noop, **kwargs):
+    def __init__(self, whole, index=noop, skip=(), **kwargs):
         super().__init__(**kwargs)
 
         # Strictly speaking, the user should provide the same "whole" getter 
@@ -176,6 +176,7 @@ class Part(Getter):
 
         self.whole = whole
         self.index = index
+        self.skip = skip
 
     def __reprargs__(self):
         if self.index is noop:
@@ -380,8 +381,21 @@ class BoundPart(BoundGetter):
                         f"reusing value from parameter {name!r}: {values!r}"
                 )
 
-            value = lookup(values, self.parent.index)
-            yield value, meta, dynamic
+            try:
+                value = lookup(values, self.parent.index)
+            except self.parent.skip as err:
+                log += lambda err=err: (
+                        f"called: {self.parent.index!r}\nraised {err.__class__.__name__}: {err}"
+                        if callable(self.parent.index) else
+                        f"did not find {self.parent.index!r} in {values!r}\nraised {err.__class__.__name__}: {err}"
+                )
+            else:
+                log += lambda: (
+                        f"called: {self.parent.index!r}\nreturned: {value!r}"
+                        if callable(self.parent.index) else
+                        f"found {self.parent.index!r}: {value!r}"
+                )
+                yield value, meta, dynamic
 
     def cleanup(self, log):
         if not self.update_peers:

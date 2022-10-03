@@ -1049,9 +1049,50 @@ test_getter_iter_values:
       log:
         - queried DummyConfig\(\):
         - found 'x': 'a,b'
+        - found 0: 'a'
 
         - getting 'x2' parameter for <DummyObj object at .*>
         - reusing value from parameter 'x1': \['a', 'b'\]
+        - found 1: 'b'
+  -
+    id: part-skip
+    obj:
+      > class DummyConfig(Config):
+      >     def load(self):
+      >         yield DictLayer({'x': 'a,b'})
+      >
+      > key = Key(DummyConfig, 'x', cast=lambda x: x.split(','))
+      > parts = [
+      >       Part(key, index=0),
+      >       Part(key, index=2, skip=IndexError),
+      > ]
+      >
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(parts[0])
+      >     x2 = byoc.param(parts[1])
+    param: x1
+    getter:
+      > parts[0]
+    expected:
+      values: ['a']
+      meta:
+        -
+          type: LayerMeta
+          layer.values: {'x': 'a,b'}
+      dynamic:
+        - False
+      log:
+        - queried DummyConfig\(\):
+        - found 'x': 'a,b'
+        - found 0: 'a'
+
+        - getting 'x2' parameter for <DummyObj object at .*>
+        - reusing value from parameter 'x1': \['a', 'b'\]
+        -
+          > did not find 2 in \['a', 'b'\]
+          > raised IndexError: list index out of range
+        - did you mean to provide a default\?
 
 test_getter_kwargs_err:
   -
@@ -1388,6 +1429,52 @@ test_part:
     expected:
       x1: 'a'
       x2: 'b'
+    n_calls:
+      f: 1
+  -
+    id: skip-first
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Part(Key(DummyConfig, 'x', cast=f), index=2, skip=IndexError),
+      >             default=None,
+      >     )
+      >     x2 = byoc.param(
+      >             Part(x1, index=1),
+      >     )
+    expected:
+      x1: None
+      x2: 'b'
+    n_calls:
+      f: 1
+  -
+    id: skip-second
+    funcs:
+      f: lambda x: x.split(',')
+    obj:
+      > class DummyConfig(byoc.Config):
+      >     def load(self):
+      >         yield byoc.DictLayer({'x': 'a,b'})
+      > 
+      > class DummyObj:
+      >     __config__ = [DummyConfig]
+      >     x1 = byoc.param(
+      >             Part(Key(DummyConfig, 'x', cast=f), index=0),
+      >     )
+      >     x2 = byoc.param(
+      >             Part(x1, index=2, skip=IndexError),
+      >             default=None,
+      >     )
+    expected:
+      x1: 'a'
+      x2: None
     n_calls:
       f: 1
 
