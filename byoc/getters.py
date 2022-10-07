@@ -2,7 +2,7 @@
 
 from . import model
 from .model import UNSPECIFIED
-from .cast import CastFuncs, Context
+from .cast import CastFuncs, Context, partial_context
 from .meta import GetterMeta, LayerMeta
 from .utils import replay, lookup, noop
 from .errors import ApiError, NoValueFound
@@ -259,14 +259,14 @@ class BoundKey(BoundGetter):
 
     def __init__(self, parent, obj, param, wrapped_configs):
         super().__init__(parent, obj, param)
-        self.key = parent.key
         self.wrapped_configs = wrapped_configs
 
-        if self.key is UNSPECIFIED:
-            self.key = param._get_default_key()
-
     def _iter_values(self, log):
-        assert self.key is not UNSPECIFIED
+        key = self.parent.key
+        if key is UNSPECIFIED:
+            key = self.param._get_default_key()
+
+        assert key is not UNSPECIFIED
         assert self.wrapped_configs is not None
 
         if not self.wrapped_configs:
@@ -302,12 +302,13 @@ class BoundKey(BoundGetter):
             config.load_status(log)
 
             for layer in wrapped_config:
-                for value in layer.iter_values(self.key, log):
-                    yield (
-                            value,
-                            LayerMeta(self.parent, layer),
-                            config.dynamic,
-                    )
+                meta = LayerMeta(self.parent, layer)
+
+                if callable(key):
+                    key = partial_context(key, meta, self.obj)
+
+                for value in layer.iter_values(key, log):
+                    yield value, meta, config.dynamic
 
 class BoundCallable(BoundGetter):
 

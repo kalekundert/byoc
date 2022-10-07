@@ -2,6 +2,7 @@
 
 import sys
 import inspect
+import functools
 
 from .errors import Error
 from more_itertools import first, value_chain
@@ -62,6 +63,25 @@ class Context:
         self.meta = meta
         self.obj = obj
 
+class _PartialContextWrapper:
+
+    def __init__(self, func, meta, obj):
+        functools.update_wrapper(self, func)
+        self.meta = meta
+        self.obj = obj
+
+    def __repr__(self):
+        # I want this wrapper to be transparent to the user.  The only time 
+        # this matters is log messages, where the `repr()` of this object may 
+        # be included.  `functools.wraps()` doesn't produce the right `repr()` 
+        # if the callable is an object (rather than a function), so here we 
+        # explicitly delegate to the wrapped `repr()`.
+        return repr(self.__wrapped__)
+
+    def __call__(self, value):
+        context = Context(value, self.meta, self.obj)
+        return call_with_context(self.__wrapped__, context)
+
 def call_with_context(f, context):
     try:
         sig = inspect.signature(f)
@@ -75,6 +95,9 @@ def call_with_context(f, context):
             return f(context)
 
     return f(context.value)
+
+def partial_context(f, meta, obj):
+    return _PartialContextWrapper(f, meta, obj)
 
 
 def relpath(
