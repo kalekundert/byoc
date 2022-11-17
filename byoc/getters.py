@@ -50,7 +50,7 @@ class Key(Getter):
     def bind(self, obj, param):
         wrapped_configs = [
                 wc for wc in model.get_wrapped_configs(obj)
-                if isinstance(wc.config, self.config_cls)
+                if wc.config.is_match(self.config_cls)
         ]
         return BoundKey(self, obj, param, wrapped_configs)
 
@@ -259,6 +259,11 @@ class BoundKey(BoundGetter):
 
     def __init__(self, parent, obj, param, wrapped_configs):
         super().__init__(parent, obj, param)
+
+        # This class is used by both `Key` and `ImplicitKey`.  The two access 
+        # wrapped configs in different ways, which is why the wrapped configs 
+        # need to be provided to the constructor and stored, rather than e.g.  
+        # calculated on-the-fly in `iter_values()`.
         self.wrapped_configs = wrapped_configs
 
     def _iter_values(self, log):

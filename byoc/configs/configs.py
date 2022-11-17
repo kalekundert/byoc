@@ -37,6 +37,10 @@ class Config:
     def load(self):
         raise NotImplementedError
 
+    def is_match(self, cls):
+        return isinstance(self, cls)
+
+
 class EnvironmentConfig(Config):
 
     def load(self):
