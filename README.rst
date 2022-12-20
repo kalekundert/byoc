@@ -11,7 +11,7 @@
 .. image:: https://img.shields.io/readthedocs/byoc.svg
    :target: https://byoc.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/github/workflow/status/kalekundert/byoc/Test%20and%20release/master
+.. image:: https://img.shields.io/github/actions/workflow/status/kalekundert/byoc/test_and_release.yml?branch=master
    :target: https://github.com/kalekundert/byoc/actions
 
 .. image:: https://img.shields.io/coveralls/kalekundert/byoc.svg
